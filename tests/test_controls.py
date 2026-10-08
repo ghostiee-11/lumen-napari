@@ -322,7 +322,7 @@ def test_segmenting_posts_the_work_and_an_overlay(qtbot, controls, posts):
 
 def test_pixel_warning_is_given_once_per_layer(qtbot, controls, posts):
     run(qtbot, controls, "Segment Layer", image_layer="nuclei", min_size=0)
-    run(qtbot, controls, "Segment Layer", image_layer="nuclei", min_size=0)
+    run(qtbot, controls, "Segment Layer", image_layer="nuclei", min_size=5)
     assert "Tell me the pixel size" not in posts[-1][0]
     assert "Sizes are in pixels." in posts[-1][0]
 
@@ -400,3 +400,13 @@ def test_measuring_with_no_name_uses_the_latest_labels(qtbot, viewer, controls):
     run(qtbot, controls, "Segment Layer", image_layer="nuclei", min_size=0)
     result = run(qtbot, controls, "Measure Layer", labels_layer="")
     assert result.table == "nuclei_labels"
+
+
+def test_same_segmentation_is_reused_without_a_new_card(qtbot, viewer, controls, posts):
+    run(qtbot, controls, "Segment Layer", image_layer="nuclei", min_size=0)
+    cards = len(posts)
+    result = run(qtbot, controls, "Segment Layer", image_layer="nuclei", min_size=0)
+    assert result.table == "nuclei_labels"
+    assert len(posts) == cards
+    run(qtbot, controls, "Segment Layer", image_layer="nuclei", min_size=5)
+    assert len(posts) == cards + 1

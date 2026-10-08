@@ -89,6 +89,7 @@ class NapariControls(CodeSourceControls):
         super().__init__(viewer=viewer, functions=functions, **params)
         self._source = None
         self._warned_pixels: set[str] = set()
+        self._segmented: dict[str, tuple] = {}
         self._lock = threading.Lock()
 
     def segment_layer(
@@ -137,6 +138,12 @@ class NapariControls(CodeSourceControls):
         layer = self._layer(image_layer, Image)
         region = visible_region(layer) if visible_only else None
         level = choose_level(layer, region) if level < 0 else level
+        key = (layer.name, method, model, min_size, split_touching, level, region,
+               tuple(measure_layers or ()), tuple(layer.scale))
+        name = f"{layer.name} labels"
+        if self._segmented.get(name) == key and name in self.viewer.layers:
+            # Same image, same settings: reuse the result (hand edits keep it current).
+            return SourceResult.from_source(self._source, table=table_name(name))
         image, scale, translate = load_region(layer, level, region)
         labels = segment(image, method=method, min_size=min_size, split_touching=split_touching,
                          model=model)
@@ -146,8 +153,8 @@ class NapariControls(CodeSourceControls):
             for name in measure_layers or []
         }
         df = measure(labels, image, spacing=scale, unit=unit, origin=translate, channels=channels)
-        name = f"{layer.name} labels"
         _publish_labels(self.viewer, name, labels, to_features(df), scale, translate)
+        self._segmented[name] = key
         table = table_name(name)
         self._remeasure_on_edit(name, table, image, scale, unit, translate, channels)
         self.script.load(layer)
