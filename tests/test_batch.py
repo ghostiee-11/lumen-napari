@@ -61,3 +61,26 @@ def test_open_unknown_image():
 
     with pytest.raises(ValueError, match="Segment a folder first"):
         path_of("nope")
+
+
+def test_join_plate_map_on_well():
+    import pandas as pd
+
+    from lumen_napari.batch import join_plate_map
+
+    objects = pd.DataFrame({"image_id": ["p_A01", "p_B02"], "well": ["A01", "B02"], "area": [1, 2]})
+    plate = pd.DataFrame({"well": ["A1", " B02 "], "compound": ["DMSO", "taxol"]})
+    joined = join_plate_map(objects, plate)
+    assert list(joined.compound) == ["DMSO", "taxol"]
+
+
+def test_join_plate_map_on_image_id_and_bad_maps():
+    import pandas as pd
+
+    from lumen_napari.batch import join_plate_map
+
+    objects = pd.DataFrame({"image_id": ["a", "b"], "area": [1, 2]})
+    joined = join_plate_map(objects, pd.DataFrame({"image_id": ["b"], "dose": [10]}))
+    assert joined.dose.isna().tolist() == [True, False]
+    with pytest.raises(ValueError, match="needs a 'well' or 'image_id' column"):
+        join_plate_map(objects, pd.DataFrame({"plate": [1]}))

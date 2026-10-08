@@ -72,3 +72,17 @@ def open_in_viewer(viewer: ViewerModel, image_id: str) -> Labels:
 def _add(viewer, image, labels, image_id, name, features) -> None:
     viewer.add_image(image, name=image_id)
     viewer.add_labels(labels, name=name, features=features)
+
+
+def join_plate_map(objects: pd.DataFrame, plate_map: pd.DataFrame) -> pd.DataFrame:
+    """Add the plate map's columns (compound, dose...) to every object, matched on well, or on
+    image_id when the map has no well column."""
+    key = next((k for k in ("well", "image_id") if k in objects and k in plate_map), None)
+    if key is None:
+        raise ValueError(
+            f"The plate map needs a 'well' or 'image_id' column. It has: {list(plate_map.columns)}."
+        )
+    plate_map = plate_map.assign(**{key: plate_map[key].astype(str).str.strip()})
+    if key == "well":
+        plate_map["well"] = plate_map["well"].map(lambda w: well_of(w) or w)
+    return objects.merge(plate_map, on=key, how="left")
