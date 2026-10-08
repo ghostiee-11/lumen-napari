@@ -80,17 +80,21 @@ class NapariControls(CodeSourceControls):
     label = '<span class="material-icons" style="vertical-align: middle;">biotech</span> napari'
 
     def __init__(self, viewer: ViewerModel, **params):
-        actions = (
-            self.segment_layer, self.measure_layer, self.layer_features, self.segment_folder,
-            self.load_table, self.measure_regions, self.segment_whole_slide,
-        )
-        functions = {action.__name__: action for action in actions}
+        functions = {action.__name__: action for action in self.actions()}
         params.setdefault("script", Script())
         super().__init__(viewer=viewer, functions=functions, **params)
         self._source = None
+        self._latest: str | None = None
         self._warned_pixels: set[str] = set()
         self._segmented: dict[str, tuple] = {}
         self._lock = threading.Lock()
+
+    def actions(self) -> tuple:
+        """The actions that make tables."""
+        return (
+            self.segment_layer, self.measure_layer, self.layer_features, self.segment_folder,
+            self.load_table, self.measure_regions, self.segment_whole_slide,
+        )
 
     def segment_layer(
         self,
@@ -538,9 +542,11 @@ class NapariControls(CodeSourceControls):
         return f"{text}\n\n{_markdown_table(result)}"
 
     def current_table(self) -> str | None:
-        """The measurement table of the most recent labels layer, if it has one."""
+        """The table made most recently, else the one of the most recent labels layer."""
         if self._source is None:
             return None
+        if self._latest in self._source.tables:
+            return self._latest
         for layer in reversed(self.viewer.layers):
             if isinstance(layer, Labels) and table_name(layer.name) in self._source.tables:
                 return table_name(layer.name)
@@ -572,6 +578,7 @@ class NapariControls(CodeSourceControls):
                 self._source._connection.from_df(df).to_view(name, replace=True)
                 self._source.clear_cache()  # Lumen caches table data; drop the old version
             self._source.tables[name] = f"SELECT * FROM {name}"
+            self._latest = name
         return SourceResult.from_source(
             self._source, table=name, message=f"Loaded {len(df):,} rows into '{name}'"
         )
