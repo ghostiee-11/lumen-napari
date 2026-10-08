@@ -7,6 +7,7 @@ import time
 
 import panel as pn
 from lumen.ai.controls import UploadSourceControls
+from lumen.ai.coordinator import Planner
 from lumen.ai.ui import ExplorerUI
 from napari.components import ViewerModel
 
@@ -26,6 +27,14 @@ SUGGESTIONS = [
 ]
 
 
+class NapariPlanner(Planner):
+    """Lumen's planner without the clarifying questions: napari questions are about the open
+    layers, so asking "which image?" three times before a count only slows people down."""
+
+    async def _check_clarification_needed(self, messages, context) -> bool:
+        return False
+
+
 def build_ui(viewer: ViewerModel, script: Script | None = None, **params) -> ExplorerUI:
     """A Lumen ExplorerUI whose data comes from the napari viewer."""
     script = script or Script()
@@ -33,6 +42,7 @@ def build_ui(viewer: ViewerModel, script: Script | None = None, **params) -> Exp
     make_charts_clickable(viewer, on_chart=script.chart)
     params.setdefault("title", "Lumen for napari")
     params.setdefault("suggestions", SUGGESTIONS)
+    params.setdefault("coordinator", NapariPlanner)
     ui = ExplorerUI(
         source_controls=[controls, UploadSourceControls],
         tools=make_tools(viewer, controls),

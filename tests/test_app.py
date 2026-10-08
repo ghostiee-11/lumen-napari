@@ -89,3 +89,11 @@ def test_questions_and_cards_are_kept_for_the_report(qapp, llm):
     assert script.questions == ["How many nuclei?"]
     ui.source_controls[0]._post("**card**")
     assert script.cards[-1] == ("**card**", None)
+
+
+async def test_planner_never_asks_clarifying_questions(qapp, llm):
+    from lumen_napari.app import NapariPlanner
+
+    ui = build_ui(ViewerModel(), llm=llm)
+    assert isinstance(ui._coordinator, NapariPlanner)
+    assert await ui._coordinator._check_clarification_needed([], {}) is False
