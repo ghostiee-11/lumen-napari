@@ -282,3 +282,23 @@ def test_measure_regions(qtbot, viewer, controls):
                        "FROM nuclei_labels_by_region GROUP BY region ORDER BY region")
     assert df.region.tolist() == ["outside", "region 1"]
     assert df.n.tolist() == [1, 1]
+
+
+def test_painting_by_hand_remeasures_the_table(qtbot, viewer, controls):
+    result = run(qtbot, controls, "Segment Layer", image_layer="nuclei", min_size=0)
+    layer = viewer.layers["nuclei labels"]
+    assert len(layer.features) == 2
+    layer.brush_size = 3
+    layer.paint((0, 39), 9)  # draw a new object by hand
+    qtbot.waitUntil(lambda: len(layer.features) == 3, timeout=5_000)
+    df = query(result, "SELECT label FROM nuclei_labels ORDER BY label")
+    assert df.label.tolist() == [1, 2, 9]
+    assert "was edited by hand" in controls.script.lines[-2]
+
+
+def test_moving_points_updates_their_table(qtbot, viewer, controls):
+    viewer.add_points([[1, 2]], name="spots")
+    result = run(qtbot, controls, "Layer Features", layer="spots")
+    viewer.layers["spots"].data = [[5, 6]]
+    qtbot.waitUntil(lambda: query(result, "SELECT position_0 FROM spots").position_0[0] == 5,
+                    timeout=5_000)

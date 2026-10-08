@@ -18,7 +18,7 @@ from lumen.sources.duckdb import DuckDBSource
 from napari.components import ViewerModel
 from napari.layers import Image, Labels, Layer, Points, Shapes, Surface, Tracks, Vectors
 from skimage.color import rgb2gray
-from superqt.utils import ensure_main_thread
+from superqt.utils import ensure_main_thread, qdebounced
 
 from .batch import join_plate_map, measure_files
 from .measure import measure, to_features
@@ -122,6 +122,7 @@ class NapariControls(CodeSourceControls):
         name = f"{layer.name} labels"
         _publish_labels(self.viewer, name, labels, to_features(df), scale, translate)
         table = table_name(name)
+        self._remeasure_on_edit(name, table, image, scale, unit, translate, channels)
         self.script.load(layer)
         self.script.created(name)
         for name in measure_layers or []:
@@ -177,6 +178,7 @@ class NapariControls(CodeSourceControls):
             self.viewer, layer.name, labels, to_features(df), layer.scale, layer.translate
         )
         table = table_name(layer.name)
+        self._remeasure_on_edit(layer.name, table, image, spacing, unit, None, channels)
         self.script.load(layer)
         image_code = "None"
         if image_source:
@@ -204,13 +206,10 @@ class NapariControls(CodeSourceControls):
             Name of the napari layer whose features to load.
         """
         source = self._layer(layer, FEATURE_LAYERS)
-        df = source.features.copy()
-        if isinstance(source, Labels):
-            df = df.rename(columns={"index": "label"})
-        elif source.data is not None and np.ndim(source.data) == 2:
-            for axis, column in enumerate(np.asarray(source.data).T):
-                df[f"position_{axis}"] = column
-        return self._publish_table(table_name(source.name), df)
+        table = table_name(source.name)
+        if not isinstance(source, Labels):
+            _watch(source, "data", lambda: self._publish_table(table, features_table(source)))
+        return self._publish_table(table, features_table(source))
 
     def segment_folder(
         self,
@@ -318,6 +317,22 @@ class NapariControls(CodeSourceControls):
         self.script.add(f"# Regions from {shapes.name!r} are not replayed by this script.")
         return self._publish_table(table, df)
 
+    def _remeasure_on_edit(self, name, table, image, spacing, unit, origin, channels) -> None:
+        """Measure a labels layer again whenever it is painted, filled or erased by hand, and
+        update both its napari features and its Lumen table."""
+
+        def remeasure():
+            if name not in self.viewer.layers:
+                return
+            layer = self.viewer.layers[name]
+            df = measure(np.asarray(layer.data), image, spacing=spacing, unit=unit,
+                         origin=origin, channels=channels)
+            layer.features = to_features(df)
+            self._publish_table(table, df)
+            self.script.edited(name)
+
+        _watch(self.viewer.layers[name], "paint", remeasure)
+
     def _publish_table(self, name: str, df: pd.DataFrame) -> SourceResult:
         """Add the table to this session's one DuckDB source and return that source.
 
@@ -361,6 +376,31 @@ def _publish_labels(viewer: ViewerModel, name: str, labels: np.ndarray, features
         layer.features = features
     else:
         viewer.add_labels(labels, name=name, features=features, scale=scale, translate=translate)
+
+
+def features_table(layer: Layer) -> pd.DataFrame:
+    """A layer's features as a table: labels keyed by `label`, points and other 2D-data layers
+    with their positions as position_0, position_1..."""
+    df = layer.features.copy()
+    if isinstance(layer, Labels):
+        return df.rename(columns={"index": "label"})
+    if layer.data is not None and np.ndim(layer.data) == 2:
+        for axis, column in enumerate(np.asarray(layer.data).T):
+            df[f"position_{axis}"] = column
+    return df
+
+
+@ensure_main_thread
+def _watch(layer: Layer, event: str, callback) -> None:
+    """Call back half a second after the last `event`, replacing any earlier watcher, so a
+    brush stroke re-measures once rather than per pixel."""
+    emitter = getattr(layer.events, event)
+    key = f"lumen_napari_{event}"
+    if previous := layer.metadata.get(key):
+        emitter.disconnect(previous)
+    debounced = qdebounced(lambda _event=None: callback(), timeout=500)
+    layer.metadata[key] = debounced
+    emitter.connect(debounced)
 
 
 def _read_table(path: str) -> tuple[pd.DataFrame, str]:
