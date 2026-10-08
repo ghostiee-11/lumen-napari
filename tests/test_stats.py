@@ -53,3 +53,12 @@ def test_identical_replicates_give_no_p_value():
     row = compare(df, "area", "compound", "DMSO").set_index("compound").loc["x"]
     assert np.isnan(row.p_value) and np.isnan(row.z_score)
     assert row.fold_change == 2
+
+
+def test_flat_response_gets_no_ec50():
+    rng = np.random.default_rng(0)
+    doses = [0.01, 0.1, 1, 10]
+    rows = [{"well": f"W{i}{r}", "compound": "inert", "dose": d, "area": 35 + rng.normal(0, 1)}
+            for i, d in enumerate(doses) for r in range(2)]
+    fit = dose_response(pd.DataFrame(rows), "area", "compound", "dose").iloc[0]
+    assert np.isnan(fit.ec50) and np.isnan(fit.bottom)

@@ -55,7 +55,8 @@ def four_parameter(x, bottom, top, ec50, hill):
 def dose_response(df: pd.DataFrame, measurement: str, condition: str, dose: str,
                   replicate: str = "well") -> pd.DataFrame:
     """A four-parameter logistic fit of the replicate medians against dose, per condition.
-    Conditions with fewer than four positive doses, or that do not converge, get NaN."""
+    Conditions with fewer than four positive doses, that do not converge, or that do not
+    respond to dose (see `_responds`) get NaN."""
     wells = per_replicate(df, measurement, replicate, condition, dose)
     rows = []
     for name, group in wells.groupby(condition, dropna=False):
@@ -66,8 +67,24 @@ def dose_response(df: pd.DataFrame, measurement: str, condition: str, dose: str,
             start = [y.min(), y.max(), float(np.median(x)), 1.0]
             try:
                 params, _ = optimize.curve_fit(four_parameter, x, y, p0=start, maxfev=10_000)
-                fit = dict(zip(fit, params, strict=True))
+                if _responds(x, y, params):
+                    fit = dict(zip(fit, params, strict=True))
             except (RuntimeError, ValueError):
                 pass
         rows.append({condition: name, "doses": group[dose].nunique(), **fit})
     return pd.DataFrame(rows)
+
+
+def _responds(x: np.ndarray, y: np.ndarray, params) -> bool:
+    """Whether the fitted curve is a real response: its EC50 lies within the tested doses and,
+    when there are spare points, it fits clearly better than a flat line (F-test, p < 0.05)."""
+    if not x.min() <= params[2] <= x.max():
+        return False
+    if len(y) <= 4:
+        return True
+    flat = np.sum((y - y.mean()) ** 2)
+    curve = np.sum((y - four_parameter(x, *params)) ** 2)
+    if curve == 0:
+        return flat > 0
+    f = ((flat - curve) / 3) / (curve / (len(y) - 4))
+    return stats.f.sf(f, 3, len(y) - 4) < 0.05
