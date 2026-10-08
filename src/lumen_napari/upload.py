@@ -8,9 +8,10 @@ import tempfile
 from pathlib import Path
 
 import numpy as np
+from skimage.io import imread
 from superqt.utils import ensure_main_thread
 
-from .files import read_file
+from .files import BIOIO_SUFFIXES, ImageFile, read_file
 
 IMAGE_EXTENSIONS = ("png", "tif", "tiff", "jpg", "jpeg", "czi", "nd2", "lif")
 
@@ -33,6 +34,9 @@ def upload_image(controls, extension: str, context, file_obj, alias: str, filena
     file_obj.seek(0)
     path.write_bytes(file_obj.read())
     file = read_file(path)
+    if not str(path).lower().endswith(BIOIO_SUFFIXES) and _is_rgb(pixels := imread(path)):
+        # Color photos and stained slides stay in color; each color is measured too.
+        file = ImageFile({"image": pixels[..., :3]})
     names = _add_channels(controls.viewer, stem, file)
     controls.segment_layer(
         image_layer=names[0], measure_layers=names[1:],
@@ -53,7 +57,10 @@ def _add_channels(viewer, stem: str, file) -> list[str]:
         if file.spacing else {}
     translate = (0.0,) * (data.ndim - 1) + (offset,)
     if len(channels) == 1:
-        layers = [viewer.add_image(data, name=stem, translate=translate, **kwargs)]
+        rgb = _is_rgb(data)
+        if rgb:
+            translate = translate[1:]  # the color axis is not a spatial one
+        layers = [viewer.add_image(data, name=stem, translate=translate, rgb=rgb, **kwargs)]
     else:
         layers = viewer.add_image(np.stack(list(file.channels.values())), channel_axis=0,
                                   name=[f"{stem} {c}" for c in channels], translate=translate,
@@ -68,3 +75,7 @@ def _right_edge(viewer) -> float:
         return 0.0
     right = max(layer.extent.world[1][-1] for layer in viewer.layers)
     return float(right + 0.05 * abs(right))
+
+
+def _is_rgb(image: np.ndarray) -> bool:
+    return image.ndim == 3 and image.shape[-1] in (3, 4)

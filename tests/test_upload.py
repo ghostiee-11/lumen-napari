@@ -108,3 +108,18 @@ def test_image_attached_in_chat_box_opens_in_napari(qapp):
         )
     ui._on_submit()
     assert [layer.name for layer in viewer.layers] == ["cells", "cells labels"]
+
+
+def test_uploaded_rgb_image_stays_in_color(qtbot, controls):
+    image = np.zeros((40, 40, 3), np.uint8)
+    image[5:15, 5:15] = (200, 40, 10)
+    image[25:35, 25:35] = (20, 60, 220)
+    buffer = io.BytesIO()
+    imsave(buffer, image, extension=".png", check_contrast=False)
+    buffer.seek(0)
+    source = run(qtbot, image_upload_handlers(controls)["png"], {}, buffer, "sky", "sky")
+    assert controls.viewer.layers["sky"].rgb
+    run(qtbot, image_upload_handlers(controls)["png"], {}, png_bytes(), "next", "next")
+    assert controls.viewer.layers["next"].extent.world[0][-1] > 40  # placed beside the sky
+    df = source.execute("SELECT intensity_mean_red FROM sky_labels ORDER BY label")
+    assert df.intensity_mean_red.tolist() == [200, 20]
