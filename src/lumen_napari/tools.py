@@ -6,7 +6,6 @@ import functools
 
 import duckdb
 import numpy as np
-import param
 from lumen.ai.tools import FunctionTool
 from napari.components import ViewerModel
 from napari.layers import Image, Labels, Layer
@@ -20,19 +19,11 @@ from .segment import INSTALL, METHODS, available
 
 
 class ViewerTool(FunctionTool):
-    """FunctionTool that ignores the step title Lumen's planner passes to every actor, and
-    shows its failures in the chat."""
+    """FunctionTool that ignores the step title Lumen's planner passes to every actor."""
 
-    chat = param.Callable(default=None, doc="post(markdown) that shows a failure in the chat.")
-
-    # ponytail: drop step_title once Lumen's FunctionTool stops forwarding it to the function
+    # ponytail: drop once Lumen's FunctionTool stops forwarding step_title to the function
     async def respond(self, messages, context, step_title=None, **kwargs):
-        try:
-            return await super().respond(messages, context, **kwargs)
-        except Exception as e:
-            if self.chat is not None:
-                self.chat(f"⚠️ **napari tool `{self.name}` failed**: {e}")
-            raise
+        return await super().respond(messages, context, **kwargs)
 
 
 def make_tools(viewer: ViewerModel, controls=None) -> list[ViewerTool]:
@@ -269,7 +260,8 @@ def _labels_layer(viewer: ViewerModel, name: str) -> Labels:
         raise ValueError("napari has no labels layer. Segment an image first.")
     if not name:
         return layers[-1]
-    if found := find_layer(layers, name):
+    # The LLM often names the image ("nuclei") for its labels ("nuclei labels").
+    if found := find_layer(layers, name) or find_layer(layers, f"{name} labels"):
         return found
     raise ValueError(f"No labels layer named {name!r}. Available: {[l.name for l in layers]}.")
 

@@ -159,18 +159,6 @@ def test_set_voxel_size_in_3d(qapp):
     assert tuple(viewer.layers["stack"].scale) == (0.29, 0.26, 0.26)
 
 
-async def test_tool_failures_are_posted(qapp):
-    posted = []
-    tool = make_tools(ViewerModel())[1]
-    tool.chat = posted.append
-    with pytest.raises(ValueError):
-        await tool.respond([], {}, label=1, rank_by="", smallest=False, labels_layer="", image_id="")
-    assert posted == [(
-        "⚠️ **napari tool `show_object_in_napari` failed**: "
-        "napari has no labels layer. Segment an image first."
-    )]
-
-
 def test_segmentation_methods_lists_what_is_installed(qapp):
     text = make_tools(ViewerModel())[5].function()
     assert text.splitlines()[0].startswith("- otsu (installed): Fast global threshold")

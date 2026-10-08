@@ -42,8 +42,6 @@ def build_ui(viewer: ViewerModel, script: Script | None = None, **params) -> Exp
     controls.chat = chat_poster(ui.interface)
     ui.interface.param.watch(lambda event: _record_questions(script, ui.interface, event),
                              "objects")
-    for tool in ui.tools:
-        tool.chat = controls.chat
     return ui
 
 

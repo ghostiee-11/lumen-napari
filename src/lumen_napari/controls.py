@@ -5,7 +5,6 @@ real annotation objects, not strings.
 """
 
 import asyncio
-import functools
 import re
 import threading
 from pathlib import Path
@@ -85,7 +84,7 @@ class NapariControls(CodeSourceControls):
             self.segment_layer, self.measure_layer, self.layer_features, self.segment_folder,
             self.load_table, self.measure_regions, self.segment_whole_slide,
         )
-        functions = {action.__name__: self._reporting(action) for action in actions}
+        functions = {action.__name__: action for action in actions}
         params.setdefault("script", Script())
         super().__init__(viewer=viewer, functions=functions, **params)
         self._source = None
@@ -539,19 +538,6 @@ class NapariControls(CodeSourceControls):
             self._warned_pixels.add(layer)
             return size_note(unit, spacing)
         return "Sizes are in pixels."
-
-    def _reporting(self, action):
-        """Show a failed step in the chat, so a failure is never hidden behind the LLM's reply."""
-
-        @functools.wraps(action)
-        def run(**params):
-            try:
-                return action(**params)
-            except Exception as e:
-                self._post(f"⚠️ **napari step `{action.__name__}` failed**: {e}")
-                raise
-
-        return run
 
     def _publish_table(self, name: str, df: pd.DataFrame) -> SourceResult:
         """Add the table to this session's one DuckDB source and return that source.

@@ -333,11 +333,6 @@ def test_units_are_reported(qtbot, viewer, controls, posts):
     assert "Sizes are in um (pixel size 0.5, 0.5 um)." in posts[-1][0]
 
 
-def test_failures_are_posted(qtbot, controls, posts):
-    run(qtbot, controls, "Segment Layer", image_layer="cells")
-    assert posts[-1][0].startswith("⚠️ **napari step `segment_layer` failed**: No image layer")
-
-
 def test_folder_report_names_the_extremes(qtbot, controls, plate, posts):
     run(qtbot, controls, "Segment Folder", folder=str(plate), pattern="*.png", min_size=0)
     text = posts[-1][0]
