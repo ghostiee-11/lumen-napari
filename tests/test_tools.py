@@ -140,3 +140,19 @@ def test_layers_are_found_by_their_table_name(qapp):
     viewer.add_labels(np.ones((4, 4), int), name="nuclei labels")
     show = make_tools(viewer)[1].function
     assert show(1, labels_layer="nuclei_labels") == "Showing object 1 of 'nuclei labels' in napari."
+
+
+def test_set_pixel_size_updates_image_and_labels(viewer):
+    set_size = make_tools(viewer)[4].function
+    message = set_size(0.65)
+    assert message.startswith("Set the pixel size of 'nuclei' to 0.65 um.")
+    assert tuple(viewer.layers["nuclei"].scale) == (0.65, 0.65)
+    assert str(viewer.layers["nuclei"].units[0]) == "micrometer"
+    assert tuple(viewer.layers["nuclei labels"].scale) == (0.65, 0.65)
+
+
+def test_set_voxel_size_in_3d(qapp):
+    viewer = ViewerModel()
+    viewer.add_image(np.zeros((4, 8, 8)), name="stack")
+    make_tools(viewer)[4].function(0.26, z_size=0.29)
+    assert tuple(viewer.layers["stack"].scale) == (0.29, 0.26, 0.26)

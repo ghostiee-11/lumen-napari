@@ -121,11 +121,42 @@ def make_tools(viewer: ViewerModel) -> list[ViewerTool]:
         _set_colormap(layer, DirectLabelColormap(color_dict={None: (0, 0, 0, 0), **colors}))
         return f"Showing {len(keep)} of {len(layer.features)} objects of {layer.name!r} where {where}."
 
+    def set_pixel_size(size: float, unit: str = "um", z_size: float = 0, layer: str = "") -> str:
+        """Set the physical pixel size of a napari image layer and its labels layer, so sizes
+        are measured in real units such as micrometers. Use when the user gives the pixel or
+        voxel size.
+
+        Parameters
+        ----------
+        size : float
+            Pixel size along x and y.
+        unit : str
+            Unit of the size, such as 'um' or 'nm'.
+        z_size : float
+            For 3D images, the spacing between slices. Defaults to size.
+        layer : str
+            Name of the image layer. Defaults to the first image layer.
+        """
+        images = [l for l in viewer.layers if isinstance(l, Image)]
+        if not images:
+            raise ValueError("napari has no image layer.")
+        image = find_layer(images, layer) if layer else images[0]
+        if image is None:
+            raise ValueError(f"No image layer named {layer!r}. Available: {[l.name for l in images]}.")
+        scale = (z_size or size,) * (image.ndim - 2) + (size, size)
+        targets = [image] + [l for l in viewer.layers
+                             if isinstance(l, Labels) and l.name == f"{image.name} labels"]
+        _set_scale(targets, scale, unit)
+        return (f"Set the pixel size of {image.name!r} to {size:g} {unit}"
+                f"{f' with {z_size:g} {unit} between slices' if z_size else ''}. "
+                f"Segment or measure it again to get sizes in {unit}.")
+
     return [
         ViewerTool(list_napari_layers),
         ViewerTool(show_object_in_napari),
         ViewerTool(color_objects_by),
         ViewerTool(filter_objects),
+        ViewerTool(set_pixel_size),
     ]
 
 
@@ -169,6 +200,13 @@ def _add_filtered(viewer: ViewerModel, layer: Labels, keep: list[int], name: str
         viewer.layers.remove(name)
     viewer.add_labels(data, name=name, features=features, scale=layer.scale,
                       translate=layer.translate)
+
+
+@ensure_main_thread(await_return=True, timeout=10_000)
+def _set_scale(layers, scale, unit) -> None:
+    for layer in layers:
+        layer.scale = scale
+        layer.units = (unit,) * len(scale)
 
 
 @ensure_main_thread(await_return=True, timeout=10_000)
