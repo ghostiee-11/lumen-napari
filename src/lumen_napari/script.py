@@ -22,9 +22,20 @@ FOOTER = "\nnapari.run()\n"
 
 
 class Script:
+    """The steps as Python, plus what the shareable report needs: the questions asked, the
+    report cards posted in the chat and the charts Lumen drew."""
+
     def __init__(self):
         self.lines: list[str] = []
         self._loaded: set[str] = set()
+        self.questions: list[str] = []
+        self.cards: list[tuple[str, bytes | None]] = []
+        self.charts: list[dict] = []
+
+    def chart(self, spec: dict) -> None:
+        """Keep a chart once, however often Lumen renders it."""
+        if spec not in self.charts:
+            self.charts.append(spec)
 
     def load(self, layer: Layer) -> None:
         """Add the line that loads a layer, once per layer."""
