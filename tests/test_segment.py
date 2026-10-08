@@ -98,3 +98,70 @@ def test_a_fixed_threshold_replaces_otsu():
     image[10:14, 10:14] = 3
     assert segment(image, split_touching=False).max() == 2
     assert segment(image, split_touching=False, threshold=5).max() == 1
+
+
+def fake_module(monkeypatch, name, **attrs):
+    import sys
+    import types
+
+    module = types.SimpleNamespace(**attrs)
+    monkeypatch.setitem(sys.modules, name, module)
+    return module
+
+
+def test_stardist_uses_the_pretrained_model_for_the_dimension(monkeypatch):
+    used = {}
+
+    class Model:
+        @classmethod
+        def from_pretrained(cls, name):
+            used["model"] = name
+            return cls()
+
+        def predict_instances(self, image):
+            used["max"] = float(image.max())
+            labels = np.zeros(image.shape, int)
+            labels[0:2, 0:2] = 1
+            labels[5:15, 5:15] = 2
+            return labels, {}
+
+    fake_module(monkeypatch, "stardist")
+    fake_module(monkeypatch, "stardist.models", StarDist2D=Model, StarDist3D=Model)
+    fake_module(monkeypatch, "csbdeep")
+    fake_module(monkeypatch, "csbdeep.utils", normalize=lambda image, low, high: image / image.max())
+    labels = segment(blobs(), method="stardist", min_size=10)
+    assert used == {"model": "2D_versatile_fluo", "max": 1.0}
+    assert np.unique(labels).tolist() == [0, 2]
+
+
+def test_bioimageio_turns_probabilities_into_instances(monkeypatch):
+    import types
+
+    probability = np.zeros((1, 40, 40))
+    probability[0, 5:12, 5:12] = 0.9
+    probability[0, 25:35, 25:35] = 0.8
+    sample = types.SimpleNamespace(members={"output": types.SimpleNamespace(data=probability)})
+    calls = {}
+
+    def predict(model, inputs):
+        calls["model"] = model
+        return sample
+
+    fake_module(monkeypatch, "bioimageio")
+    fake_module(monkeypatch, "bioimageio.core", predict=predict)
+    labels = segment(blobs(), method="bioimageio", model="affable-shark")
+    assert calls == {"model": "affable-shark"}
+    assert labels.max() == 2
+
+
+def test_bioimageio_needs_a_model_id():
+    with pytest.raises(ValueError, match="model id"):
+        segment(blobs(), method="bioimageio")
+
+
+def test_available_methods():
+    from lumen_napari.segment import METHODS, available
+
+    found = available()
+    assert found["otsu"] is True
+    assert set(found) == set(METHODS)
