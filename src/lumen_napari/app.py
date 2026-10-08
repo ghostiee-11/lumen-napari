@@ -6,6 +6,7 @@ import os
 import socket
 import time
 
+import lumen.ai.ui
 import panel as pn
 from lumen.ai import llm as lumen_llm
 from lumen.ai.controls import UploadSourceControls
@@ -19,7 +20,7 @@ from .explorer import explorer_for
 from .plate import plate_for
 from .script import Script
 from .tools import make_tools
-from .upload import image_upload_handlers
+from .upload import IMAGE_EXTENSIONS, image_upload_handlers
 
 SUGGESTIONS = [
     ("biotech", "Segment the nuclei layer and plot the distribution of object area"),
@@ -39,6 +40,16 @@ MESSAGE_CSS = """
   margin: 8px 0;
 }
 """
+
+
+# Lumen's chat box sends png and jpeg files to the LLM as pictures, so they never reach the
+# upload handlers and fail outright on providers without vision (the coding CLIs). Here an
+# image is data to open in napari, so those types take the upload path like tif already does.
+# ponytail: rebinds the name in lumen.ai.ui for the whole process; a Lumen hook would be cleaner
+lumen.ai.ui.IMAGE_MIME_TYPES = {
+    ext: mime for ext, mime in lumen.ai.ui.IMAGE_MIME_TYPES.items()
+    if ext.lstrip(".") not in IMAGE_EXTENSIONS
+}
 
 
 class NapariPlanner(Planner):

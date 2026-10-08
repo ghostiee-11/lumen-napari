@@ -90,3 +90,19 @@ def test_uploads_sit_side_by_side(qtbot, controls):
     second = viewer.layers["second"].extent.world
     assert second[0][-1] > first[1][-1]
     assert tuple(viewer.layers["second labels"].translate) == tuple(viewer.layers["second"].translate)
+
+
+def test_image_attached_in_chat_box_opens_in_napari(qapp):
+    from lumen.ai.llm import OpenAI
+    from panel.util import edit_readonly
+
+    from lumen_napari.app import build_ui
+
+    viewer = ViewerModel()
+    ui = build_ui(viewer, llm=OpenAI(api_key="sk-test"))
+    with edit_readonly(ui._chat_input):
+        ui._chat_input.param.update(
+            value_uploaded={"cells.png": {"value": png_bytes().getvalue(), "mime_type": "image/png"}}
+        )
+    ui._on_submit()
+    assert [layer.name for layer in viewer.layers] == ["cells", "cells labels"]
