@@ -132,8 +132,8 @@ def plate(tmp_path):
 def test_segment_folder_makes_one_table(qtbot, controls, plate):
     result = run(qtbot, controls, "Segment Folder", folder=str(plate), pattern="*.png", min_size=0)
     table = result.table
-    df = query(result, f"SELECT file, COUNT(*) AS n FROM {table} GROUP BY file ORDER BY file")
-    assert df.to_dict("list") == {"file": ["A01.png", "A02.png", "B01.png"], "n": [1, 2, 3]}
+    df = query(result, f"SELECT well, COUNT(*) AS n FROM {table} GROUP BY well ORDER BY well")
+    assert df.to_dict("list") == {"well": ["A01", "A02", "B01"], "n": [1, 2, 3]}
 
 
 def test_segment_folder_without_matches(qtbot, controls, plate):

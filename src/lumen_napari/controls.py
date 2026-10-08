@@ -19,9 +19,10 @@ from napari.layers import Image, Labels, Layer, Points, Shapes, Surface, Tracks,
 from skimage.color import rgb2gray
 from superqt.utils import ensure_main_thread
 
+from .batch import measure_files
 from .measure import measure, to_features
 from .script import Script
-from .segment import read_image, segment
+from .segment import segment
 
 FEATURE_LAYERS = (Labels, Points, Shapes, Surface, Tracks, Vectors)
 
@@ -161,10 +162,12 @@ class NapariControls(CodeSourceControls):
         min_size: int = 20,
         max_files: int = 500,
     ) -> pd.DataFrame:
-        """Segment and measure every image file in a folder, one row per object with its file name.
+        """Segment and measure every image file in a folder into one table, one row per object.
 
-        Use this for many images at once, such as all fields or wells of a plate, to compare
-        them. The images are not added to napari. Sizes are in pixels.
+        Use this for many images at once, such as all fields or wells of a plate. Rows are keyed
+        by image_id (the file name without extension) and by well when file names contain plate
+        wells like B02, so they can be joined with an uploaded plate map. The images are not
+        added to napari. Sizes are in pixels.
 
         Parameters
         ----------
@@ -183,26 +186,16 @@ class NapariControls(CodeSourceControls):
         files = sorted(root.glob(pattern))[:max_files]
         if not files:
             raise ValueError(f"No files match {pattern!r} in {str(root)!r}.")
-        tables = []
-        for path in files:
-            image = read_image(path)
-            df = measure(segment(image, method=method, min_size=min_size), image)
-            df.insert(0, "file", path.name)
-            tables.append(df)
+        df = measure_files(files, method=method, min_size=min_size)
         self.table_name = table_name(f"{root.name} objects")
         self.script.add(
             "from pathlib import Path",
-            "from lumen_napari.segment import read_image",
-            "import pandas as pd",
-            "rows = []",
-            f"for path in sorted(Path({str(root)!r}).glob({pattern!r}))[:{max_files!r}]:",
-            "    image = read_image(path)",
-            f"    df = measure(segment(image, method={method!r}, min_size={min_size!r}), image)",
-            '    df.insert(0, "file", path.name)',
-            "    rows.append(df)",
-            f"tables[{self.table_name!r}] = pd.concat(rows, ignore_index=True)",
+            "from lumen_napari.batch import measure_files",
+            f"files = sorted(Path({str(root)!r}).glob({pattern!r}))[:{max_files!r}]",
+            f"tables[{self.table_name!r}] = measure_files(files, method={method!r}, "
+            f"min_size={min_size!r})",
         )
-        return pd.concat(tables, ignore_index=True)
+        return df
 
     def _named(self, action):
         """Return the action's table under our name. Lumen would otherwise derive one from the
