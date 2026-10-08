@@ -44,17 +44,27 @@ def segment(
     image: np.ndarray,
     method: Method = "otsu",
     min_size: int = 0,
-    split_touching: bool = True,
+    split_touching: bool | None = None,
     diameter: float | None = None,
     threshold: float | None = None,
     model: str = "",
-    dark_objects: bool = False,
+    dark_objects: bool | None = None,
 ) -> np.ndarray:
-    """Segment bright objects in a 2D or 3D image and return a label image. `threshold`
+    """Segment the objects of a 2D or 3D image and return a label image. `threshold`
     replaces Otsu's, so tiles of one large image share a single cut-off. `model` names the
-    StarDist or BioImage.IO model. With `dark_objects`, Otsu finds dark objects instead, such
-    as cells outlined by bright walls or membranes."""
+    StarDist or BioImage.IO model.
+
+    With Otsu, `dark_objects` and `split_touching` are worked out from the image when left
+    as None (see `polarity`): bright objects on a dark background are split where they
+    touch; dark objects on a bright background (brightfield) are found by inverting; cells
+    inside a network of bright walls or membranes are found without splitting, since the
+    walls already separate them."""
     image = np.asarray(image)
+    if method == "otsu" and threshold is None and (dark_objects is None or split_touching is None):
+        dark, walls = polarity(image)
+        dark_objects = dark if dark_objects is None else dark_objects
+        split_touching = (not walls) if split_touching is None else split_touching
+    split_touching = True if split_touching is None else split_touching
     if dark_objects and method == "otsu":
         image = image.max() - image.astype(float)
     if method in ("cellpose", "stardist", "bioimageio"):
@@ -85,6 +95,27 @@ def segment(
     markers = np.zeros(mask.shape, dtype=np.int32)
     markers[tuple(peaks.T)] = np.arange(1, len(peaks) + 1)
     return segmentation.watershed(-distance, markers, mask=mask).astype(np.int32)
+
+
+def polarity(image: np.ndarray) -> tuple[bool, bool]:
+    """(dark objects, inside walls) for an intensity image. Above Otsu's threshold, most of
+    the image means a bright background (brightfield), and one bright component spanning the
+    image means walls or membranes around dark cells. Otherwise the objects are bright."""
+    image = np.asarray(image, dtype=float)
+    if image.ndim == 3:
+        image = filters.gaussian(image, sigma=2)
+    if image.min() == image.max():
+        return False, False
+    mask = image > filters.threshold_otsu(image)
+    labels, count = ndi.label(mask)
+    if not count:
+        return False, False
+    sizes = np.bincount(labels.ravel())[1:]
+    largest = ndi.find_objects((labels == sizes.argmax() + 1).astype(np.int8))[0]
+    span = min((s.stop - s.start) / n for s, n in zip(largest, mask.shape, strict=True))
+    background = mask.mean() > 0.5
+    walls = not background and sizes.max() >= 0.6 * mask.sum() and span >= 0.8
+    return bool(walls or background), bool(walls)
 
 
 def _peak_distance(objects: np.ndarray) -> int:

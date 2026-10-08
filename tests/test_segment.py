@@ -174,3 +174,26 @@ def test_dark_objects_inside_bright_walls():
     labels = segment(walls, dark_objects=True, split_touching=False)
     assert labels.max() == 9
     assert labels[10, 10] and not labels[0, 10]
+
+
+def grid_of_walls():
+    walls = np.zeros((60, 60))
+    walls[::20, :] = walls[:, ::20] = 1
+    walls[-1, :] = walls[:, -1] = 1
+    return walls
+
+
+def test_dark_objects_are_detected():
+    from lumen_napari.segment import polarity
+
+    assert polarity(grid_of_walls()) == (True, True)  # dark cells inside a wall network
+    spots = np.zeros((60, 60))
+    spots[10:20, 10:20] = spots[40:50, 40:50] = 1
+    assert polarity(spots) == (False, False)  # bright objects
+    assert polarity(1 - spots) == (True, False)  # brightfield: dark objects, bright background
+    assert segment(grid_of_walls()).max() == 9  # automatic, without settings
+
+
+def test_blank_image_has_no_objects():
+    assert segment(np.zeros((20, 20))).max() == 0
+    assert segment(np.full((20, 20), 7.0)).max() == 0
