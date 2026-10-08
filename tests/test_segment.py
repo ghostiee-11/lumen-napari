@@ -79,3 +79,14 @@ def test_cellpose_missing_explains_the_extra(monkeypatch):
     monkeypatch.setitem(sys.modules, "cellpose", None)
     with pytest.raises(ImportError, match=r"lumen-napari\[cellpose\]"):
         segment(blobs(), method="cellpose")
+
+
+def test_read_image_converts_rgb_to_gray(tmp_path):
+    from skimage.io import imsave
+
+    from lumen_napari.segment import read_image
+
+    imsave(tmp_path / "rgb.png", np.zeros((6, 6, 3), np.uint8), check_contrast=False)
+    imsave(tmp_path / "gray.png", np.zeros((6, 6), np.uint8), check_contrast=False)
+    assert read_image(tmp_path / "rgb.png").shape == (6, 6)
+    assert read_image(tmp_path / "gray.png").shape == (6, 6)

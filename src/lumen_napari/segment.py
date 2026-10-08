@@ -7,8 +7,18 @@ from typing import Literal
 import numpy as np
 from scipy import ndimage as ndi
 from skimage import feature, filters, morphology, segmentation
+from skimage.color import rgb2gray
+from skimage.io import imread
 
 Method = Literal["otsu", "cellpose"]
+
+
+def read_image(path) -> np.ndarray:
+    """Read an image file as one intensity channel; RGB images are converted to gray."""
+    image = imread(path)
+    if image.ndim == 3 and image.shape[-1] in (3, 4):
+        image = rgb2gray(image[..., :3])
+    return image
 
 
 def segment(
