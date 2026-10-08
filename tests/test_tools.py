@@ -95,3 +95,15 @@ def test_show_object_from_a_folder_image(qapp, tmp_path):
     viewer = ViewerModel()
     show = make_tools(viewer)[1].function
     assert show(image_id="C07", rank_by="area") == "Showing object 2 of 'C07 labels' in napari."
+
+
+def test_color_objects_by_a_measurement(qapp):
+    viewer = ranked_viewer(qapp)
+    color = make_tools(viewer)[2].function
+    message = color("area", colormap="gray")
+    assert message == "Colored 'cells' by area from 4 to 400 with gray."
+    layer = viewer.layers["cells"]
+    assert list(layer.colormap.map(1)[:3]) == [0, 0, 0]
+    assert list(layer.colormap.map(2)[:3]) == [1, 1, 1]
+    assert color() == "Reset the colors of 'cells'."
+    assert type(layer.colormap).__name__ == "CyclicLabelColormap"

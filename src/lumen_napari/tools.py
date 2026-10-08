@@ -5,6 +5,7 @@ from __future__ import annotations
 from lumen.ai.tools import FunctionTool
 from napari.components import ViewerModel
 from napari.layers import Image, Labels, Layer
+from napari.utils.colormaps import DirectLabelColormap, ensure_colormap, label_colormap
 from superqt.utils import ensure_main_thread
 
 from .batch import open_in_viewer
@@ -63,7 +64,37 @@ def make_tools(viewer: ViewerModel) -> list[ViewerTool]:
         _focus(viewer, layer, int(label))
         return f"Showing object {label} of {layer.name!r} in napari."
 
-    return [ViewerTool(list_napari_layers), ViewerTool(show_object_in_napari)]
+    def color_objects_by(column: str = "", labels_layer: str = "", colormap: str = "viridis") -> str:
+        """Color every object in a napari labels layer by one of its measurements, a heatmap on
+        the image itself. Call with no column to go back to the default colors.
+
+        Parameters
+        ----------
+        column : str
+            Measurement column to color by, such as 'area' or 'intensity_mean'.
+        labels_layer : str
+            Name of the napari labels layer. Defaults to the most recently added one.
+        colormap : str
+            Name of a colormap such as 'viridis', 'magma' or 'turbo'.
+        """
+        layer = _labels_layer(viewer, labels_layer)
+        if not column:
+            _set_colormap(layer, label_colormap())
+            return f"Reset the colors of {layer.name!r}."
+        values = _column(layer, column).astype(float)
+        low, high = values.min(), values.max()
+        scaled = (values - low) / (high - low) if high > low else values * 0
+        colors = ensure_colormap(colormap).map(scaled.to_numpy())
+        labels = layer.features["index"]
+        mapping = {int(label): color for label, color in zip(labels, colors, strict=True)}
+        _set_colormap(layer, DirectLabelColormap(color_dict={None: (0, 0, 0, 0), **mapping}))
+        return f"Colored {layer.name!r} by {column} from {low:g} to {high:g} with {colormap}."
+
+    return [
+        ViewerTool(list_napari_layers),
+        ViewerTool(show_object_in_napari),
+        ViewerTool(color_objects_by),
+    ]
 
 
 def _describe(layer: Layer) -> str:
@@ -76,13 +107,23 @@ def _describe(layer: Layer) -> str:
     return f"- {layer.name!r}: {kind}, {size}, scale {scale}"
 
 
-def _ranked_label(layer: Labels, column: str, smallest: bool) -> int:
+def _column(layer: Labels, column: str):
     features = layer.features
     if column not in features.columns:
         columns = [c for c in features.columns if c != "index"]
         raise ValueError(f"{layer.name!r} has no {column!r} measurement. Columns: {columns}.")
-    row = features[column].idxmin() if smallest else features[column].idxmax()
-    return int(features.loc[row, "index"])
+    return features[column]
+
+
+def _ranked_label(layer: Labels, column: str, smallest: bool) -> int:
+    values = _column(layer, column)
+    row = values.idxmin() if smallest else values.idxmax()
+    return int(layer.features.loc[row, "index"])
+
+
+@ensure_main_thread(await_return=True, timeout=10_000)
+def _set_colormap(layer: Labels, colormap) -> None:
+    layer.colormap = colormap
 
 
 def _labels_layer(viewer: ViewerModel, name: str) -> Labels:

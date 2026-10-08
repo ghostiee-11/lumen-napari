@@ -16,7 +16,9 @@ def llm():
 def test_build_ui_wires_napari(qapp, llm):
     ui = build_ui(ViewerModel(), llm=llm)
     assert isinstance(ui.source_controls[0], NapariControls)
-    assert [tool.name for tool in ui.tools] == ["list_napari_layers", "show_object_in_napari"]
+    assert [tool.name for tool in ui.tools] == [
+        "list_napari_layers", "show_object_in_napari", "color_objects_by",
+    ]
     assert ui.title == "Lumen for napari"
 
 
