@@ -20,7 +20,7 @@ from napari.layers import Image, Labels, Layer, Points, Shapes, Surface, Tracks,
 from skimage.color import rgb2gray
 from superqt.utils import ensure_main_thread
 
-from .batch import measure_files
+from .batch import join_plate_map, measure_files
 from .measure import measure, to_features
 from .script import Script
 from .segment import segment
@@ -174,13 +174,15 @@ class NapariControls(CodeSourceControls):
         method: Literal["otsu", "cellpose"] = "otsu",
         min_size: int = 20,
         max_files: int = 500,
+        plate_map: str = "",
     ) -> SourceResult:
         """Segment and measure every image file in a folder into one table, one row per object.
 
         Use this for many images at once, such as all fields or wells of a plate. Rows are keyed
         by image_id (the file name without extension) and by well when file names contain plate
-        wells like B02, so they can be joined with an uploaded plate map. The images are not
-        added to napari. Sizes are in pixels.
+        wells like B02. If the user has a plate map file, pass it as plate_map: its columns, such
+        as compound or dose, are joined onto every object. The images are not added to napari.
+        Sizes are in pixels.
 
         Parameters
         ----------
@@ -194,6 +196,8 @@ class NapariControls(CodeSourceControls):
             Objects with fewer pixels than this are dropped.
         max_files : int
             Stop after this many files.
+        plate_map : str
+            Optional path of a .csv, .tsv, .xlsx or .parquet table with a well or image_id column.
         """
         root = Path(folder).expanduser()
         files = sorted(root.glob(pattern))[:max_files]
@@ -201,13 +205,17 @@ class NapariControls(CodeSourceControls):
             raise ValueError(f"No files match {pattern!r} in {str(root)!r}.")
         df = measure_files(files, method=method, min_size=min_size)
         table = table_name(f"{root.name} objects")
-        self.script.add(
+        lines = [
             "from pathlib import Path",
-            "from lumen_napari.batch import measure_files",
+            "from lumen_napari.batch import join_plate_map, measure_files",
             f"files = sorted(Path({str(root)!r}).glob({pattern!r}))[:{max_files!r}]",
-            f"tables[{table!r}] = measure_files(files, method={method!r}, "
-            f"min_size={min_size!r})",
-        )
+            f"tables[{table!r}] = measure_files(files, method={method!r}, min_size={min_size!r})",
+        ]
+        if plate_map:
+            plate, code = _read_table(plate_map)
+            df = join_plate_map(df, plate)
+            lines.append(f"tables[{table!r}] = join_plate_map(tables[{table!r}], {code})")
+        self.script.add(*lines)
         return self._publish_table(table, df)
 
     def load_table(self, path: str) -> SourceResult:
@@ -219,15 +227,9 @@ class NapariControls(CodeSourceControls):
         path : str
             Path of the table file.
         """
-        file = Path(path).expanduser()
-        suffix = file.suffix.lower()
-        if suffix not in READERS:
-            raise ValueError(f"Cannot read {file.name!r}. Use one of {', '.join(READERS)}.")
-        reader, kwargs = READERS[suffix]
-        df = getattr(pd, reader)(file, **kwargs)
-        table = table_name(file.stem)
-        args = ", ".join([repr(str(file)), *(f"{k}={v!r}" for k, v in kwargs.items())])
-        self.script.add(f"tables[{table!r}] = pd.{reader}({args})")
+        df, code = _read_table(path)
+        table = table_name(Path(path).expanduser().stem)
+        self.script.add(f"tables[{table!r}] = {code}")
         return self._publish_table(table, df)
 
     def _publish_table(self, name: str, df: pd.DataFrame) -> SourceResult:
@@ -280,6 +282,17 @@ def _publish_labels(
             labels, name=name, features=features, scale=like.scale[-labels.ndim:],
             translate=like.translate[-labels.ndim:],
         )
+
+
+def _read_table(path: str) -> tuple[pd.DataFrame, str]:
+    """Read a table file, and the pandas code that reads it."""
+    file = Path(path).expanduser()
+    suffix = file.suffix.lower()
+    if suffix not in READERS:
+        raise ValueError(f"Cannot read {file.name!r}. Use one of {', '.join(READERS)}.")
+    reader, kwargs = READERS[suffix]
+    args = ", ".join([repr(str(file)), *(f"{k}={v!r}" for k, v in kwargs.items())])
+    return getattr(pd, reader)(file, **kwargs), f"pd.{reader}({args})"
 
 
 def _floats(values) -> tuple[float, ...]:

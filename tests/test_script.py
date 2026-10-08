@@ -25,7 +25,7 @@ def replay(script, viewer):
     fresh = ViewerModel()
     fresh.add_image(viewer.layers["nuclei"].data, name="nuclei", scale=(0.5, 0.5))
     namespace = {
-        "viewer": fresh, "tables": {}, "segment": segment, "measure": measure,
+        "viewer": fresh, "tables": {}, "pd": pd, "segment": segment, "measure": measure,
         "to_features": to_features, "intensity": controls_module.intensity,
     }
     exec(script.body(), namespace)  # noqa: S102
@@ -88,5 +88,18 @@ def test_folder_step_replays(viewer, tmp_path):
     imsave(tmp_path / "a.png", image, check_contrast=False)
     controls = NapariControls(viewer=viewer)
     result = controls.segment_folder(str(tmp_path), pattern="*.png", min_size=0)
+    _, tables = replay(controls.script, viewer)
+    pd.testing.assert_frame_equal(tables[result.table], table(result))
+
+
+def test_folder_with_plate_map_replays(viewer, tmp_path):
+    from skimage.io import imsave
+
+    image = np.zeros((20, 20), np.uint8)
+    image[2:8, 2:8] = 200
+    imsave(tmp_path / "x_A01.png", image, check_contrast=False)
+    pd.DataFrame({"well": ["A01"], "compound": ["DMSO"]}).to_csv(tmp_path / "map.csv", index=False)
+    controls = NapariControls(viewer=viewer)
+    result = controls.segment_folder(str(tmp_path), "*.png", min_size=0, plate_map=str(tmp_path / "map.csv"))
     _, tables = replay(controls.script, viewer)
     pd.testing.assert_frame_equal(tables[result.table], table(result))

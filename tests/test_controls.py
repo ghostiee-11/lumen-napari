@@ -212,3 +212,12 @@ def test_parallel_actions_share_one_source(qtbot, controls, plate, tmp_path):
     assert results["Segment Folder"].sources[0] is first.sources[0]
     df = query(first, f"SELECT COUNT(*) AS n FROM {results['Segment Folder'].table} JOIN map USING (well)")
     assert df.n[0] == 1
+
+
+def test_segment_folder_joins_a_plate_map(qtbot, controls, plate, tmp_path):
+    pd.DataFrame({"well": ["A01", "A02", "B01"], "compound": ["DMSO", "taxol", "taxol"]}).to_csv(
+        tmp_path / "map.csv", index=False)
+    result = run(qtbot, controls, "Segment Folder", folder=str(plate), pattern="*.png", min_size=0,
+                 plate_map=str(tmp_path / "map.csv"))
+    df = query(result, f"SELECT compound, COUNT(*) AS n FROM {result.table} GROUP BY 1 ORDER BY 1")
+    assert df.to_dict("list") == {"compound": ["DMSO", "taxol"], "n": [1, 5]}
