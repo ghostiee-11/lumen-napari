@@ -52,3 +52,23 @@ def test_unknown_table_uses_latest_labels_layer(viewer):
 
 def test_viewer_is_not_copied(viewer):
     assert explorer_for(viewer).instance().viewer is viewer
+
+
+def test_click_on_a_batch_row_opens_its_image(qapp, tmp_path):
+    from skimage.io import imsave
+
+    from lumen_napari.batch import measure_files
+
+    image = np.zeros((30, 50), np.uint8)
+    image[5:15, 5:15] = 200
+    image[5:15, 30:45] = 200
+    imsave(tmp_path / "w_B02.png", image, check_contrast=False)
+    df = measure_files([tmp_path / "w_B02.png"], min_size=0)
+    source = DuckDBSource.from_df(tables={"plate": df})
+    source.tables["plate"] = "SELECT * FROM plate"
+    viewer = ViewerModel()
+    explorer = explorer_for(viewer).instance()
+    explorer(Pipeline(source=source, table="plate"), {})
+    explorer._selection.event(index=[1])
+    assert [l.name for l in viewer.layers] == ["w_B02", "w_B02 labels"]
+    assert viewer.layers["w_B02 labels"].selected_label == 2
