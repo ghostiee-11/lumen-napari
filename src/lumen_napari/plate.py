@@ -9,6 +9,7 @@ from napari.components import ViewerModel
 from superqt.utils import ensure_main_thread
 
 from .batch import open_in_viewer
+from .explorer import _show_choice
 
 hv.extension("bokeh", logo=False)
 
@@ -33,6 +34,7 @@ class PlateHeatmap(Analysis):
     def __call__(self, pipeline, context):
         df = pipeline.data
         value = self.value or _default_value(df)
+        _show_choice(self, value=value)
         wells = per_well(df, value, self.statistic)
         rows, cols = plate_shape(wells["well"])
         label = f"{self.statistic} {value}" if self.statistic != "count" else "objects"

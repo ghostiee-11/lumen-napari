@@ -36,6 +36,7 @@ def test_click_zooms_napari_to_the_object(viewer):
     explorer = explorer_for(viewer).instance()
     pane = explorer(pipeline_for(viewer), {})
     assert pane.object.kdims[0].name == "area"
+    assert (explorer.x, explorer.y) == ("area", pane.object.kdims[1].name)
     explorer._selection.event(index=[1])
     layer = viewer.layers["nuclei labels"]
     assert layer.selected_label == 2

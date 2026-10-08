@@ -32,6 +32,7 @@ class ObjectExplorer(Analysis):
         df = pipeline.data
         default_x, default_y = _default_axes(df)
         x, y = self.x or default_x, self.y or default_y
+        _show_choice(self, x=x, y=y)
         batch = "image_id" in df.columns
         layer = None if batch else _layer_for(self.viewer, pipeline.table)
         where = "open its image in napari" if batch else f"show it in napari ({layer.name!r})"
@@ -53,6 +54,14 @@ class ObjectExplorer(Analysis):
             layer = open_in_viewer(self.viewer, row["image_id"])
         _focus(self.viewer, layer, label)
         self._dynamic_provides = {"selected_object": label}
+
+
+def _show_choice(analysis: Analysis, **values) -> None:
+    """Make the dropdowns show the columns actually plotted."""
+    for name, value in values.items():
+        if value not in analysis.param[name].objects:
+            analysis.param[name].objects = [*analysis.param[name].objects, value]
+    analysis.param.update(**values)
 
 
 def explorer_for(viewer: ViewerModel) -> type[ObjectExplorer]:
