@@ -37,3 +37,16 @@ def test_reopening_reuses_the_server_and_quit_stops_it(qtbot, qapp):
     first.server.start()
     qapp.aboutToQuit.emit()
     assert not first.server.running
+
+
+def test_export_script(qtbot, tmp_path):
+    widget = LumenWidget(ViewerModel())
+    qtbot.addWidget(widget)
+    widget._export(str(tmp_path / "a.py"))
+    assert "Nothing to export yet" in widget.status.text()
+    assert not (tmp_path / "a.py").exists()
+
+    widget.server.script.add("labels = None")
+    widget._export(str(tmp_path / "a.py"))
+    assert "labels = None" in (tmp_path / "a.py").read_text()
+    assert "Saved the analysis script" in widget.status.text()

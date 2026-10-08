@@ -3,10 +3,18 @@
 from __future__ import annotations
 
 import webbrowser
+from pathlib import Path
 from weakref import WeakKeyDictionary
 
 import napari
-from qtpy.QtWidgets import QApplication, QLabel, QPushButton, QVBoxLayout, QWidget
+from qtpy.QtWidgets import (
+    QApplication,
+    QFileDialog,
+    QLabel,
+    QPushButton,
+    QVBoxLayout,
+    QWidget,
+)
 
 from .app import LumenServer
 
@@ -27,13 +35,16 @@ class LumenWidget(QWidget):
         self.server = server_for(napari_viewer)
         self.toggle = QPushButton("Start Lumen")
         self.open = QPushButton("Open in browser")
+        self.export = QPushButton("Export script")
+        self.export.setToolTip("Save the segmentation and measurement steps as a Python script.")
         self.status = QLabel("Ask questions about your layers in plain language.")
         self.status.setWordWrap(True)
         self.status.setOpenExternalLinks(True)
         self.toggle.clicked.connect(self._toggle)
         self.open.clicked.connect(lambda: webbrowser.open(self.server.url))
+        self.export.clicked.connect(self._export)
         layout = QVBoxLayout(self)
-        for widget in (self.toggle, self.open, self.status):
+        for widget in (self.toggle, self.open, self.export, self.status):
             layout.addWidget(widget)
         layout.addStretch()
         self._refresh()
@@ -46,6 +57,16 @@ class LumenWidget(QWidget):
             QApplication.processEvents()
             webbrowser.open(self.server.start())
         self._refresh()
+
+    def _export(self, path: str | None = None) -> None:
+        if not self.server.script.lines:
+            self.status.setText("Nothing to export yet. Ask Lumen to segment or measure a layer.")
+            return
+        if path is None:
+            path, _ = QFileDialog.getSaveFileName(self, "Export script", "analysis.py", "Python (*.py)")
+        if path:
+            Path(path).write_text(self.server.script.render())
+            self.status.setText(f"Saved the analysis script to {path}")
 
     def _refresh(self) -> None:
         running = self.server.running
