@@ -245,3 +245,21 @@ def test_layer_list_answers_simple_counts(qapp):
     text = make_tools(viewer)[0].function()
     assert "'nuclei labels': labels, shape (20, 20), scale (1.0, 1.0); 2 measured objects, mean area 10" in text
     assert "'other': image" in text and text.count("not segmented yet") == 1
+
+
+def test_listing_segments_when_nothing_is_segmented(qtbot, qapp):
+    import threading
+
+    from lumen_napari.controls import NapariControls
+
+    viewer = ViewerModel()
+    image = np.zeros((40, 40))
+    image[5:15, 5:15] = 1
+    viewer.add_image(image, name="nuclei")
+    listing = make_tools(viewer, NapariControls(viewer=viewer))[0].function
+    out = {}
+    thread = threading.Thread(target=lambda: out.update(text=listing()))
+    thread.start()
+    qtbot.waitUntil(lambda: not thread.is_alive(), timeout=60_000)
+    assert "'nuclei labels': labels" in out["text"] and "1 measured objects" in out["text"]
+    assert make_tools(ViewerModel())[0].function() == "napari has no layers open."

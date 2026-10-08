@@ -58,10 +58,12 @@ def make_tools(viewer: ViewerModel, controls=None) -> list[ViewerTool]:
 
     def list_napari_layers() -> str:
         """List the layers open in napari with their type, shape and pixel size, and for
-        segmented images their object count and mean sizes. An image without a labels layer
-        must be segmented (Segment Layer) before questions about its objects."""
+        segmented images their object count and mean sizes. When nothing is segmented yet,
+        the first image is segmented so its objects can be counted."""
         if not len(viewer.layers):
             return "napari has no layers open."
+        if controls is not None and any(isinstance(layer, Image) for layer in viewer.layers):
+            objects_layer("")  # segments the first image when nothing is segmented yet
         lines = []
         for layer in viewer.layers:
             line = _describe(layer)
