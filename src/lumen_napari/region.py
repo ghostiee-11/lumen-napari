@@ -45,8 +45,9 @@ def pixels(layer: Image, level: int, region: Region | None) -> int:
     return math.prod(math.ceil((b - a) / s) for (a, b), s in zip(region, f, strict=True))
 
 
-def choose_level(layer: Image, region: Region | None = None, budget: int = MAX_PIXELS) -> int:
+def choose_level(layer: Image, region: Region | None = None, budget: int | None = None) -> int:
     """The finest level that fits the pixel budget."""
+    budget = budget or MAX_PIXELS
     for level in range(len(levels(layer))):
         if pixels(layer, level, region) <= budget:
             return level

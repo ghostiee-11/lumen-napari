@@ -57,3 +57,15 @@ def test_undisplayed_axes_are_kept_whole():
     layer = Image(np.zeros((7, 30, 40)))
     layer.corner_pixels = np.array([[0, 5, 6], [0, 9, 19]])
     assert visible_region(layer) == ((0, 7), (5, 10), (6, 20))
+
+
+def test_lazy_dask_levels_read_only_the_crop():
+    da = pytest.importorskip("dask.array")
+    reads = []
+    full = da.from_array(np.ones((1000, 1000)), chunks=100)
+    tracked = full.map_blocks(lambda block: reads.append(block.shape) or block, dtype=float)
+    layer = Image([tracked, tracked[::4, ::4]], multiscale=True)
+    reads.clear()
+    image, _, _ = load_region(layer, level=0, region=((0, 100), (0, 100)))
+    assert image.shape == (100, 100)
+    assert len(reads) == 1
