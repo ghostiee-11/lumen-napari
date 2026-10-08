@@ -107,3 +107,29 @@ def test_color_objects_by_a_measurement(qapp):
     assert list(layer.colormap.map(2)[:3]) == [1, 1, 1]
     assert color() == "Reset the colors of 'cells'."
     assert type(layer.colormap).__name__ == "CyclicLabelColormap"
+
+
+def test_filter_hides_objects_that_do_not_match(qapp):
+    viewer = ranked_viewer(qapp)
+    filter_objects = make_tools(viewer)[3].function
+    assert filter_objects("area >= 25") == "Showing 2 of 3 objects of 'cells' where area >= 25."
+    layer = viewer.layers["cells"]
+    assert layer.colormap.map(1)[3] == 0
+    assert layer.colormap.map(2)[3] == 1
+    assert filter_objects() == "Showing every object of 'cells'."
+    assert layer.colormap.map(1)[3] == 1
+
+
+def test_filter_into_a_new_layer(qapp):
+    viewer = ranked_viewer(qapp)
+    filter_objects = make_tools(viewer)[3].function
+    filter_objects("area < 30", as_new_layer=True)
+    new = viewer.layers["cells filtered"]
+    assert sorted(np.unique(new.data)) == [0, 1, 3]
+    assert list(new.features["index"]) == [1, 3]
+
+
+def test_filter_sql_cannot_read_files(qapp):
+    filter_objects = make_tools(ranked_viewer(qapp))[3].function
+    with pytest.raises(Exception, match="disabled"):
+        filter_objects("label IN (SELECT 1 FROM read_csv('/etc/hosts'))")

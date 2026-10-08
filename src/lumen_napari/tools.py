@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import duckdb
+import numpy as np
 from lumen.ai.tools import FunctionTool
 from napari.components import ViewerModel
 from napari.layers import Image, Labels, Layer
@@ -90,10 +92,39 @@ def make_tools(viewer: ViewerModel) -> list[ViewerTool]:
         _set_colormap(layer, DirectLabelColormap(color_dict={None: (0, 0, 0, 0), **mapping}))
         return f"Colored {layer.name!r} by {column} from {low:g} to {high:g} with {colormap}."
 
+    def filter_objects(where: str = "", labels_layer: str = "", as_new_layer: bool = False) -> str:
+        """Show only the objects of a napari labels layer that match a SQL condition on their
+        measurements, such as "area >= 50" or "intensity_mean > 200 AND eccentricity < 0.8".
+        The others are hidden, or with as_new_layer a new labels layer holds just the matches.
+        Call with no condition to show every object again.
+
+        Parameters
+        ----------
+        where : str
+            SQL condition on the layer's measurement columns.
+        labels_layer : str
+            Name of the napari labels layer. Defaults to the most recently added one.
+        as_new_layer : bool
+            Put the matching objects in a new labels layer instead of hiding the others.
+        """
+        layer = _labels_layer(viewer, labels_layer)
+        if not where:
+            _set_colormap(layer, label_colormap())
+            return f"Showing every object of {layer.name!r}."
+        keep = _matching(layer, where)
+        if as_new_layer:
+            name = f"{layer.name} filtered"
+            _add_filtered(viewer, layer, keep, name)
+            return f"Added {name!r} with the {len(keep)} objects where {where}."
+        colors = {label: layer.colormap.map(label) for label in keep}
+        _set_colormap(layer, DirectLabelColormap(color_dict={None: (0, 0, 0, 0), **colors}))
+        return f"Showing {len(keep)} of {len(layer.features)} objects of {layer.name!r} where {where}."
+
     return [
         ViewerTool(list_napari_layers),
         ViewerTool(show_object_in_napari),
         ViewerTool(color_objects_by),
+        ViewerTool(filter_objects),
     ]
 
 
@@ -119,6 +150,24 @@ def _ranked_label(layer: Labels, column: str, smallest: bool) -> int:
     values = _column(layer, column)
     row = values.idxmin() if smallest else values.idxmax()
     return int(layer.features.loc[row, "index"])
+
+
+def _matching(layer: Labels, where: str) -> list[int]:
+    """Labels whose measurements match a SQL condition. The query runs on an in-memory copy of
+    the features, with DuckDB's file and network access switched off."""
+    con = duckdb.connect(config={"enable_external_access": False})
+    con.register("objects", layer.features.rename(columns={"index": "label"}))
+    return [int(row[0]) for row in con.execute(f"SELECT label FROM objects WHERE {where}").fetchall()]
+
+
+@ensure_main_thread(await_return=True, timeout=60_000)
+def _add_filtered(viewer: ViewerModel, layer: Labels, keep: list[int], name: str) -> None:
+    data = np.where(np.isin(layer.data, keep), layer.data, 0)
+    features = layer.features[layer.features["index"].isin(keep)].reset_index(drop=True)
+    if name in viewer.layers:
+        viewer.layers.remove(name)
+    viewer.add_labels(data, name=name, features=features, scale=layer.scale,
+                      translate=layer.translate)
 
 
 @ensure_main_thread(await_return=True, timeout=10_000)
