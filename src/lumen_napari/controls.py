@@ -570,6 +570,7 @@ class NapariControls(CodeSourceControls):
                 self._source = DuckDBSource.from_df(tables={name: df})
             else:
                 self._source._connection.from_df(df).to_view(name, replace=True)
+                self._source.clear_cache()  # Lumen caches table data; drop the old version
             self._source.tables[name] = f"SELECT * FROM {name}"
         return SourceResult.from_source(
             self._source, table=name, message=f"Loaded {len(df):,} rows into '{name}'"
