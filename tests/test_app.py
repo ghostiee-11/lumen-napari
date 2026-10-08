@@ -30,3 +30,9 @@ def test_server_serves_and_stops(qapp, llm):
     finally:
         server.stop()
     assert not server.running
+
+
+def test_sessions_share_the_server_script(qapp, llm):
+    server = LumenServer(ViewerModel(), llm=llm)
+    ui = build_ui(server.viewer, server.script, llm=llm)
+    assert ui.source_controls[0].script is server.script

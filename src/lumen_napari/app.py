@@ -11,6 +11,7 @@ from lumen.ai.ui import ExplorerUI
 from napari.components import ViewerModel
 
 from .controls import NapariControls
+from .script import Script
 from .tools import make_tools
 
 SUGGESTIONS = [
@@ -20,12 +21,13 @@ SUGGESTIONS = [
 ]
 
 
-def build_ui(viewer: ViewerModel, **params) -> ExplorerUI:
+def build_ui(viewer: ViewerModel, script: Script | None = None, **params) -> ExplorerUI:
     """A Lumen ExplorerUI whose data comes from the napari viewer."""
+    controls = NapariControls(viewer=viewer, script=script or Script())
     params.setdefault("title", "Lumen for napari")
     params.setdefault("suggestions", SUGGESTIONS)
     return ExplorerUI(
-        source_controls=[NapariControls(viewer=viewer), UploadSourceControls],
+        source_controls=[controls, UploadSourceControls],
         tools=make_tools(viewer),
         **params,
     )
@@ -54,6 +56,7 @@ class LumenServer:
         self.viewer = viewer
         self.port = port or free_port()
         self.params = params
+        self.script = Script()
         self._thread = None
 
     @property
@@ -67,7 +70,7 @@ class LumenServer:
     def start(self) -> str:
         if not self.running:
             self._thread = pn.serve(
-                lambda: build_ui(self.viewer, **self.params).servable(),
+                lambda: build_ui(self.viewer, self.script, **self.params).servable(),
                 port=self.port,
                 address="127.0.0.1",
                 websocket_origin=[f"localhost:{self.port}", f"127.0.0.1:{self.port}"],
