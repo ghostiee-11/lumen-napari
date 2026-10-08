@@ -75,7 +75,7 @@ class LumenServer:
     def start(self) -> str:
         if not self.running:
             self._thread = pn.serve(
-                lambda: build_ui(self.viewer, self.script, **self.params).servable(),
+                lambda: build_ui(self.viewer, self.script, **self.params),
                 port=self.port,
                 address="127.0.0.1",
                 websocket_origin=[f"localhost:{self.port}", f"127.0.0.1:{self.port}"],

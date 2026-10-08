@@ -47,3 +47,16 @@ def test_object_explorer_is_available(qapp, llm):
     assert explorer.name == "ObjectExplorer"
     assert plate.name == "PlateHeatmap"
     assert explorer.instance().viewer is viewer
+
+
+def test_page_shows_the_app_once(qapp, llm):
+    from bokeh.client import pull_session
+
+    server = LumenServer(ViewerModel(), llm=llm)
+    server.start()
+    try:
+        with pull_session(url=server.url) as session:
+            roots = session.document.roots
+            assert len([r for r in roots if type(r).__name__ == type(roots[0]).__name__]) == 1
+    finally:
+        server.stop()
