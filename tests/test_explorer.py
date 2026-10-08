@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import pytest
 from lumen.pipeline import Pipeline
 from lumen.sources.duckdb import DuckDBSource
@@ -89,3 +90,10 @@ def test_explorer_renders_tables_with_text_columns(qapp, tmp_path):
     source.tables["plate"] = "SELECT * FROM plate"
     pane = explorer_for(ViewerModel()).instance()(Pipeline(source=source, table="plate"), {})
     hv.render(pane.object)
+
+
+def test_a_labels_only_table_uses_the_layer_measurements(viewer):
+    source = DuckDBSource.from_df(tables={"ids": pd.DataFrame({"label": [1, 2]})})
+    source.tables["ids"] = "SELECT * FROM ids"
+    pane = explorer_for(viewer).instance()(Pipeline(source=source, table="ids"), {})
+    assert pane.object.kdims[0].name == "area"

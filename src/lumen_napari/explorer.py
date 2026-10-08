@@ -6,6 +6,7 @@ import panel as pn
 import param
 from lumen.ai.analysis import Analysis
 from napari.components import ViewerModel
+from napari.layers import Labels
 
 from .pick import show_row
 
@@ -27,6 +28,16 @@ class ObjectExplorer(Analysis):
 
     def __call__(self, pipeline, context):
         df = pipeline.data
+        if not _measurements(df):
+            # A table of labels alone (say from a SQL step): use the measurements napari
+            # keeps on the labels layer instead.
+            measured = [layer for layer in self.viewer.layers
+                        if isinstance(layer, Labels) and "index" in layer.features]
+            if measured:
+                features = measured[-1].features.rename(columns={"index": "label"})
+                df = df[["label"]].merge(features, on="label")
+        if not _measurements(df):
+            raise ValueError("The table has no measurements to plot. Segment or measure first.")
         default_x, default_y = _default_axes(df)
         x, y = self.x or default_x, self.y or default_y
         _show_choice(self, x=x, y=y)
@@ -62,8 +73,12 @@ def explorer_for(viewer: ViewerModel) -> type[ObjectExplorer]:
     )})
 
 
+def _measurements(df: pd.DataFrame) -> list[str]:
+    return [c for c in df.select_dtypes("number").columns if c != "label"]
+
+
 def _default_axes(df: pd.DataFrame) -> tuple[str, str]:
-    numeric = [c for c in df.select_dtypes("number").columns if c != "label"]
+    numeric = _measurements(df)
     preferred = [c for c in numeric if c.startswith(("area", "volume", "intensity_mean"))]
     ordered = preferred + [c for c in numeric if c not in preferred]
     return ordered[0], ordered[1] if len(ordered) > 1 else ordered[0]
