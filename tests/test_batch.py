@@ -32,7 +32,9 @@ def test_measure_files_keys_rows_by_image(tmp_path):
     assert list(df.columns[:2]) == ["image_id", "well"]
     assert df.groupby("well").size().to_dict() == {"A01": 1, "B03": 3}
     assert df.path.iloc[0] == str(paths[0].resolve())
-    assert SEGMENTED_WITH[str(paths[0].resolve())] == {"method": "otsu", "min_size": 0}
+    assert SEGMENTED_WITH[str(paths[0].resolve())] == {
+        "image_id": "plate_A01", "method": "otsu", "min_size": 0, "channel": "image",
+    }
 
 
 def test_no_well_column_without_wells(tmp_path):
@@ -111,3 +113,42 @@ def test_measure_files_with_channels(tmp_path):
 def test_channels_need_a_valid_segment_channel(tmp_path):
     with pytest.raises(ValueError, match="segment_channel must be one of"):
         measure_files([], channels={"dapi": "_w1"}, segment_channel="nuclei")
+
+
+def test_ome_tiff_folders_use_file_metadata(tmp_path, qapp):
+    pytest.importorskip("bioio_ome_tiff")
+    from bioio.writers import OmeTiffWriter
+    from bioio_base.types import PhysicalPixelSizes
+    from napari.components import ViewerModel
+
+    from lumen_napari.batch import open_in_viewer
+
+    data = np.zeros((2, 40, 40), np.uint16)
+    data[0, 5:15, 5:15] = 900
+    data[1, 5:15, 5:15] = 300
+    path = tmp_path / "screen_D05.ome.tiff"
+    OmeTiffWriter.save(data, str(path), dim_order="CYX", channel_names=["DAPI", "Actin"],
+                       physical_pixel_sizes=PhysicalPixelSizes(None, 0.5, 0.5))
+    df = measure_files([path], min_size=0)
+    assert list(df.image_id) == ["screen_D05"]
+    assert list(df.well) == ["D05"]
+    assert list(df.area_um2) == [25.0]
+    assert list(df.intensity_mean_actin) == [300]
+
+    viewer = ViewerModel()
+    layer = open_in_viewer(viewer, "screen_D05")
+    assert tuple(layer.scale) == (0.5, 0.5)
+    assert viewer.layers["screen_D05"].data.max() == 900
+
+
+def test_channel_sites_reopen_by_site_id(tmp_path, qapp):
+    from napari.components import ViewerModel
+
+    from lumen_napari.batch import open_in_viewer
+
+    write(tmp_path, "E01_s2_w1abc.png", 2)
+    write(tmp_path, "E01_s2_w2def.png", 2)
+    measure_files(sorted(tmp_path.glob("*.png")), min_size=0,
+                  channels={"dapi": "_w1", "actin": "_w2"}, segment_channel="dapi")
+    viewer = ViewerModel()
+    assert open_in_viewer(viewer, "E01_s2").data.max() == 2

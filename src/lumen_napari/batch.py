@@ -11,6 +11,7 @@ from napari.components import ViewerModel
 from napari.layers import Labels
 from superqt.utils import ensure_main_thread
 
+from .files import ImageFile, read_file
 from .measure import measure, to_features
 from .segment import read_image, segment
 
@@ -53,37 +54,56 @@ def measure_files(
     is segmented and every other channel adds intensity columns such as intensity_mean_actin.
     A `well` column is added when every image_id contains a plate well id.
     """
-    if channels:
-        if segment_channel not in channels:
-            raise ValueError(f"segment_channel must be one of {list(channels)}.")
-        sites = group_channels(paths, channels)
-    else:
-        sites = {Path(p).stem: {None: Path(p)} for p in paths}
+    if channels and segment_channel not in channels:
+        raise ValueError(f"segment_channel must be one of {list(channels)}.")
     tables = []
-    for site, files in sites.items():
-        path = files[segment_channel if channels else None]
-        image = read_image(path)
-        others = {name: read_image(f) for name, f in files.items() if name != segment_channel}
+    for site, path, channel, image, others, file in _sites(paths, channels, segment_channel):
         labels = segment(image, method=method, min_size=min_size)
-        df = measure(labels, image, channels=others or None)
+        df = measure(labels, image, spacing=file.spacing, unit=file.unit, channels=others or None)
         resolved = str(path.resolve())
-        df.insert(0, "image_id", site.rstrip("_-. ") or path.stem)
+        df.insert(0, "image_id", site)
+        df["well"] = file.well or well_of(site)
         df["path"] = resolved
-        SEGMENTED_WITH[resolved] = {"method": method, "min_size": min_size}
+        SEGMENTED_WITH[resolved] = {
+            "image_id": site, "method": method, "min_size": min_size, "channel": channel,
+        }
         tables.append(df)
     if not tables:
         raise ValueError("No complete sites found: every channel token must match a file.")
     df = pd.concat(tables, ignore_index=True)
-    wells = df["image_id"].map(well_of)
+    wells = df.pop("well")
     if wells.notna().all():
         df.insert(1, "well", wells)
     return df
 
 
+def _sites(paths, channels, segment_channel):
+    """Yield (image_id, path of the segmented channel, the channel's name inside that file or
+    None for single-channel files, its pixels, the other channels, the file's metadata)."""
+    if channels:
+        for site, files in group_channels(paths, channels).items():
+            path = files[segment_channel]
+            others = {n: read_image(f) for n, f in files.items() if n != segment_channel}
+            yield site.rstrip("_-. ") or path.stem, path, None, read_image(path), others, ImageFile({})
+        return
+    for path in map(Path, paths):
+        file = read_file(path)
+        name = segment_channel or next(iter(file.channels))
+        if name not in file.channels:
+            raise ValueError(f"{path.name} has channels {list(file.channels)}, not {name!r}.")
+        others = {n: data for n, data in file.channels.items() if n != name}
+        yield _stem(path), path, name, file.channels[name], others, file
+
+
+def _stem(path: Path) -> str:
+    """File name without its extensions, so plate.ome.tiff gives plate."""
+    return path.name.split(".")[0] or path.stem
+
+
 def path_of(image_id: str) -> str:
     """The file a batch-measured image_id came from."""
-    for path in SEGMENTED_WITH:
-        if Path(path).stem == image_id:
+    for path, settings in SEGMENTED_WITH.items():
+        if settings["image_id"] == image_id:
             return path
     raise ValueError(f"No measured image {image_id!r}. Segment a folder first.")
 
@@ -94,16 +114,21 @@ def open_in_viewer(viewer: ViewerModel, image_id: str) -> Labels:
     if name in viewer.layers:
         return viewer.layers[name]
     path = path_of(image_id)
-    image = read_image(path)
-    labels = segment(image, **SEGMENTED_WITH[path])
-    _add(viewer, image, labels, image_id, name, to_features(measure(labels, image)))
+    settings = dict(SEGMENTED_WITH[path])
+    channel = settings.pop("channel")
+    settings.pop("image_id")
+    file = read_file(path) if channel else ImageFile({"image": read_image(path)})
+    image = file.channels[channel or "image"]
+    labels = segment(image, **settings)
+    features = to_features(measure(labels, image, spacing=file.spacing, unit=file.unit))
+    _add(viewer, image, labels, image_id, name, features, file.spacing or (1,) * image.ndim)
     return viewer.layers[name]
 
 
 @ensure_main_thread(await_return=True, timeout=60_000)
-def _add(viewer, image, labels, image_id, name, features) -> None:
-    viewer.add_image(image, name=image_id)
-    viewer.add_labels(labels, name=name, features=features)
+def _add(viewer, image, labels, image_id, name, features, scale) -> None:
+    viewer.add_image(image, name=image_id, scale=scale)
+    viewer.add_labels(labels, name=name, features=features, scale=scale)
 
 
 def join_plate_map(objects: pd.DataFrame, plate_map: pd.DataFrame) -> pd.DataFrame:
