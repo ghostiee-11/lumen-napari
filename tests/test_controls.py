@@ -410,3 +410,9 @@ def test_same_segmentation_is_reused_without_a_new_card(qtbot, viewer, controls,
     assert len(posts) == cards
     run(qtbot, controls, "Segment Layer", image_layer="nuclei", min_size=5)
     assert len(posts) == cards + 1
+
+
+def test_remeasuring_keeps_the_source_image_intensities(qtbot, controls):
+    run(qtbot, controls, "Segment Layer", image_layer="nuclei", min_size=0)
+    result = run(qtbot, controls, "Measure Layer", labels_layer="nuclei labels")
+    assert "intensity_mean" in query(result, "SELECT * FROM nuclei_labels").columns

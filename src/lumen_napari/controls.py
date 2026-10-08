@@ -217,6 +217,9 @@ class NapariControls(CodeSourceControls):
             )
         layer = self._layer(labels_layer, Labels) if labels_layer else existing[-1]
         labels = np.asarray(layer.data)
+        if not image_layer and layer.name.removesuffix(" labels") in images:
+            # Labels made by segmenting an image keep that image's intensities.
+            image_layer = layer.name.removesuffix(" labels")
         image_source = self._layer(image_layer, Image) if image_layer else None
         image = intensity(image_source) if image_source else None
         spacing = _floats(layer.scale)
