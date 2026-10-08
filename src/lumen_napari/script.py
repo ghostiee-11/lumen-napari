@@ -7,6 +7,7 @@ from napari.layers import Layer
 HEADER = '''"""Reproduces the lumen-napari steps run on this viewer."""
 
 import napari
+import pandas as pd
 
 from lumen_napari.controls import intensity
 from lumen_napari.measure import measure, to_features
