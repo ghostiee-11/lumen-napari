@@ -41,6 +41,7 @@ def test_sessions_share_the_server_script(qapp, llm):
 def test_object_explorer_is_available(qapp, llm):
     viewer = ViewerModel()
     ui = build_ui(viewer, llm=llm)
-    [explorer] = ui.analyses
+    explorer, plate = ui.analyses
     assert explorer.name == "ObjectExplorer"
+    assert plate.name == "PlateHeatmap"
     assert explorer.instance().viewer is viewer

@@ -12,6 +12,7 @@ from napari.components import ViewerModel
 
 from .controls import NapariControls
 from .explorer import explorer_for
+from .plate import plate_for
 from .script import Script
 from .tools import make_tools
 
@@ -20,6 +21,7 @@ SUGGESTIONS = [
     ("search", "Which objects are the brightest? Show the top one in napari"),
     ("scatter_plot", "Plot area against mean intensity for every object"),
     ("touch_app", "Explore the objects and click one to see it in napari"),
+    ("grid_on", "Show a plate heatmap of the mean nuclear area per well"),
 ]
 
 
@@ -31,7 +33,7 @@ def build_ui(viewer: ViewerModel, script: Script | None = None, **params) -> Exp
     return ExplorerUI(
         source_controls=[controls, UploadSourceControls],
         tools=make_tools(viewer),
-        analyses=[explorer_for(viewer)],
+        analyses=[explorer_for(viewer), plate_for(viewer)],
         **params,
     )
 
