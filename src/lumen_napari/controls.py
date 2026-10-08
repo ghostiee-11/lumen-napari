@@ -28,6 +28,7 @@ from .regions import objects_by_region
 from .report import overlay_png, segmentation_report, size_note
 from .script import Script
 from .segment import segment
+from .stats import compare, dose_response
 
 # pandas reader and keyword arguments for each table file type.
 READERS = {
@@ -81,7 +82,7 @@ class NapariControls(CodeSourceControls):
     def __init__(self, viewer: ViewerModel, **params):
         actions = (
             self.segment_layer, self.measure_layer, self.layer_features, self.segment_folder,
-            self.load_table, self.measure_regions,
+            self.load_table, self.measure_regions, self.compare_conditions,
         )
         functions = {action.__name__: self._reporting(action) for action in actions}
         params.setdefault("script", Script())
@@ -377,6 +378,68 @@ class NapariControls(CodeSourceControls):
 
         _watch(self.viewer.layers[name], "paint", remeasure)
 
+    def compare_conditions(
+        self,
+        table: str,
+        measurement: str,
+        condition: str,
+        control: str,
+        replicate: str = "well",
+        dose: str = "",
+    ) -> SourceResult:
+        """Compare conditions (compounds, treatments) against a control the statistically sound
+        way. Use this, not a plain average over cells, for questions like "which compounds
+        change nuclear size compared to DMSO?".
+
+        Objects are first summarised per replicate (the median per well), so wells, not cells,
+        are the replicates. Returns per condition: replicates, objects, mean and sd of the well
+        medians, fold change and z-score against the control wells, and a Welch t-test p-value.
+        With a dose column it also fits a dose-response curve per condition (EC50, hill).
+
+        Parameters
+        ----------
+        table : str
+            A measurement table with one row per object, such as plate1_objects.
+        measurement : str
+            The column to compare, such as area or intensity_mean_tubulin.
+        condition : str
+            The column holding the condition, such as compound.
+        control : str
+            The control condition, such as DMSO.
+        replicate : str
+            The column identifying a replicate, usually well.
+        dose : str
+            Optional dose or concentration column for a dose-response fit.
+        """
+        if self._source is None or table not in self._source.tables:
+            known = list(self._source.tables) if self._source else []
+            raise ValueError(f"No table {table!r}. Tables: {known}.")
+        df = self._source.execute(f"SELECT * FROM {table}")
+        for column in (measurement, condition, replicate, *([dose] if dose else [])):
+            if column not in df.columns:
+                raise ValueError(f"{table!r} has no {column!r} column. Columns: {list(df.columns)}.")
+        result = compare(df, measurement, condition, control, replicate)
+        if dose:
+            result = result.merge(dose_response(df, measurement, condition, dose, replicate),
+                                  on=condition, how="left")
+        name = table_name(f"{table} vs {control}")
+        self.script.add(
+            "from lumen_napari.stats import compare, dose_response",
+            f"tables[{name!r}] = compare(tables[{table!r}], {measurement!r}, {condition!r}, "
+            f"{control!r}, {replicate!r})",
+        )
+        self._post(
+            f"**Compared `{measurement}` across `{condition}` against `{control}`** into table "
+            f"`{name}`.\n\nMethod: each {replicate} is one replicate, summarised by the median "
+            f"of its objects, so wells with many cells do not outweigh wells with few. Means, "
+            f"z-scores and Welch t-tests use the {replicate} medians "
+            f"({int(result['replicates'].sum())} {replicate}s, "
+            f"{int(result['objects'].sum()):,} objects)."
+            + (f" Dose-response: four-parameter logistic fit against `{dose}`." if dose else "")
+            + "\n\n" + _verdicts(result, condition, control)
+        )
+        return self._publish_table(name, result)
+
     def _post(self, text: str, png: bytes | None = None) -> None:
         if self.chat is not None:
             self.chat(text, png)
@@ -443,6 +506,21 @@ def _publish_labels(viewer: ViewerModel, name: str, labels: np.ndarray, features
         layer.features = features
     else:
         viewer.add_labels(labels, name=name, features=features, scale=scale, translate=translate)
+
+
+def _verdicts(result: pd.DataFrame, condition: str, control: str) -> str:
+    """One plain sentence per condition, flagging too few replicates for a test."""
+    lines = []
+    for row in result.itertuples(index=False):
+        name = getattr(row, condition)
+        if name == control:
+            continue
+        if row.replicates < 2:
+            lines.append(f"- `{name}`: only {row.replicates} replicate, no test possible.")
+        else:
+            lines.append(f"- `{name}`: fold change {row.fold_change:.2f}, z = {row.z_score:.1f}, "
+                         f"p = {row.p_value:.3g} ({row.replicates} replicates).")
+    return "\n".join(lines)
 
 
 def features_table(layer: Layer) -> pd.DataFrame:

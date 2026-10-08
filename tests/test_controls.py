@@ -47,7 +47,7 @@ def test_table_name():
 def test_actions_are_registered(controls):
     assert [name for name, _ in controls.as_tools()] == [
         "Segment Layer", "Measure Layer", "Layer Features", "Segment Folder", "Load Table",
-        "Measure Regions",
+        "Measure Regions", "Compare Conditions",
     ]
 
 
@@ -96,7 +96,7 @@ def test_lumen_source_agent_builds_every_action(controls):
     tools = SourceAgent._build_tools({"source_controls": [controls]}, result_store=[])
     assert [tool.name for tool in tools] == [
         "segment_layer", "measure_layer", "layer_features", "segment_folder", "load_table",
-        "measure_regions",
+        "measure_regions", "compare_conditions",
     ]
 
 
@@ -343,3 +343,29 @@ def test_folder_report_names_the_extremes(qtbot, controls, plate, posts):
     text = posts[-1][0]
     assert "**Segmented 3 images" in text and "6 objects**" in text
     assert "fewest 1 (`A01`), most 3 (`B01`)" in text
+
+
+def test_compare_conditions_uses_wells_as_replicates(qtbot, controls, posts, tmp_path):
+    rows = []
+    for well, compound, n, area in (("A01", "DMSO", 10, 100), ("A02", "DMSO", 10, 110),
+                                    ("B01", "taxol", 50, 200), ("B02", "taxol", 5, 220),
+                                    ("C01", "nocodazole", 8, 60)):
+        rows += [{"well": well, "compound": compound, "area": area}] * n
+    pd.DataFrame(rows).to_csv(tmp_path / "objects.csv", index=False)
+    run(qtbot, controls, "Load Table", path=str(tmp_path / "objects.csv"))
+    result = run(qtbot, controls, "Compare Conditions", table="objects", measurement="area",
+                 condition="compound", control="DMSO")
+    assert result.table == "objects_vs_dmso"
+    df = query(result, "SELECT compound, replicates, mean_area FROM objects_vs_dmso ORDER BY compound")
+    assert df.to_dict("list") == {"compound": ["DMSO", "nocodazole", "taxol"],
+                                  "replicates": [2, 1, 2], "mean_area": [105.0, 60.0, 210.0]}
+    text = posts[-1][0]
+    assert "each well is one replicate" in text
+    assert "`nocodazole`: only 1 replicate, no test possible." in text
+    assert "`taxol`: fold change 2.00" in text
+
+
+def test_compare_conditions_needs_a_known_table(qtbot, controls):
+    result = run(qtbot, controls, "Compare Conditions", table="nope", measurement="area",
+                 condition="compound", control="DMSO")
+    assert "No table 'nope'" in result.message
