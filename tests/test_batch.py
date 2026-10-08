@@ -39,3 +39,25 @@ def test_no_well_column_without_wells(tmp_path):
     df = measure_files([write(tmp_path, "cells.png", 2)], min_size=0)
     assert "well" not in df.columns
     assert list(df.image_id) == ["cells", "cells"]
+
+
+def test_open_in_viewer_resegments_identically(tmp_path, qapp):
+    from napari.components import ViewerModel
+
+    from lumen_napari.batch import open_in_viewer
+
+    path = write(tmp_path, "plate_C04.png", 3)
+    df = measure_files([path], min_size=0)
+    viewer = ViewerModel()
+    layer = open_in_viewer(viewer, "plate_C04")
+    assert [l.name for l in viewer.layers] == ["plate_C04", "plate_C04 labels"]
+    assert layer.data.max() == len(df) == 3
+    assert list(layer.features["area"]) == list(df["area"])
+    assert open_in_viewer(viewer, "plate_C04") is layer
+
+
+def test_open_unknown_image():
+    from lumen_napari.batch import path_of
+
+    with pytest.raises(ValueError, match="Segment a folder first"):
+        path_of("nope")
