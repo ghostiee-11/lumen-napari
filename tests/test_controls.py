@@ -474,3 +474,9 @@ def test_rgb_images_measure_each_color(qtbot, controls):
     assert df.intensity_mean_red.tolist() == [200, 20]
     assert df.intensity_mean_blue.tolist() == [10, 220]
     assert "rgb_channels" in controls.script.render()
+
+
+def test_four_dimensional_images_fail_clearly(qtbot, controls):
+    controls.viewer.add_image(np.zeros((2, 3, 10, 10)), name="movie")
+    result = run(qtbot, controls, "Segment Layer", image_layer="movie")
+    assert "4 dimensions" in result.message

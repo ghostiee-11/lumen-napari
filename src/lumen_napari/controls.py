@@ -159,6 +159,11 @@ class NapariControls(CodeSourceControls):
             to detect it from the image, which is usually right.
         """
         layer = self._layer(image_layer, Image)
+        if layer.ndim > 3:
+            raise ValueError(
+                f"{layer.name!r} has {layer.ndim} dimensions, such as time and z. Segmentation "
+                "works on 2D images and 3D volumes: open one time point as its own layer."
+            )
         if not measure_layers:
             measure_layers = [other.name for other in self.viewer.layers
                               if _same_grid(other, layer) and other is not layer]
