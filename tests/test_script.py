@@ -118,3 +118,18 @@ def test_channel_steps_replay(viewer):
                  "to_features": to_features, "load_region": load_region}
     exec(controls.script.body(), namespace)  # noqa: S102
     pd.testing.assert_frame_equal(namespace["tables"]["nuclei_labels"], df)
+
+
+def test_folder_with_channels_replays(viewer, tmp_path):
+    from skimage.io import imsave
+
+    image = np.zeros((20, 20), np.uint8)
+    image[2:8, 2:8] = 200
+    imsave(tmp_path / "A01_w1.png", image, check_contrast=False)
+    imsave(tmp_path / "A01_w2.png", image // 4, check_contrast=False)
+    controls = NapariControls(viewer=viewer)
+    result = controls.segment_folder(str(tmp_path), "*.png", min_size=0,
+                                     channels={"dapi": "_w1", "actin": "_w2"}, segment_channel="dapi")
+    assert "intensity_mean_actin" in table(result).columns
+    _, tables = replay(controls.script, viewer)
+    pd.testing.assert_frame_equal(tables[result.table], table(result))

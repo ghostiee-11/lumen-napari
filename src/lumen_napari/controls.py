@@ -219,6 +219,8 @@ class NapariControls(CodeSourceControls):
         min_size: int = 20,
         max_files: int = 500,
         plate_map: str = "",
+        channels: dict[str, str] | None = None,
+        segment_channel: str = "",
     ) -> SourceResult:
         """Segment and measure every image file in a folder into one table, one row per object.
 
@@ -242,18 +244,29 @@ class NapariControls(CodeSourceControls):
             Stop after this many files.
         plate_map : str
             Optional path of a .csv, .tsv, .xlsx or .parquet table with a well or image_id column.
+        channels : dict[str, str]
+            For screens with one file per channel: channel name to the token that marks it in
+            file names, such as {"dapi": "_w1", "tubulin": "_w2", "actin": "_w4"}.
+        segment_channel : str
+            With channels, the channel to segment (usually the nuclear stain). The others are
+            measured as intensity_mean_<channel> columns.
         """
         root = Path(folder).expanduser()
         files = sorted(root.glob(pattern))[:max_files]
         if not files:
             raise ValueError(f"No files match {pattern!r} in {str(root)!r}.")
-        df = measure_files(files, method=method, min_size=min_size)
+        df = measure_files(files, method=method, min_size=min_size, channels=channels,
+                           segment_channel=segment_channel or None)
         table = table_name(f"{root.name} objects")
         lines = [
             "from pathlib import Path",
             "from lumen_napari.batch import join_plate_map, measure_files",
             f"files = sorted(Path({str(root)!r}).glob({pattern!r}))[:{max_files!r}]",
-            f"tables[{table!r}] = measure_files(files, method={method!r}, min_size={min_size!r})",
+            (
+                f"tables[{table!r}] = measure_files(files, method={method!r}, "
+                f"min_size={min_size!r}, channels={channels!r}, "
+                f"segment_channel={segment_channel or None!r})"
+            ),
         ]
         if plate_map:
             plate, code = _read_table(plate_map)
