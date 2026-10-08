@@ -74,3 +74,15 @@ def test_render_is_a_runnable_script():
     assert text.startswith(HEADER)
     assert text.endswith("napari.run()\n")
     compile(text, "script.py", "exec")
+
+
+def test_folder_step_replays(viewer, tmp_path):
+    from skimage.io import imsave
+
+    image = np.zeros((20, 20), np.uint8)
+    image[2:8, 2:8] = 200
+    imsave(tmp_path / "a.png", image, check_contrast=False)
+    controls = NapariControls(viewer=viewer)
+    df = controls.segment_folder(str(tmp_path), pattern="*.png", min_size=0)
+    _, tables = replay(controls.script, viewer)
+    pd.testing.assert_frame_equal(tables[controls.table_name], df)

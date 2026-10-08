@@ -5,6 +5,7 @@ real annotation objects, not strings.
 """
 
 import re
+from pathlib import Path
 from typing import Literal
 
 import numpy as np
@@ -18,7 +19,7 @@ from superqt.utils import ensure_main_thread
 
 from .measure import measure, to_features
 from .script import Script
-from .segment import segment
+from .segment import read_image, segment
 
 FEATURE_LAYERS = (Labels, Points, Shapes, Surface, Tracks, Vectors)
 
@@ -51,6 +52,7 @@ class NapariControls(CodeSourceControls):
             "segment_layer": self.segment_layer,
             "measure_layer": self.measure_layer,
             "layer_features": self.layer_features,
+            "segment_folder": self.segment_folder,
         }
         params.setdefault("script", Script())
         super().__init__(viewer=viewer, functions=functions, **params)
@@ -152,6 +154,57 @@ class NapariControls(CodeSourceControls):
                 df[f"position_{axis}"] = column
         self.table_name = table_name(source.name)
         return df
+
+    def segment_folder(
+        self,
+        folder: str,
+        pattern: str = "*.tif",
+        method: Literal["otsu", "cellpose"] = "otsu",
+        min_size: int = 20,
+        max_files: int = 500,
+    ) -> pd.DataFrame:
+        """Segment and measure every image file in a folder, one row per object with its file name.
+
+        Use this for many images at once, such as all fields or wells of a plate, to compare
+        them. The images are not added to napari. Sizes are in pixels.
+
+        Parameters
+        ----------
+        folder : str
+            Path of the folder with the images.
+        pattern : str
+            Glob pattern for the image files, such as '*.tif' or '*.png'.
+        method : str
+            'otsu' for a fast threshold, 'cellpose' for a deep learning model.
+        min_size : int
+            Objects with fewer pixels than this are dropped.
+        max_files : int
+            Stop after this many files.
+        """
+        root = Path(folder).expanduser()
+        files = sorted(root.glob(pattern))[:max_files]
+        if not files:
+            raise ValueError(f"No files match {pattern!r} in {str(root)!r}.")
+        tables = []
+        for path in files:
+            image = read_image(path)
+            df = measure(segment(image, method=method, min_size=min_size), image)
+            df.insert(0, "file", path.name)
+            tables.append(df)
+        self.table_name = table_name(f"{root.name} objects")
+        self.script.add(
+            "from pathlib import Path",
+            "from lumen_napari.segment import read_image",
+            "import pandas as pd",
+            "rows = []",
+            f"for path in sorted(Path({str(root)!r}).glob({pattern!r}))[:{max_files!r}]:",
+            "    image = read_image(path)",
+            f"    df = measure(segment(image, method={method!r}, min_size={min_size!r}), image)",
+            '    df.insert(0, "file", path.name)',
+            "    rows.append(df)",
+            f"tables[{self.table_name!r}] = pd.concat(rows, ignore_index=True)",
+        )
+        return pd.concat(tables, ignore_index=True)
 
     def _layer(self, name: str, kind: type[Layer] | tuple[type[Layer], ...]) -> Layer:
         layers = [layer for layer in self.viewer.layers if isinstance(layer, kind)]

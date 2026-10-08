@@ -46,7 +46,7 @@ def test_table_name():
 
 def test_actions_are_registered(controls):
     assert [name for name, _ in controls.as_tools()] == [
-        "Segment Layer", "Measure Layer", "Layer Features",
+        "Segment Layer", "Measure Layer", "Layer Features", "Segment Folder",
     ]
 
 
@@ -93,7 +93,9 @@ def test_lumen_source_agent_builds_every_action(controls):
     from lumen.ai.agents.source import SourceAgent
 
     tools = SourceAgent._build_tools({"source_controls": [controls]}, result_store=[])
-    assert [tool.name for tool in tools] == ["segment_layer", "measure_layer", "layer_features"]
+    assert [tool.name for tool in tools] == [
+        "segment_layer", "measure_layer", "layer_features", "segment_folder",
+    ]
 
 
 def test_layer_features_rejects_image_layers(qtbot, controls):
@@ -113,3 +115,27 @@ def test_unit_of_pixels_is_none(viewer):
     from lumen_napari.controls import unit_of
 
     assert unit_of(viewer.layers["nuclei"]) is None
+
+
+@pytest.fixture
+def plate(tmp_path):
+    from skimage.io import imsave
+
+    for well, count in (("A01", 1), ("A02", 2), ("B01", 3)):
+        image = np.zeros((40, 60), np.uint8)
+        for i in range(count):
+            image[5:15, 5 + 18 * i:15 + 18 * i] = 200
+        imsave(tmp_path / f"{well}.png", image, check_contrast=False)
+    return tmp_path
+
+
+def test_segment_folder_makes_one_table(qtbot, controls, plate):
+    result = run(qtbot, controls, "Segment Folder", folder=str(plate), pattern="*.png", min_size=0)
+    table = result.table
+    df = query(result, f"SELECT file, COUNT(*) AS n FROM {table} GROUP BY file ORDER BY file")
+    assert df.to_dict("list") == {"file": ["A01.png", "A02.png", "B01.png"], "n": [1, 2, 3]}
+
+
+def test_segment_folder_without_matches(qtbot, controls, plate):
+    result = run(qtbot, controls, "Segment Folder", folder=str(plate), pattern="*.tif")
+    assert "No files match '*.tif'" in result.message
