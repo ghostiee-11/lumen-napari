@@ -13,6 +13,7 @@ jobs:
       - uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.12"
+          activate-environment: true
       - uses: tlambert03/setup-qt-libs@v1
       - run: uv pip install -e ".[qt,test]" ruff
       - run: ruff check src tests
