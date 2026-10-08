@@ -21,6 +21,10 @@ lumen-napari connects [napari](https://napari.org) to [Lumen](https://github.com
 - **Ask** follow-up questions in plain language. Lumen writes the SQL and charts, and you can upload a CSV (a plate map, treatments) to join with the measurements.
 - **Show** any object in napari: "show me the largest nucleus" zooms the viewer to it and selects it.
 - **Plate heatmap** of any per-well measurement on a 96 or 384 well layout. Clicking a well opens its image in napari.
+- **Color** objects by any measurement ("color nuclei by area"), a heatmap on the image itself.
+- **Filter** what napari shows with a SQL condition ("hide objects smaller than 50 µm²"), in place or as a new labels layer.
+- **Regions**: draw shapes in napari and ask about them ("compare nuclear density inside vs outside the region I drew").
+- **Hand corrections flow back**: painting, filling or erasing a measured labels layer, or moving points, re-measures it and updates the tables the chat queries.
 - **Click back** from a chart: ask to "explore the objects" for a scatter of every object. Clicking a point zooms napari to that object.
 - **Export** the segmentation and measurement steps as a Python script with **Export script** in the dock, so the analysis can be rerun without the chat.
 
@@ -51,6 +55,7 @@ Lumen supports OpenAI, Anthropic, Google, Mistral, Azure, Ollama, llama.cpp and 
    - "Which objects are the brightest? Show the top one in napari"
    - "Plot area against mean intensity for every object"
    - "Explore the objects and click one to see it in napari"
+   - "Color the nuclei by area, then hide the ones smaller than 50 µm²"
    - "Segment every image in ~/data/plate1 with the plate map ~/data/plate1_map.csv. Which compounds shrink nuclei compared to DMSO?"
 
 The chat server only listens on `localhost`, and it stops when napari closes.
