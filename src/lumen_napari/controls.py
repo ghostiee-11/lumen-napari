@@ -1,6 +1,8 @@
-"""Lumen data source actions that read from and write to a live napari viewer."""
+"""Lumen data source actions that read from and write to a live napari viewer.
 
-from __future__ import annotations
+No `from __future__ import annotations` here: Lumen rebuilds the action signatures and needs
+real annotation objects, not strings.
+"""
 
 import re
 from typing import Literal

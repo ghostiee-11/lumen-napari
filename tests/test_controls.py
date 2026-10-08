@@ -87,3 +87,10 @@ def test_missing_layer_lists_available_ones(qtbot, controls):
     result = run(qtbot, controls, "Segment Layer", image_layer="cells")
     assert not result.sources
     assert "Available: 'nuclei'" in result.message
+
+
+def test_lumen_source_agent_builds_every_action(controls):
+    from lumen.ai.agents.source import SourceAgent
+
+    tools = SourceAgent._build_tools({"source_controls": [controls]})
+    assert [tool.name for tool in tools] == ["segment_layer", "measure_layer", "layer_features"]
