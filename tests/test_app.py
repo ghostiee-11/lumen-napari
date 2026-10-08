@@ -105,3 +105,10 @@ def test_messages_get_a_border_and_padding(qapp, llm):
     ui = build_ui(ViewerModel(), llm=llm)
     ui.interface.send("hello", user="napari", respond=False)
     assert MESSAGE_CSS in ui.interface.objects[-1].stylesheets
+
+
+def test_image_uploads_are_handled(qapp, llm):
+    from lumen_napari.upload import IMAGE_EXTENSIONS
+
+    ui = build_ui(ViewerModel(), llm=llm)
+    assert set(IMAGE_EXTENSIONS) <= set(ui.upload_handlers)

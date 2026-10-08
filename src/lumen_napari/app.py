@@ -17,6 +17,7 @@ from .explorer import explorer_for
 from .plate import plate_for
 from .script import Script
 from .tools import make_tools
+from .upload import image_upload_handlers
 
 SUGGESTIONS = [
     ("biotech", "Segment the nuclei layer and plot the distribution of object area"),
@@ -54,6 +55,7 @@ def build_ui(viewer: ViewerModel, script: Script | None = None, **params) -> Exp
     params.setdefault("title", "Lumen for napari")
     params.setdefault("suggestions", SUGGESTIONS)
     params.setdefault("coordinator", NapariPlanner)
+    params["upload_handlers"] = {**image_upload_handlers(controls), **params.get("upload_handlers", {})}
     ui = ExplorerUI(
         source_controls=[controls, UploadSourceControls],
         tools=make_tools(viewer, controls),
