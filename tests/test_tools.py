@@ -230,3 +230,18 @@ async def test_actions_reach_the_answer_as_data(qapp):
                                           as_new_layer=False)
     assert out["data"].startswith("Done in napari:\n- Colored 'cells' by area")
     assert "- Showing 2 of 3 objects of 'cells' where area >= 25." in out["data"]
+
+
+def test_layer_list_answers_simple_counts(qapp):
+    from lumen_napari.measure import measure, to_features
+
+    viewer = ViewerModel()
+    viewer.add_image(np.zeros((20, 20)), name="nuclei")
+    viewer.add_image(np.zeros((20, 20)), name="other")
+    labels = np.zeros((20, 20), int)
+    labels[1:3, 1:3] = 1
+    labels[5:9, 5:9] = 2
+    viewer.add_labels(labels, name="nuclei labels", features=to_features(measure(labels)))
+    text = make_tools(viewer)[0].function()
+    assert "'nuclei labels': labels, shape (20, 20), scale (1.0, 1.0); 2 measured objects, mean area 10" in text
+    assert "'other': image" in text and text.count("not segmented yet") == 1

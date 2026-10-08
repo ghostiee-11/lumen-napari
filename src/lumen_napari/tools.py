@@ -57,10 +57,18 @@ def make_tools(viewer: ViewerModel, controls=None) -> list[ViewerTool]:
         return _labels_layer(viewer, name)
 
     def list_napari_layers() -> str:
-        """List the layers open in napari with their type, shape and pixel size."""
+        """List the layers open in napari with their type, shape and pixel size, and for
+        segmented images their object count and mean sizes. An image without a labels layer
+        must be segmented (Segment Layer) before questions about its objects."""
         if not len(viewer.layers):
             return "napari has no layers open."
-        return "napari layers:\n" + "\n".join(_describe(layer) for layer in viewer.layers)
+        lines = []
+        for layer in viewer.layers:
+            line = _describe(layer)
+            if isinstance(layer, Image) and f"{layer.name} labels" not in viewer.layers:
+                line += "; not segmented yet"
+            lines.append(line)
+        return "napari layers:\n" + "\n".join(lines)
 
     def show_object_in_napari(
         label: int = 0,
@@ -194,7 +202,7 @@ def make_tools(viewer: ViewerModel, controls=None) -> list[ViewerTool]:
         )
 
     return [
-        ViewerTool(list_napari_layers),
+        ViewerTool(list_napari_layers, provides=["data"]),
         ViewerTool(show_object_in_napari, provides=["data"], done=done),
         ViewerTool(color_objects_by, provides=["data"], done=done),
         ViewerTool(filter_objects, provides=["data"], done=done),
@@ -221,7 +229,23 @@ def _describe(layer: Layer) -> str:
         size = f"shape {tuple(layer.data[0].shape if layer.multiscale else layer.data.shape)}"
     else:
         size = f"{len(layer.data)} items"
-    return f"- {layer.name!r}: {kind}, {size}, scale {scale}"
+    line = f"- {layer.name!r}: {kind}, {size}, scale {scale}"
+    if isinstance(layer, Labels):
+        line += _objects_summary(layer)
+    return line
+
+
+def _objects_summary(layer: Labels) -> str:
+    """Object count and mean sizes, so simple questions are answered from the layer list."""
+    features = layer.features
+    if "index" not in features or features.empty:
+        count = len(np.unique(np.asarray(layer.data[0] if layer.multiscale else layer.data))) - 1
+        return f"; {count} objects (not measured yet)"
+    means = ", ".join(
+        f"mean {c} {features[c].mean():.4g}" for c in features.columns
+        if c.startswith(("area", "volume", "intensity_mean"))
+    )
+    return f"; {len(features)} measured objects" + (f", {means}" if means else "")
 
 
 def _column(layer: Labels, column: str):
