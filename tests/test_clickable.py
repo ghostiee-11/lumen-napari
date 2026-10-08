@@ -57,3 +57,15 @@ def test_aggregate_charts_are_left_alone(viewer):
     pane = view_of(pd.DataFrame({"compound": ["a"], "mean_area": [3.0]}),
                    {"mark": "bar", "encoding": {}}).get_panel()
     assert "params" not in pane.object
+
+
+def test_drawn_charts_are_recorded_as_json(qapp, monkeypatch):
+    import json
+
+    monkeypatch.setattr(VegaLiteView, "get_panel", clickable._original)
+    seen = []
+    make_charts_clickable(ViewerModel(), on_chart=seen.append)
+    view_of(pd.DataFrame({"compound": ["a"], "mean_area": [3.0]}),
+            {"mark": "bar", "encoding": {}}).get_panel()
+    assert seen[0]["data"]["values"] == [{"compound": "a", "mean_area": 3.0}]
+    json.dumps(seen[0], default=str)

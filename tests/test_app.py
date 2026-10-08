@@ -83,3 +83,14 @@ def test_reports_reach_the_chat(qapp, llm):
 def test_tools_post_failures_to_the_chat(qapp, llm):
     ui = build_ui(ViewerModel(), llm=llm)
     assert all(tool.chat is ui.source_controls[0].chat for tool in ui.tools)
+
+
+def test_questions_and_cards_are_kept_for_the_report(qapp, llm):
+    viewer = ViewerModel()
+    ui = build_ui(viewer, llm=llm)
+    script = ui.source_controls[0].script
+    ui.interface.send("How many nuclei?", user=ui.interface.user, respond=False)
+    ui.interface.send("not a question", user="napari", respond=False)
+    assert script.questions == ["How many nuclei?"]
+    ui.source_controls[0]._post("**card**")
+    assert script.cards[-1] == ("**card**", None)

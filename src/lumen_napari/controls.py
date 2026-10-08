@@ -495,6 +495,7 @@ class NapariControls(CodeSourceControls):
         return self._publish_table(name, result)
 
     def _post(self, text: str, png: bytes | None = None) -> None:
+        self.script.cards.append((text, png))
         if self.chat is not None:
             self.chat(text, png)
 

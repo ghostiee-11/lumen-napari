@@ -28,8 +28,9 @@ SUGGESTIONS = [
 
 def build_ui(viewer: ViewerModel, script: Script | None = None, **params) -> ExplorerUI:
     """A Lumen ExplorerUI whose data comes from the napari viewer."""
-    controls = NapariControls(viewer=viewer, script=script or Script())
-    make_charts_clickable(viewer)
+    script = script or Script()
+    controls = NapariControls(viewer=viewer, script=script)
+    make_charts_clickable(viewer, on_chart=script.chart)
     params.setdefault("title", "Lumen for napari")
     params.setdefault("suggestions", SUGGESTIONS)
     ui = ExplorerUI(
@@ -39,9 +40,20 @@ def build_ui(viewer: ViewerModel, script: Script | None = None, **params) -> Exp
         **params,
     )
     controls.chat = chat_poster(ui.interface)
+    ui.interface.param.watch(lambda event: _record_questions(script, ui.interface, event),
+                             "objects")
     for tool in ui.tools:
         tool.chat = controls.chat
     return ui
+
+
+def _record_questions(script: Script, interface, event) -> None:
+    """Keep each new question typed in the chat, for the report."""
+    for message in event.new[len(event.old):]:
+        question = message.object
+        if message.user == interface.user and isinstance(question, str) \
+                and question not in script.questions:
+            script.questions.append(question)
 
 
 def chat_poster(interface):

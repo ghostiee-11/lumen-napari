@@ -12,6 +12,7 @@ PICK = "napari_pick"
 
 # ponytail: one viewer per process (the latest bound); keep a viewer per session if several
 _viewer: list[ViewerModel] = []
+_on_chart: list = []
 _original = VegaLiteView.get_panel
 
 
@@ -38,6 +39,8 @@ def with_pick(spec: dict, fields: list[str]) -> dict:
 
 def _get_panel(self):
     pane = _original(self)
+    for record in _on_chart:
+        record(jsonable(pane.object))
     if not _viewer:
         return pane
     fields = pick_fields(self.get_data())
@@ -55,7 +58,20 @@ def _show(viewer: ViewerModel, table: str, picked) -> None:
         show_row(viewer, table, picked[0])
 
 
-def make_charts_clickable(viewer: ViewerModel) -> None:
-    """Send clicks on Lumen's charts to this viewer."""
+def jsonable(spec: dict) -> dict:
+    """The spec with its data frames turned into records, ready for json and vega-embed."""
+    def convert(value):
+        if isinstance(value, pd.DataFrame):
+            return value.to_dict("records")
+        if isinstance(value, dict):
+            return {k: convert(v) for k, v in value.items()}
+        return value
+
+    return convert(spec)
+
+
+def make_charts_clickable(viewer: ViewerModel, on_chart=None) -> None:
+    """Send clicks on Lumen's charts to this viewer, and every drawn spec to `on_chart`."""
     _viewer[:] = [viewer]
+    _on_chart[:] = [on_chart] if on_chart else []
     VegaLiteView.get_panel = _get_panel
