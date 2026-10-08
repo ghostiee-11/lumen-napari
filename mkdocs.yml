@@ -1,0 +1,73 @@
+site_name: lumen-napari
+site_description: Ask questions about your napari images in plain language with Lumen
+repo_url: https://github.com/ghostiee-11/lumen-napari
+edit_uri: edit/main/docs/
+
+theme:
+  name: material
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - content.code.copy
+    - search.suggest
+  palette:
+    - scheme: default
+      primary: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.highlight
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          paths: [src]
+          options:
+            show_source: false
+            show_root_heading: true
+            heading_level: 3
+
+nav:
+  - Home: index.md
+  - Getting started:
+      - Installation: getting_started/installation.md
+      - Quickstart: getting_started/quickstart.md
+      - Choosing an LLM: getting_started/llm.md
+  - How-to guides:
+      - Upload images: how_to/upload_images.md
+      - Segment and measure: how_to/segment.md
+      - Physical units: how_to/units.md
+      - Explore objects in napari: how_to/explore_in_napari.md
+      - Screens and plates: how_to/plates.md
+      - Compare conditions: how_to/statistics.md
+      - Large images and whole slides: how_to/large_images.md
+      - Regions and hand corrections: how_to/regions_and_edits.md
+      - Export a script or report: how_to/export.md
+      - Use from Python: how_to/python.md
+  - Reference:
+      - Chat actions and tools: reference/chat_actions.md
+      - Measurement columns: reference/measurements.md
+      - File formats: reference/file_formats.md
+      - Python API: reference/api.md
+  - Explanation:
+      - How it works: explanation/how_it_works.md
+      - Limitations: explanation/limitations.md
