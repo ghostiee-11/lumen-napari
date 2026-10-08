@@ -39,7 +39,7 @@ def test_3d_skips_2d_only_properties():
     labels = np.zeros((4, 6, 6), int)
     labels[1:3, 1:4, 1:4] = 1
     df = measure(labels)
-    assert df.area[0] == 18
+    assert df.volume[0] == 18
     assert "eccentricity" not in df.columns
 
 
@@ -48,3 +48,17 @@ def test_features_line_up_with_napari_labels():
     layer = Labels(labels, features=to_features(measure(labels)))
     assert "area: 4" in layer.get_status((1, 1))["coordinates"]
     assert "area: 16" in layer.get_status((6, 6))["coordinates"]
+
+
+def test_units_are_added_to_size_columns():
+    df = measure(two_objects(), spacing=(0.5, 0.5), unit="um")
+    assert list(df.area_um2) == [1, 4]
+    assert "centroid_0_um" in df.columns
+    assert "perimeter_um" in df.columns
+    assert "bbox_0" in df.columns
+
+
+def test_3d_size_is_called_volume():
+    labels = np.zeros((4, 6, 6), int)
+    labels[1:3, 1:4, 1:4] = 1
+    assert measure(labels, unit="um").volume_um3[0] == 18

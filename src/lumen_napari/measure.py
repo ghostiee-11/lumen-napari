@@ -13,12 +13,20 @@ SHAPE_2D = ("eccentricity", "perimeter", "solidity")
 INTENSITY = ("intensity_mean", "intensity_min", "intensity_max")
 
 
+LENGTHS = ("centroid", "equivalent_diameter_area", "perimeter")
+
+
 def measure(
     labels: np.ndarray,
     intensity: np.ndarray | None = None,
     spacing: Sequence[float] | None = None,
+    unit: str | None = None,
 ) -> pd.DataFrame:
-    """Return one row per label with shape and, if an image is given, intensity columns."""
+    """Return one row per label with shape and, if an image is given, intensity columns.
+
+    In 3D `area` is called `volume`. With a `unit` (the physical unit of `spacing`), size
+    columns get it as a suffix, such as `area_um2` or `centroid_0_um`. `bbox` stays in pixels.
+    """
     labels = np.asarray(labels)
     properties = SHAPE + (SHAPE_2D if labels.ndim == 2 else ())
     if intensity is not None:
@@ -28,6 +36,14 @@ def measure(
     )
     df = pd.DataFrame(table)
     df.columns = [c.replace("-", "_") for c in df.columns]
+    size = "area" if labels.ndim == 2 else "volume"
+    df = df.rename(columns={"area": size})
+    if unit:
+        df = df.rename(columns={
+            c: f"{c}_{unit}{labels.ndim}" if c == size else f"{c}_{unit}"
+            for c in df.columns
+            if c == size or c.startswith(LENGTHS)
+        })
     return df
 
 
