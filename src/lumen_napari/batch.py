@@ -27,20 +27,52 @@ def well_of(name: str) -> str | None:
     return f"{match[1]}{int(match[2]):02d}" if match else None
 
 
-def measure_files(paths: Iterable[Path], method: str = "otsu", min_size: int = 20) -> pd.DataFrame:
+def group_channels(paths: Iterable[Path], channels: dict[str, str]) -> dict[str, dict[str, Path]]:
+    """Group per-channel files into sites. `channels` maps a channel name to the token that
+    marks it in file names (`{"dapi": "_w1", "actin": "_w4"}`); a site is the name before the
+    token. Sites missing a channel are left out."""
+    sites: dict[str, dict[str, Path]] = {}
+    for path in paths:
+        for name, token in channels.items():
+            if (i := Path(path).name.find(token)) >= 0:
+                sites.setdefault(Path(path).name[:i], {})[name] = Path(path)
+                break
+    return {site: files for site, files in sites.items() if len(files) == len(channels)}
+
+
+def measure_files(
+    paths: Iterable[Path],
+    method: str = "otsu",
+    min_size: int = 20,
+    channels: dict[str, str] | None = None,
+    segment_channel: str | None = None,
+) -> pd.DataFrame:
     """One row per object across all files, keyed by image_id (the file name without extension).
 
-    A `well` column is added when every file name contains a plate well id.
+    With `channels`, files are grouped into sites (see `group_channels`): `segment_channel`
+    is segmented and every other channel adds intensity columns such as intensity_mean_actin.
+    A `well` column is added when every image_id contains a plate well id.
     """
+    if channels:
+        if segment_channel not in channels:
+            raise ValueError(f"segment_channel must be one of {list(channels)}.")
+        sites = group_channels(paths, channels)
+    else:
+        sites = {Path(p).stem: {None: Path(p)} for p in paths}
     tables = []
-    for path in paths:
+    for site, files in sites.items():
+        path = files[segment_channel if channels else None]
         image = read_image(path)
-        df = measure(segment(image, method=method, min_size=min_size), image)
-        resolved = str(Path(path).resolve())
-        df.insert(0, "image_id", Path(path).stem)
+        others = {name: read_image(f) for name, f in files.items() if name != segment_channel}
+        labels = segment(image, method=method, min_size=min_size)
+        df = measure(labels, image, channels=others or None)
+        resolved = str(path.resolve())
+        df.insert(0, "image_id", site.rstrip("_-. ") or path.stem)
         df["path"] = resolved
         SEGMENTED_WITH[resolved] = {"method": method, "min_size": min_size}
         tables.append(df)
+    if not tables:
+        raise ValueError("No complete sites found: every channel token must match a file.")
     df = pd.concat(tables, ignore_index=True)
     wells = df["image_id"].map(well_of)
     if wells.notna().all():

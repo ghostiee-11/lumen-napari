@@ -84,3 +84,30 @@ def test_join_plate_map_on_image_id_and_bad_maps():
     assert joined.dose.isna().tolist() == [True, False]
     with pytest.raises(ValueError, match="needs a 'well' or 'image_id' column"):
         join_plate_map(objects, pd.DataFrame({"plate": [1]}))
+
+
+def test_per_channel_files_are_grouped_into_sites(tmp_path):
+    from lumen_napari.batch import group_channels
+
+    for name in ("A01_s1_w1x.png", "A01_s1_w2y.png", "B02_s1_w1z.png"):
+        write(tmp_path, name, 1)
+    sites = group_channels(sorted(tmp_path.glob("*.png")), {"dapi": "_w1", "tubulin": "_w2"})
+    assert list(sites) == ["A01_s1"]
+    assert sites["A01_s1"]["tubulin"].name == "A01_s1_w2y.png"
+
+
+def test_measure_files_with_channels(tmp_path):
+    nuclei = write(tmp_path, "P_C03_s1_w1.png", 2)
+    from skimage.io import imread
+    imsave(tmp_path / "P_C03_s1_w2.png", (imread(nuclei) // 2).astype(np.uint8), check_contrast=False)
+    df = measure_files(sorted(tmp_path.glob("*.png")), min_size=0,
+                       channels={"dapi": "_w1", "tubulin": "_w2"}, segment_channel="dapi")
+    assert list(df.image_id) == ["P_C03_s1", "P_C03_s1"]
+    assert list(df.well) == ["C03", "C03"]
+    assert list(df.intensity_mean_tubulin) == list(df.intensity_mean // 2)
+    assert df.path.iloc[0].endswith("_w1.png")
+
+
+def test_channels_need_a_valid_segment_channel(tmp_path):
+    with pytest.raises(ValueError, match="segment_channel must be one of"):
+        measure_files([], channels={"dapi": "_w1"}, segment_channel="nuclei")
