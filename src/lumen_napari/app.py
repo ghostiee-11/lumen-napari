@@ -2,10 +2,12 @@
 
 from __future__ import annotations
 
+import os
 import socket
 import time
 
 import panel as pn
+from lumen.ai import llm as lumen_llm
 from lumen.ai.controls import UploadSourceControls
 from lumen.ai.coordinator import Planner
 from lumen.ai.ui import ExplorerUI
@@ -47,9 +49,22 @@ class NapariPlanner(Planner):
         return False
 
 
+def provider_llm():
+    """The LLM named by LUMEN_NAPARI_PROVIDER (a Lumen provider such as 'claude-code' or
+    'copilot-cli'), or None to let Lumen pick one from the API keys in the environment."""
+    if not (provider := os.environ.get("LUMEN_NAPARI_PROVIDER")):
+        return None
+    if provider not in lumen_llm.LLM_PROVIDERS:
+        raise ValueError(f"Unknown LUMEN_NAPARI_PROVIDER {provider!r}. "
+                         f"Use one of {list(lumen_llm.LLM_PROVIDERS)}.")
+    return getattr(lumen_llm, lumen_llm.LLM_PROVIDERS[provider])()
+
+
 def build_ui(viewer: ViewerModel, script: Script | None = None, **params) -> ExplorerUI:
     """A Lumen ExplorerUI whose data comes from the napari viewer."""
     script = script or Script()
+    if "llm" not in params and (llm := provider_llm()) is not None:
+        params["llm"] = llm
     controls = NapariControls(viewer=viewer, script=script)
     make_charts_clickable(viewer, on_chart=script.chart)
     params.setdefault("title", "Lumen for napari")

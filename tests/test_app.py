@@ -112,3 +112,17 @@ def test_image_uploads_are_handled(qapp, llm):
 
     ui = build_ui(ViewerModel(), llm=llm)
     assert set(IMAGE_EXTENSIONS) <= set(ui.upload_handlers)
+
+
+def test_provider_from_environment(monkeypatch):
+    from lumen.ai.llm import ClaudeCode
+
+    from lumen_napari.app import provider_llm
+
+    monkeypatch.delenv("LUMEN_NAPARI_PROVIDER", raising=False)
+    assert provider_llm() is None
+    monkeypatch.setenv("LUMEN_NAPARI_PROVIDER", "claude-code")
+    assert isinstance(provider_llm(), ClaudeCode)
+    monkeypatch.setenv("LUMEN_NAPARI_PROVIDER", "nope")
+    with pytest.raises(ValueError, match="copilot-cli"):
+        provider_llm()
