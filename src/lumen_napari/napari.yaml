@@ -1,0 +1,10 @@
+name: lumen-napari
+display_name: Lumen
+contributions:
+  commands:
+    - id: lumen-napari.widget
+      title: Ask Lumen
+      python_name: lumen_napari.widget:LumenWidget
+  widgets:
+    - command: lumen-napari.widget
+      display_name: Ask Lumen
