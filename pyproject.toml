@@ -1,0 +1,37 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "lumen-napari"
+version = "0.1.0.dev0"
+description = "Ask questions about your napari images in plain language with Lumen"
+readme = "README.md"
+license = "BSD-3-Clause"
+requires-python = ">=3.11"
+authors = [{ name = "Aman Kumar", email = "aman0611kumar@gmail.com" }]
+classifiers = ["Framework :: napari"]
+dependencies = [
+    "lumen[ai] @ git+https://github.com/holoviz/lumen.git@main",
+    "napari @ git+https://github.com/napari/napari.git@main",
+    "scikit-image>=0.22",
+    "superqt",
+]
+
+[project.optional-dependencies]
+qt = ["pyqt6"]
+cellpose = ["cellpose>=4"]
+test = ["pytest", "pytest-asyncio", "pytest-qt", "pooch"]
+
+[project.entry-points."napari.manifest"]
+lumen-napari = "lumen_napari:napari.yaml"
+
+[tool.hatch.metadata]
+allow-direct-references = true
+
+[tool.pytest.ini_options]
+asyncio_mode = "auto"
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 100
