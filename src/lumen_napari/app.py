@@ -72,10 +72,15 @@ class LumenServer:
     def running(self) -> bool:
         return self._thread is not None
 
+    def _page(self):
+        # The full page (header, sidebar, JS extensions) is what ExplorerUI.servable() adds to
+        # the document; returning it, and not also calling servable(), renders it once.
+        return build_ui(self.viewer, self.script, **self.params)._create_view(server=True)
+
     def start(self) -> str:
         if not self.running:
             self._thread = pn.serve(
-                lambda: build_ui(self.viewer, self.script, **self.params),
+                self._page,
                 port=self.port,
                 address="127.0.0.1",
                 websocket_origin=[f"localhost:{self.port}", f"127.0.0.1:{self.port}"],

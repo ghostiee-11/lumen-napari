@@ -57,6 +57,7 @@ def test_page_shows_the_app_once(qapp, llm):
     try:
         with pull_session(url=server.url) as session:
             roots = session.document.roots
-            assert len([r for r in roots if type(r).__name__ == type(roots[0]).__name__]) == 1
+            # The whole page, header included, is one React root; serving it twice made two.
+            assert [type(r).__name__ for r in roots].count("ReactComponent") == 1
     finally:
         server.stop()
