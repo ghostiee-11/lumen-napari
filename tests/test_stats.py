@@ -45,3 +45,11 @@ def test_dose_response_recovers_the_ec50():
     assert fit.loc["x", "ec50"] == pytest.approx(1.0, rel=1e-3)
     assert fit.loc["x", "doses"] == 7
     assert np.isnan(fit.loc["y", "ec50"])
+
+
+def test_identical_replicates_give_no_p_value():
+    df = pd.DataFrame({"well": ["A1", "A2", "B1", "B2"], "compound": ["DMSO", "DMSO", "x", "x"],
+                       "area": [100, 100, 200, 200]})
+    row = compare(df, "area", "compound", "DMSO").set_index("compound").loc["x"]
+    assert np.isnan(row.p_value) and np.isnan(row.z_score)
+    assert row.fold_change == 2

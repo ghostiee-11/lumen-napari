@@ -31,8 +31,10 @@ def compare(df: pd.DataFrame, measurement: str, condition: str, control: str,
     rows = []
     for name, group in wells.groupby(condition, dropna=False):
         values = group[measurement]
-        test = (stats.ttest_ind(values, controls, equal_var=False)
-                if name != control and len(values) > 1 and len(controls) > 1 else None)
+        # A t-test needs spread: with identical replicates its p-value is meaningless.
+        testable = (name != control and len(values) > 1 and len(controls) > 1
+                    and (values.std(ddof=1) > 0 or controls.std(ddof=1) > 0))
+        test = stats.ttest_ind(values, controls, equal_var=False) if testable else None
         rows.append({
             condition: name,
             "replicates": len(values),

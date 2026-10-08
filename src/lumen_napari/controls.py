@@ -602,8 +602,13 @@ def _verdicts(result: pd.DataFrame, condition: str, control: str) -> str:
             continue
         if row.replicates < 2:
             lines.append(f"- `{name}`: only {row.replicates} replicate, no test possible.")
+        elif np.isnan(row.p_value):
+            lines.append(f"- `{name}`: fold change {row.fold_change:.2f}; no test possible "
+                         "because the replicates do not vary.")
         else:
-            lines.append(f"- `{name}`: fold change {row.fold_change:.2f}, z = {row.z_score:.1f}, "
+            z = "undefined (control wells do not vary)" if np.isnan(row.z_score) \
+                else f"{row.z_score:.1f}"
+            lines.append(f"- `{name}`: fold change {row.fold_change:.2f}, z = {z}, "
                          f"p = {row.p_value:.3g} ({row.replicates} replicates).")
     return "\n".join(lines)
 
