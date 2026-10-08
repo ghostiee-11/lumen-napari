@@ -68,3 +68,11 @@ def test_origin_moves_centroids_to_world_space():
     df = measure(two_objects(), origin=(100, 200))
     assert list(df.centroid_0) == [101.5, 106.5]
     assert list(df.centroid_1) == [201.5, 206.5]
+
+
+def test_other_channels_get_their_own_intensity_columns():
+    labels = two_objects()
+    df = measure(labels, intensity=labels * 1.0, channels={"tubulin": labels * 3.0, "actin": labels * 0.0})
+    assert list(df.intensity_mean) == [1, 2]
+    assert list(df.intensity_mean_tubulin) == [3, 6]
+    assert list(df.intensity_max_actin) == [0, 0]
