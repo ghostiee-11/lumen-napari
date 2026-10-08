@@ -12,3 +12,4 @@ def test_cells3d():
     [(image, meta, _)] = cells3d()
     assert image.ndim == 3
     assert meta["scale"] == (0.29, 0.26, 0.26)
+    assert meta["units"] == ("um", "um", "um")
