@@ -384,3 +384,10 @@ def test_segment_whole_slide(qtbot, viewer, controls, posts):
     points = viewer.layers["slide objects"]
     assert len(points.data) == 49
     assert "in 9 tiles of 100 px: 49 objects" in posts[-1][0]
+
+
+def test_the_method_reason_is_reported(qtbot, controls, posts):
+    run(qtbot, controls, "Segment Layer", image_layer="nuclei", min_size=0,
+        reason="Bright, well separated nuclei on a dark background.")
+    assert posts[-1][0].endswith(
+        "**Why otsu:** Bright, well separated nuclei on a dark background.")

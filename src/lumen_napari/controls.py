@@ -96,7 +96,9 @@ class NapariControls(CodeSourceControls):
     def segment_layer(
         self,
         image_layer: str,
-        method: Literal["otsu", "cellpose"] = "otsu",
+        method: Literal["otsu", "cellpose", "stardist", "bioimageio"] = "otsu",
+        model: str = "",
+        reason: str = "",
         min_size: int = 20,
         split_touching: bool = True,
         visible_only: bool = False,
@@ -115,7 +117,12 @@ class NapariControls(CodeSourceControls):
         image_layer : str
             Name of the napari image layer to segment.
         method : str
-            'otsu' for a fast threshold, 'cellpose' for a deep learning model.
+            Segmentation method: 'otsu', 'cellpose', 'stardist' or 'bioimageio'. Call
+            segmentation_methods first to see which are installed and when each fits.
+        model : str
+            For stardist or bioimageio: the model name or BioImage.IO id. Usually empty.
+        reason : str
+            One sentence on why this method fits the image, shown to the user.
         min_size : int
             Objects with fewer pixels than this are dropped.
         split_touching : bool
@@ -133,7 +140,8 @@ class NapariControls(CodeSourceControls):
         region = visible_region(layer) if visible_only else None
         level = choose_level(layer, region) if level < 0 else level
         image, scale, translate = load_region(layer, level, region)
-        labels = segment(image, method=method, min_size=min_size, split_touching=split_touching)
+        labels = segment(image, method=method, min_size=min_size, split_touching=split_touching,
+                         model=model)
         unit = unit_of(layer)
         channels = {
             table_name(name): load_region(self._layer(name, Image), level, region)[0]
@@ -156,17 +164,19 @@ class NapariControls(CodeSourceControls):
             f"image, scale, translate = load_region(viewer.layers[{layer.name!r}], "
             f"level={level!r}, region={region!r})",
             f"labels = segment(image, method={method!r}, min_size={min_size!r}, "
-            f"split_touching={split_touching!r})",
+            f"split_touching={split_touching!r}, model={model!r})",
             f"table = tables[{table!r}] = measure(labels, image, spacing=scale, unit={unit!r}, "
             f"origin=translate, channels={{{channel_code}}})",
             f"viewer.add_labels(labels, name={name!r}, features=to_features(table), "
             "scale=scale, translate=translate)",
         )
-        settings = {"method": method, "min_size": min_size, "split_touching": split_touching,
+        settings = {"method": method, **({"model": model} if model else {}),
+                    "min_size": min_size, "split_touching": split_touching,
                     "level": level, "region": region or "whole image"}
         self._post(
             segmentation_report(layer.name, len(df), settings,
-                                self._size_note(unit, scale, layer.name), table),
+                                self._size_note(unit, scale, layer.name), table)
+            + _why(method, reason),
             overlay_png(image, labels),
         )
         return self._publish_table(table, df)
@@ -249,7 +259,9 @@ class NapariControls(CodeSourceControls):
         self,
         folder: str,
         pattern: str = "*.tif",
-        method: Literal["otsu", "cellpose"] = "otsu",
+        method: Literal["otsu", "cellpose", "stardist", "bioimageio"] = "otsu",
+        model: str = "",
+        reason: str = "",
         min_size: int = 20,
         max_files: int = 500,
         plate_map: str = "",
@@ -272,7 +284,12 @@ class NapariControls(CodeSourceControls):
         pattern : str
             Glob pattern for the image files, such as '*.tif' or '*.png'.
         method : str
-            'otsu' for a fast threshold, 'cellpose' for a deep learning model.
+            Segmentation method: 'otsu', 'cellpose', 'stardist' or 'bioimageio'. Call
+            segmentation_methods first to see which are installed and when each fits.
+        model : str
+            For stardist or bioimageio: the model name or BioImage.IO id. Usually empty.
+        reason : str
+            One sentence on why this method fits the image, shown to the user.
         min_size : int
             Objects with fewer pixels than this are dropped.
         max_files : int
@@ -292,7 +309,7 @@ class NapariControls(CodeSourceControls):
         files = sorted(root.glob(pattern))[:max_files]
         if not files:
             raise ValueError(f"No files match {pattern!r} in {str(root)!r}.")
-        df = measure_files(files, method=method, min_size=min_size, channels=channels,
+        df = measure_files(files, method=method, min_size=min_size, model=model, channels=channels,
                            segment_channel=segment_channel or None)
         table = table_name(f"{root.name} objects")
         lines = [
@@ -301,7 +318,7 @@ class NapariControls(CodeSourceControls):
             f"files = sorted(Path({str(root)!r}).glob({pattern!r}))[:{max_files!r}]",
             (
                 f"tables[{table!r}] = measure_files(files, method={method!r}, "
-                f"min_size={min_size!r}, channels={channels!r}, "
+                f"min_size={min_size!r}, model={model!r}, channels={channels!r}, "
                 f"segment_channel={segment_channel or None!r})"
             ),
         ]
@@ -322,6 +339,7 @@ class NapariControls(CodeSourceControls):
             "extremes in napari by asking me to show an object from them.\n\n"
             + ("Sizes come from the files' pixel size." if unit_cols else
                "⚠️ **Sizes are in pixels**: these files carry no pixel size.")
+            + _why(method, reason)
         )
         return self._publish_table(table, df)
 
@@ -384,7 +402,9 @@ class NapariControls(CodeSourceControls):
         self,
         image_layer: str,
         tile_size: int = 2048,
-        method: Literal["otsu", "cellpose"] = "otsu",
+        method: Literal["otsu", "cellpose", "stardist", "bioimageio"] = "otsu",
+        model: str = "",
+        reason: str = "",
         min_size: int = 20,
         split_touching: bool = True,
     ) -> SourceResult:
@@ -400,8 +420,12 @@ class NapariControls(CodeSourceControls):
         tile_size : int
             Tile side in pixels. Smaller tiles use less memory.
         method : str
-            'otsu' for a fast threshold (one threshold for the whole slide), 'cellpose' for a
-            deep learning model.
+            Segmentation method: 'otsu', 'cellpose', 'stardist' or 'bioimageio'. Call
+            segmentation_methods first to see which are installed and when each fits.
+        model : str
+            For stardist or bioimageio: the model name or BioImage.IO id. Usually empty.
+        reason : str
+            One sentence on why this method fits the image, shown to the user.
         min_size : int
             Objects with fewer pixels than this are dropped.
         split_touching : bool
@@ -409,7 +433,8 @@ class NapariControls(CodeSourceControls):
         """
         layer = self._layer(image_layer, Image)
         unit = unit_of(layer)
-        df, count = segment_tiled(layer, tile=tile_size, method=method, min_size=min_size,
+        df, count = segment_tiled(layer, tile=tile_size, method=method, model=model,
+                                  min_size=min_size,
                                   split_touching=split_touching, unit=unit)
         name = f"{layer.name} objects"
         suffix = f"_{unit}" if unit else ""
@@ -420,7 +445,7 @@ class NapariControls(CodeSourceControls):
         self.script.add(
             "from lumen_napari.tiles import segment_tiled",
             f"tables[{table!r}], _ = segment_tiled(viewer.layers[{layer.name!r}], "
-            f"tile={tile_size!r}, method={method!r}, min_size={min_size!r}, "
+            f"tile={tile_size!r}, method={method!r}, model={model!r}, min_size={min_size!r}, "
             f"split_touching={split_touching!r}, unit={unit!r})",
         )
         self._post(
@@ -428,7 +453,7 @@ class NapariControls(CodeSourceControls):
             f"into table `{table}`, shown in napari as the points layer `{name}`.\n\n"
             f"Settings: method={method!r}, min_size={min_size!r}, split_touching="
             f"{split_touching!r}, one threshold for the whole slide.\n\n"
-            f"{self._size_note(unit, layer.scale, layer.name)}"
+            f"{self._size_note(unit, layer.scale, layer.name)}" + _why(method, reason)
         )
         return self._publish_table(table, df)
 
@@ -561,6 +586,11 @@ def _publish_labels(viewer: ViewerModel, name: str, labels: np.ndarray, features
         layer.features = features
     else:
         viewer.add_labels(labels, name=name, features=features, scale=scale, translate=translate)
+
+
+def _why(method: str, reason: str) -> str:
+    """The method choice, explained."""
+    return f"\n\n**Why {method}:** {reason}" if reason else ""
 
 
 def _verdicts(result: pd.DataFrame, condition: str, control: str) -> str:
