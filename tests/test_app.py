@@ -97,3 +97,11 @@ async def test_planner_never_asks_clarifying_questions(qapp, llm):
     ui = build_ui(ViewerModel(), llm=llm)
     assert isinstance(ui._coordinator, NapariPlanner)
     assert await ui._coordinator._check_clarification_needed([], {}) is False
+
+
+def test_messages_get_a_border_and_padding(qapp, llm):
+    from lumen_napari.app import MESSAGE_STYLE
+
+    ui = build_ui(ViewerModel(), llm=llm)
+    ui.interface.send("hello", user="napari", respond=False)
+    assert ui.interface.objects[-1].sx == MESSAGE_STYLE
