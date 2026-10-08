@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import functools
+import re
 
 import duckdb
 import numpy as np
@@ -224,12 +225,34 @@ def _ranked_label(layer: Labels, column: str, smallest: bool) -> int:
     return int(layer.features.loc[row, "index"])
 
 
+# Units the LLM writes after numbers ("area >= 20 µm²"), which are not SQL.
+UNITS = re.compile(r"(?<=\d)\s*(?:[µμu]m[²³23]?|nm[²³23]?|px|pixels?)(?![A-Za-z0-9_])")
+
+
+def clean_condition(where: str, columns) -> str:
+    """Drop units after numbers, and point bare names at unit-suffixed columns (area to
+    area_um2) when only the suffixed one exists."""
+    where = UNITS.sub("", where)
+    for column in columns:
+        base = re.sub(r"_(?:[a-z]+[23]?)$", "", column)
+        if base != column and base not in columns:
+            where = re.sub(rf"\b{re.escape(base)}\b(?!_)", column, where)
+    return where
+
+
 def _matching(layer: Labels, where: str) -> list[int]:
     """Labels whose measurements match a SQL condition. The query runs on an in-memory copy of
     the features, with DuckDB's file and network access switched off."""
+    features = layer.features.rename(columns={"index": "label"})
     con = duckdb.connect(config={"enable_external_access": False})
-    con.register("objects", layer.features.rename(columns={"index": "label"}))
-    return [int(row[0]) for row in con.execute(f"SELECT label FROM objects WHERE {where}").fetchall()]
+    con.register("objects", features)
+    condition = clean_condition(where, list(features.columns))
+    try:
+        rows = con.execute(f"SELECT label FROM objects WHERE {condition}").fetchall()
+    except duckdb.Error as e:
+        raise ValueError(f"Cannot filter with {where!r}: {e}. "
+                         f"Columns: {[c for c in features.columns if c != 'label']}.") from e
+    return [int(row[0]) for row in rows]
 
 
 @ensure_main_thread(await_return=True, timeout=60_000)

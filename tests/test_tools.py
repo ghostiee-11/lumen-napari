@@ -200,3 +200,23 @@ def test_tools_segment_first_when_nothing_is_segmented(qtbot, qapp):
     qtbot.waitUntil(lambda: not thread.is_alive(), timeout=60_000)
     assert "nuclei labels" in viewer.layers
     assert out["msg"].startswith("Colored 'nuclei labels' by area")
+
+
+@pytest.mark.parametrize(("where", "columns", "expected"), [
+    ("area >= 20 µm²", ["area"], "area >= 20"),
+    ("area > 3.5um2 AND eccentricity < 0.8", ["area", "eccentricity"], "area > 3.5 AND eccentricity < 0.8"),
+    ("area < 50 pixels", ["area"], "area < 50"),
+    ("area >= 20", ["area_um2", "label"], "area_um2 >= 20"),
+    ("volume > 100 µm³", ["volume_um3"], "volume_um3 > 100"),
+    ("area_um2 > 1", ["area_um2"], "area_um2 > 1"),
+])
+def test_clean_condition(where, columns, expected):
+    from lumen_napari.tools import clean_condition
+
+    assert clean_condition(where, columns) == expected
+
+
+def test_filter_reports_columns_on_bad_sql(qapp):
+    filter_objects = make_tools(ranked_viewer(qapp))[3].function
+    with pytest.raises(ValueError, match="Columns: \\['area'"):
+        filter_objects("size > 3")
