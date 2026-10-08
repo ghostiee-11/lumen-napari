@@ -44,3 +44,23 @@ def test_segmentation_report_shows_the_work():
     assert "method='otsu', min_size=20" in text
     assert "Does the outline look right?" in text
     assert "Sizes are in pixels" in text
+
+
+def test_report_html_has_every_section():
+    from lumen_napari.report import report_html
+    from lumen_napari.script import Script
+
+    script = Script()
+    script.questions.append("Which compound <b>shrinks</b> nuclei?")
+    script.cards.append(("**Segmented `nuclei`: 3 objects**", overlay_png(*blobs())))
+    script.chart({"mark": "point", "data": {"values": [{"label": "</script><script>x()"}]}})
+    script.chart({"mark": "point", "data": {"values": [{"label": "</script><script>x()"}]}})
+    script.add("labels = segment(image)")
+    page = report_html(script, snapshot=overlay_png(*blobs()), title="Plate 1")
+    assert page.startswith("<!doctype html>") and "<title>Plate 1</title>" in page
+    assert "<li>Which compound &lt;b&gt;shrinks&lt;/b&gt; nuclei?</li>" in page
+    assert "<strong>Segmented <code>nuclei</code>: 3 objects</strong>" in page
+    assert page.count("data:image/png;base64,") == 2
+    assert page.count("vegaEmbed('#chart") == 1
+    assert "</script><script>x()" not in page
+    assert "labels = segment(image)" in page
