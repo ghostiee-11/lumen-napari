@@ -8,7 +8,7 @@ lumen-napari connects [napari](https://napari.org), the multi-dimensional image 
 You      How many nuclei are there, and how big are they?
 
 napari   adds a `nuclei labels` layer, every object measured
-Lumen    Segmented `nuclei`: 354 objects into table `nuclei_labels`.
+Lumen    Segmented `nuclei`: 348 objects into table `nuclei_labels`.
          The mean area is 83.94 pixels.
 ```
 
