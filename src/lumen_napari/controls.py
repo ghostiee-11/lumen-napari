@@ -23,6 +23,14 @@ from .segment import segment
 FEATURE_LAYERS = (Labels, Points, Shapes, Surface, Tracks, Vectors)
 
 
+def unit_of(layer: Layer) -> str | None:
+    """SQL-safe physical unit of the layer's axes, or None for pixels or mixed units."""
+    units = {f"{u:~}" for u in layer.units}
+    if len(units) != 1 or units == {"pixel"}:
+        return None
+    return re.sub(r"\W", "", units.pop().replace("μ", "u").replace("µ", "u")) or None
+
+
 def table_name(layer_name: str) -> str:
     """SQL-safe table name for a layer."""
     return re.sub(r"\W+", "_", layer_name).strip("_").lower() or "layer"
@@ -74,7 +82,8 @@ class NapariControls(CodeSourceControls):
         image = intensity(layer)
         labels = segment(image, method=method, min_size=min_size, split_touching=split_touching)
         spacing = _floats(layer.scale[-labels.ndim:])
-        df = measure(labels, image, spacing=spacing)
+        unit = unit_of(layer)
+        df = measure(labels, image, spacing=spacing, unit=unit)
         name = f"{layer.name} labels"
         self._publish(name, labels, df, layer)
         self.table_name = table_name(name)
@@ -84,7 +93,8 @@ class NapariControls(CodeSourceControls):
             f"image = intensity(viewer.layers[{layer.name!r}])",
             f"labels = segment(image, method={method!r}, min_size={min_size!r}, "
             f"split_touching={split_touching!r})",
-            f"table = tables[{self.table_name!r}] = measure(labels, image, spacing={spacing!r})",
+            f"table = tables[{self.table_name!r}] = measure(labels, image, spacing={spacing!r}, "
+            f"unit={unit!r})",
             f"viewer.add_labels(labels, name={name!r}, features=to_features(table), "
             f"scale={spacing!r}, translate={_floats(layer.translate[-labels.ndim:])!r})",
         )
@@ -108,7 +118,8 @@ class NapariControls(CodeSourceControls):
         image_source = self._layer(image_layer, Image) if image_layer else None
         image = intensity(image_source) if image_source else None
         spacing = _floats(layer.scale)
-        df = measure(labels, image, spacing=spacing)
+        unit = unit_of(layer)
+        df = measure(labels, image, spacing=spacing, unit=unit)
         self._publish(layer.name, labels, df, layer)
         self.table_name = table_name(layer.name)
         self.script.load(layer)
@@ -118,7 +129,8 @@ class NapariControls(CodeSourceControls):
             image_code = f"intensity(viewer.layers[{image_source.name!r}])"
         self.script.add(
             f"labels = viewer.layers[{layer.name!r}].data",
-            f"table = tables[{self.table_name!r}] = measure(labels, {image_code}, spacing={spacing!r})",
+            f"table = tables[{self.table_name!r}] = measure(labels, {image_code}, "
+            f"spacing={spacing!r}, unit={unit!r})",
             f"viewer.layers[{layer.name!r}].features = to_features(table)",
         )
         return df

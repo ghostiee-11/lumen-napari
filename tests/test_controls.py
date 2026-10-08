@@ -100,3 +100,16 @@ def test_layer_features_rejects_image_layers(qtbot, controls):
     result = run(qtbot, controls, "Layer Features", layer="nuclei")
     assert not result.sources
     assert "No labels or points" in result.message
+
+
+def test_layer_units_name_the_columns(qtbot, viewer, controls):
+    viewer.layers["nuclei"].units = ("um", "um")
+    result = run(qtbot, controls, "Segment Layer", image_layer="nuclei", min_size=0)
+    df = query(result, "SELECT area_um2 FROM nuclei_labels ORDER BY label")
+    assert list(df.area_um2) == [49 * 0.25, 100 * 0.25]
+
+
+def test_unit_of_pixels_is_none(viewer):
+    from lumen_napari.controls import unit_of
+
+    assert unit_of(viewer.layers["nuclei"]) is None
