@@ -18,6 +18,7 @@ lumen-napari connects [napari](https://napari.org) to [Lumen](https://github.com
 - **Load features** that other plugins wrote on points, shapes, labels, tracks, surface or vectors layers.
 - **Ask** follow-up questions in plain language. Lumen writes the SQL and charts, and you can upload a CSV (a plate map, treatments) to join with the measurements.
 - **Show** any object in napari: "show me the largest nucleus" zooms the viewer to it and selects it.
+- **Click back** from a chart: ask to "explore the objects" for a scatter of every object. Clicking a point zooms napari to that object.
 - **Export** the segmentation and measurement steps as a Python script with **Export script** in the dock, so the analysis can be rerun without the chat.
 
 ## Install
@@ -46,6 +47,7 @@ Lumen supports OpenAI, Anthropic, Google, Mistral, Azure, Ollama, llama.cpp and 
    - "Segment the nuclei layer and plot the distribution of object area"
    - "Which objects are the brightest? Show the top one in napari"
    - "Plot area against mean intensity for every object"
+   - "Explore the objects and click one to see it in napari"
 
 The chat server only listens on `localhost`, and it stops when napari closes.
 
