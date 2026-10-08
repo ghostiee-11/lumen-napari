@@ -46,7 +46,7 @@ def test_table_name():
 
 def test_actions_are_registered(controls):
     assert [name for name, _ in controls.as_tools()] == [
-        "Segment Layer", "Measure Layer", "Layer Features", "Segment Folder",
+        "Segment Layer", "Measure Layer", "Layer Features", "Segment Folder", "Load Table",
     ]
 
 
@@ -94,7 +94,7 @@ def test_lumen_source_agent_builds_every_action(controls):
 
     tools = SourceAgent._build_tools({"source_controls": [controls]}, result_store=[])
     assert [tool.name for tool in tools] == [
-        "segment_layer", "measure_layer", "layer_features", "segment_folder",
+        "segment_layer", "measure_layer", "layer_features", "segment_folder", "load_table",
     ]
 
 
@@ -177,3 +177,16 @@ def test_folder_table_joins_an_uploaded_plate_map(qtbot, controls, plate):
         "JOIN plate_map p USING (well) GROUP BY compound ORDER BY compound"
     )
     assert df.to_dict("list") == {"compound": ["DMSO", "taxol"], "n": [1, 5]}
+
+
+def test_load_table(qtbot, controls, tmp_path):
+    pd.DataFrame({"well": ["A01"], "compound": ["DMSO"]}).to_csv(tmp_path / "Plate Map.csv", index=False)
+    result = run(qtbot, controls, "Load Table", path=str(tmp_path / "Plate Map.csv"))
+    assert result.table == "plate_map"
+    assert query(result, "SELECT compound FROM plate_map").compound[0] == "DMSO"
+    assert controls.script.lines[-2] == f"tables['plate_map'] = pd.read_csv({str(tmp_path / 'Plate Map.csv')!r})"
+
+
+def test_load_table_rejects_other_files(qtbot, controls, tmp_path):
+    result = run(qtbot, controls, "Load Table", path=str(tmp_path / "notes.txt"))
+    assert "Cannot read 'notes.txt'" in result.message

@@ -24,6 +24,14 @@ from .measure import measure, to_features
 from .script import Script
 from .segment import segment
 
+# pandas reader and keyword arguments for each table file type.
+READERS = {
+    ".csv": ("read_csv", {}),
+    ".tsv": ("read_csv", {"sep": "\t"}),
+    ".xlsx": ("read_excel", {}),
+    ".parquet": ("read_parquet", {}),
+}
+
 FEATURE_LAYERS = (Labels, Points, Shapes, Surface, Tracks, Vectors)
 
 
@@ -51,7 +59,10 @@ class NapariControls(CodeSourceControls):
     label = '<span class="material-icons" style="vertical-align: middle;">biotech</span> napari'
 
     def __init__(self, viewer: ViewerModel, **params):
-        actions = (self.segment_layer, self.measure_layer, self.layer_features, self.segment_folder)
+        actions = (
+            self.segment_layer, self.measure_layer, self.layer_features, self.segment_folder,
+            self.load_table,
+        )
         functions = {action.__name__: self._named(action) for action in actions}
         params.setdefault("script", Script())
         super().__init__(viewer=viewer, functions=functions, **params)
@@ -195,6 +206,26 @@ class NapariControls(CodeSourceControls):
             f"tables[{self.table_name!r}] = measure_files(files, method={method!r}, "
             f"min_size={min_size!r})",
         )
+        return df
+
+    def load_table(self, path: str) -> pd.DataFrame:
+        """Load a table file, such as a plate map of wells and treatments, to join with
+        measurements. Reads .csv, .tsv, .xlsx and .parquet files.
+
+        Parameters
+        ----------
+        path : str
+            Path of the table file.
+        """
+        file = Path(path).expanduser()
+        suffix = file.suffix.lower()
+        if suffix not in READERS:
+            raise ValueError(f"Cannot read {file.name!r}. Use one of {', '.join(READERS)}.")
+        reader, kwargs = READERS[suffix]
+        df = getattr(pd, reader)(file, **kwargs)
+        self.table_name = table_name(file.stem)
+        args = ", ".join([repr(str(file)), *(f"{k}={v!r}" for k, v in kwargs.items())])
+        self.script.add(f"tables[{self.table_name!r}] = pd.{reader}({args})")
         return df
 
     def _named(self, action):
