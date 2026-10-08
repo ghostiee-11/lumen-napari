@@ -45,7 +45,11 @@ Lumen needs an LLM. Set the key for your provider before starting napari, for ex
 export OPENAI_API_KEY=...
 ```
 
-Lumen supports OpenAI, Anthropic, Google, Mistral, Azure, Ollama, llama.cpp and other providers. See the [Lumen docs](https://lumen.holoviz.org).
+Lumen supports OpenAI, Anthropic, Google, Mistral, Azure, Ollama, llama.cpp and other providers. To use a Claude, ChatGPT, Copilot or Antigravity subscription instead of a key, sign in to its CLI and name it:
+
+```bash
+export LUMEN_NAPARI_PROVIDER=claude-code   # or codex-cli, copilot-cli, antigravity-cli
+```
 
 ## Use
 
@@ -72,6 +76,15 @@ viewer.open_sample("lumen-napari", "mitosis")
 server = LumenServer(viewer)
 print(server.start())
 napari.run()
+```
+
+## Documentation
+
+The full guide is in [`docs/`](docs/index.md): installation, a quickstart, how-to guides for each workflow, and reference pages. Build it locally with:
+
+```bash
+uv pip install -e ".[docs]"
+mkdocs serve
 ```
 
 ## Development
