@@ -27,17 +27,31 @@ def make_tools(viewer: ViewerModel) -> list[ViewerTool]:
             return "napari has no layers open."
         return "napari layers:\n" + "\n".join(_describe(layer) for layer in viewer.layers)
 
-    def show_object_in_napari(label: int, labels_layer: str = "") -> str:
+    def show_object_in_napari(
+        label: int = 0, rank_by: str = "", smallest: bool = False, labels_layer: str = ""
+    ) -> str:
         """Zoom the napari viewer to one segmented object and select it.
+
+        Give either the object's label, or rank_by to pick the largest (or smallest) object by
+        a measurement. Use rank_by for requests like "show the biggest nucleus" instead of
+        guessing a label.
 
         Parameters
         ----------
         label : int
             The object's label value, the `label` column of a measurement table.
+        rank_by : str
+            Measurement column to rank by, such as 'area' or 'intensity_mean'.
+        smallest : bool
+            With rank_by, show the smallest object instead of the largest.
         labels_layer : str
             Name of the napari labels layer. Defaults to the most recently added one.
         """
         layer = _labels_layer(viewer, labels_layer)
+        if rank_by:
+            label = _ranked_label(layer, rank_by, smallest)
+        elif not label:
+            raise ValueError("Give a label, or rank_by a measurement column such as 'area'.")
         _focus(viewer, layer, int(label))
         return f"Showing object {label} of {layer.name!r} in napari."
 
@@ -52,6 +66,15 @@ def _describe(layer: Layer) -> str:
     else:
         size = f"{len(layer.data)} items"
     return f"- {layer.name!r}: {kind}, {size}, scale {scale}"
+
+
+def _ranked_label(layer: Labels, column: str, smallest: bool) -> int:
+    features = layer.features
+    if column not in features.columns:
+        columns = [c for c in features.columns if c != "index"]
+        raise ValueError(f"{layer.name!r} has no {column!r} measurement. Columns: {columns}.")
+    row = features[column].idxmin() if smallest else features[column].idxmax()
+    return int(features.loc[row, "index"])
 
 
 def _labels_layer(viewer: ViewerModel, name: str) -> Labels:

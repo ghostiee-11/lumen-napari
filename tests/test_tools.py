@@ -52,3 +52,31 @@ def test_show_object_needs_labels(qapp):
     show = make_tools(ViewerModel())[1].function
     with pytest.raises(ValueError, match="Segment an image first"):
         show(1)
+
+
+def ranked_viewer(qapp):
+    from lumen_napari.measure import measure, to_features
+
+    viewer = ViewerModel()
+    labels = np.zeros((50, 60), int)
+    labels[2:4, 2:4] = 1
+    labels[20:40, 30:50] = 2
+    labels[10:15, 10:15] = 3
+    viewer.add_labels(labels, name="cells", features=to_features(measure(labels)))
+    return viewer
+
+
+def test_show_largest_by_measurement(qtbot, qapp):
+    viewer = ranked_viewer(qapp)
+    show = make_tools(viewer)[1].function
+    assert show(rank_by="area") == "Showing object 2 of 'cells' in napari."
+    assert show(rank_by="area", smallest=True) == "Showing object 1 of 'cells' in napari."
+    assert viewer.layers["cells"].selected_label == 1
+
+
+def test_show_refuses_to_guess(qapp):
+    show = make_tools(ranked_viewer(qapp))[1].function
+    with pytest.raises(ValueError, match="Give a label, or rank_by"):
+        show()
+    with pytest.raises(ValueError, match="no 'volume' measurement"):
+        show(rank_by="volume")
