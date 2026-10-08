@@ -3,17 +3,28 @@
 from __future__ import annotations
 
 import webbrowser
+from weakref import WeakKeyDictionary
 
 import napari
 from qtpy.QtWidgets import QApplication, QLabel, QPushButton, QVBoxLayout, QWidget
 
 from .app import LumenServer
 
+_servers: WeakKeyDictionary = WeakKeyDictionary()
+
+
+def server_for(viewer) -> LumenServer:
+    """One server per viewer, so closing and reopening the dock keeps the same chat."""
+    if viewer not in _servers:
+        _servers[viewer] = server = LumenServer(viewer)
+        QApplication.instance().aboutToQuit.connect(server.stop)
+    return _servers[viewer]
+
 
 class LumenWidget(QWidget):
     def __init__(self, napari_viewer: napari.Viewer, parent: QWidget | None = None):
         super().__init__(parent)
-        self.server = LumenServer(napari_viewer)
+        self.server = server_for(napari_viewer)
         self.toggle = QPushButton("Start Lumen")
         self.open = QPushButton("Open in browser")
         self.status = QLabel("Ask questions about your layers in plain language.")
@@ -25,7 +36,6 @@ class LumenWidget(QWidget):
         for widget in (self.toggle, self.open, self.status):
             layout.addWidget(widget)
         layout.addStretch()
-        QApplication.instance().aboutToQuit.connect(self.server.stop)
         self._refresh()
 
     def _toggle(self) -> None:

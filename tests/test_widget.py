@@ -25,3 +25,15 @@ def test_start_and_stop(qtbot, monkeypatch):
         widget.toggle.click()
     assert widget.toggle.text() == "Start Lumen"
     assert not widget.server.running
+
+
+def test_reopening_reuses_the_server_and_quit_stops_it(qtbot, qapp):
+    viewer = ViewerModel()
+    first, second = LumenWidget(viewer), LumenWidget(viewer)
+    qtbot.addWidget(first)
+    qtbot.addWidget(second)
+    assert first.server is second.server
+    first.server.params["llm"] = OpenAI(api_key="sk-test")
+    first.server.start()
+    qapp.aboutToQuit.emit()
+    assert not first.server.running
