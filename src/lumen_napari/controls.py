@@ -5,8 +5,8 @@ real annotation objects, not strings.
 """
 
 import asyncio
-import functools
 import re
+import threading
 from pathlib import Path
 from typing import Literal
 
@@ -14,6 +14,7 @@ import numpy as np
 import pandas as pd
 import param
 from lumen.ai.controls import CodeSourceControls, SourceResult
+from lumen.sources.duckdb import DuckDBSource
 from napari.components import ViewerModel
 from napari.layers import Image, Labels, Layer, Points, Shapes, Surface, Tracks, Vectors
 from skimage.color import rgb2gray
@@ -63,9 +64,11 @@ class NapariControls(CodeSourceControls):
             self.segment_layer, self.measure_layer, self.layer_features, self.segment_folder,
             self.load_table,
         )
-        functions = {action.__name__: self._named(action) for action in actions}
+        functions = {action.__name__: action for action in actions}
         params.setdefault("script", Script())
         super().__init__(viewer=viewer, functions=functions, **params)
+        self._source = None
+        self._lock = threading.Lock()
 
     def segment_layer(
         self,
@@ -73,7 +76,7 @@ class NapariControls(CodeSourceControls):
         method: Literal["otsu", "cellpose"] = "otsu",
         min_size: int = 20,
         split_touching: bool = True,
-    ) -> pd.DataFrame:
+    ) -> SourceResult:
         """Find the objects (cells, nuclei, spots) in a napari image layer and measure each one.
 
         Use this to segment an image. It adds a labels layer to napari and returns one row per
@@ -98,21 +101,21 @@ class NapariControls(CodeSourceControls):
         df = measure(labels, image, spacing=spacing, unit=unit)
         name = f"{layer.name} labels"
         self._publish(name, labels, df, layer)
-        self.table_name = table_name(name)
+        table = table_name(name)
         self.script.load(layer)
         self.script.created(name)
         self.script.add(
             f"image = intensity(viewer.layers[{layer.name!r}])",
             f"labels = segment(image, method={method!r}, min_size={min_size!r}, "
             f"split_touching={split_touching!r})",
-            f"table = tables[{self.table_name!r}] = measure(labels, image, spacing={spacing!r}, "
+            f"table = tables[{table!r}] = measure(labels, image, spacing={spacing!r}, "
             f"unit={unit!r})",
             f"viewer.add_labels(labels, name={name!r}, features=to_features(table), "
             f"scale={spacing!r}, translate={_floats(layer.translate[-labels.ndim:])!r})",
         )
-        return df
+        return self._publish_table(table, df)
 
-    def measure_layer(self, labels_layer: str, image_layer: str | None = None) -> pd.DataFrame:
+    def measure_layer(self, labels_layer: str, image_layer: str | None = None) -> SourceResult:
         """Measure the objects of a napari labels layer that already exists.
 
         Only for labels layers, such as ones drawn by hand or made by another plugin. To find
@@ -133,7 +136,7 @@ class NapariControls(CodeSourceControls):
         unit = unit_of(layer)
         df = measure(labels, image, spacing=spacing, unit=unit)
         self._publish(layer.name, labels, df, layer)
-        self.table_name = table_name(layer.name)
+        table = table_name(layer.name)
         self.script.load(layer)
         image_code = "None"
         if image_source:
@@ -141,13 +144,13 @@ class NapariControls(CodeSourceControls):
             image_code = f"intensity(viewer.layers[{image_source.name!r}])"
         self.script.add(
             f"labels = viewer.layers[{layer.name!r}].data",
-            f"table = tables[{self.table_name!r}] = measure(labels, {image_code}, "
+            f"table = tables[{table!r}] = measure(labels, {image_code}, "
             f"spacing={spacing!r}, unit={unit!r})",
             f"viewer.layers[{layer.name!r}].features = to_features(table)",
         )
-        return df
+        return self._publish_table(table, df)
 
-    def layer_features(self, layer: str) -> pd.DataFrame:
+    def layer_features(self, layer: str) -> SourceResult:
         """Load the features table of a napari points, shapes, labels or tracks layer.
 
         Parameters
@@ -162,8 +165,7 @@ class NapariControls(CodeSourceControls):
         elif source.data is not None and np.ndim(source.data) == 2:
             for axis, column in enumerate(np.asarray(source.data).T):
                 df[f"position_{axis}"] = column
-        self.table_name = table_name(source.name)
-        return df
+        return self._publish_table(table_name(source.name), df)
 
     def segment_folder(
         self,
@@ -172,7 +174,7 @@ class NapariControls(CodeSourceControls):
         method: Literal["otsu", "cellpose"] = "otsu",
         min_size: int = 20,
         max_files: int = 500,
-    ) -> pd.DataFrame:
+    ) -> SourceResult:
         """Segment and measure every image file in a folder into one table, one row per object.
 
         Use this for many images at once, such as all fields or wells of a plate. Rows are keyed
@@ -198,17 +200,17 @@ class NapariControls(CodeSourceControls):
         if not files:
             raise ValueError(f"No files match {pattern!r} in {str(root)!r}.")
         df = measure_files(files, method=method, min_size=min_size)
-        self.table_name = table_name(f"{root.name} objects")
+        table = table_name(f"{root.name} objects")
         self.script.add(
             "from pathlib import Path",
             "from lumen_napari.batch import measure_files",
             f"files = sorted(Path({str(root)!r}).glob({pattern!r}))[:{max_files!r}]",
-            f"tables[{self.table_name!r}] = measure_files(files, method={method!r}, "
+            f"tables[{table!r}] = measure_files(files, method={method!r}, "
             f"min_size={min_size!r})",
         )
-        return df
+        return self._publish_table(table, df)
 
-    def load_table(self, path: str) -> pd.DataFrame:
+    def load_table(self, path: str) -> SourceResult:
         """Load a table file, such as a plate map of wells and treatments, to join with
         measurements. Reads .csv, .tsv, .xlsx and .parquet files.
 
@@ -223,21 +225,27 @@ class NapariControls(CodeSourceControls):
             raise ValueError(f"Cannot read {file.name!r}. Use one of {', '.join(READERS)}.")
         reader, kwargs = READERS[suffix]
         df = getattr(pd, reader)(file, **kwargs)
-        self.table_name = table_name(file.stem)
+        table = table_name(file.stem)
         args = ", ".join([repr(str(file)), *(f"{k}={v!r}" for k, v in kwargs.items())])
-        self.script.add(f"tables[{self.table_name!r}] = pd.{reader}({args})")
-        return df
+        self.script.add(f"tables[{table!r}] = pd.{reader}({args})")
+        return self._publish_table(table, df)
 
-    def _named(self, action):
-        """Return the action's table under our name. Lumen would otherwise derive one from the
-        arguments, which can start with a digit and break SQL."""
+    def _publish_table(self, name: str, df: pd.DataFrame) -> SourceResult:
+        """Add the table to this session's one DuckDB source and return that source.
 
-        @functools.wraps(action)
-        def run(**params) -> SourceResult:
-            df = action(**params)
-            return SourceResult.from_dataframe(df, self.table_name)
-
-        return run
+        Lumen keeps only the first result when the LLM calls several actions at once, so every
+        table lives in the same source and stays queryable and joinable. Our own names also
+        avoid Lumen deriving one from the arguments, which can start with a digit.
+        """
+        with self._lock:
+            if self._source is None:
+                self._source = DuckDBSource.from_df(tables={name: df})
+            else:
+                self._source._connection.from_df(df).to_view(name, replace=True)
+            self._source.tables[name] = f"SELECT * FROM {name}"
+        return SourceResult.from_source(
+            self._source, table=name, message=f"Loaded {len(df):,} rows into '{name}'"
+        )
 
     async def _fetch_data(self, action_name: str, **params) -> SourceResult:
         try:

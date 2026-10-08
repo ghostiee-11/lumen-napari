@@ -32,9 +32,13 @@ def replay(script, viewer):
     return fresh, namespace["tables"]
 
 
+def table(result):
+    return result.sources[0].execute(f"SELECT * FROM {result.table}")
+
+
 def test_segment_step_replays_to_the_same_table(viewer):
     controls = NapariControls(viewer=viewer)
-    df = controls.segment_layer("nuclei", min_size=0)
+    df = table(controls.segment_layer("nuclei", min_size=0))
     fresh, tables = replay(controls.script, viewer)
     pd.testing.assert_frame_equal(tables["nuclei_labels"], df)
     assert fresh.layers["nuclei labels"].scale[0] == 0.5
@@ -43,7 +47,7 @@ def test_segment_step_replays_to_the_same_table(viewer):
 def test_measure_step_replays(viewer):
     controls = NapariControls(viewer=viewer)
     controls.segment_layer("nuclei", min_size=0)
-    df = controls.measure_layer("nuclei labels", image_layer="nuclei")
+    df = table(controls.measure_layer("nuclei labels", image_layer="nuclei"))
     _, tables = replay(controls.script, viewer)
     pd.testing.assert_frame_equal(tables["nuclei_labels"], df)
 
@@ -83,6 +87,6 @@ def test_folder_step_replays(viewer, tmp_path):
     image[2:8, 2:8] = 200
     imsave(tmp_path / "a.png", image, check_contrast=False)
     controls = NapariControls(viewer=viewer)
-    df = controls.segment_folder(str(tmp_path), pattern="*.png", min_size=0)
+    result = controls.segment_folder(str(tmp_path), pattern="*.png", min_size=0)
     _, tables = replay(controls.script, viewer)
-    pd.testing.assert_frame_equal(tables[controls.table_name], df)
+    pd.testing.assert_frame_equal(tables[result.table], table(result))

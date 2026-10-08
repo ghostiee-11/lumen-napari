@@ -190,3 +190,25 @@ def test_load_table(qtbot, controls, tmp_path):
 def test_load_table_rejects_other_files(qtbot, controls, tmp_path):
     result = run(qtbot, controls, "Load Table", path=str(tmp_path / "notes.txt"))
     assert "Cannot read 'notes.txt'" in result.message
+
+
+def test_parallel_actions_share_one_source(qtbot, controls, plate, tmp_path):
+    """The LLM may call several actions at once and Lumen keeps only the first result."""
+    pd.DataFrame({"well": ["A01"], "compound": ["DMSO"]}).to_csv(tmp_path / "map.csv", index=False)
+    results = {}
+
+    def call(name, **params):
+        results[name] = controls._actions[name](**params)
+
+    threads = [
+        threading.Thread(target=call, args=("Segment Folder",),
+                         kwargs={"folder": str(plate), "pattern": "*.png", "min_size": 0}),
+        threading.Thread(target=call, args=("Load Table",), kwargs={"path": str(tmp_path / "map.csv")}),
+    ]
+    for thread in threads:
+        thread.start()
+    qtbot.waitUntil(lambda: not any(t.is_alive() for t in threads), timeout=60_000)
+    first = results["Load Table"]
+    assert results["Segment Folder"].sources[0] is first.sources[0]
+    df = query(first, f"SELECT COUNT(*) AS n FROM {results['Segment Folder'].table} JOIN map USING (well)")
+    assert df.n[0] == 1
