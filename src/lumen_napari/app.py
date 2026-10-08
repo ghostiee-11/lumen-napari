@@ -28,10 +28,14 @@ SUGGESTIONS = [
 
 
 # A light border and padding around every chat message, so answers and checks stand apart.
-MESSAGE_STYLE = {
-    "border": "1px solid", "borderColor": "divider", "borderRadius": "12px",
-    "padding": "12px 16px", "margin": "8px 0",
+MESSAGE_CSS = """
+.chat-message {
+  border: 1px solid rgba(127, 127, 127, 0.25);
+  border-radius: 12px;
+  padding: 12px 16px;
+  margin: 8px 0;
 }
+"""
 
 
 class NapariPlanner(Planner):
@@ -57,7 +61,7 @@ def build_ui(viewer: ViewerModel, script: Script | None = None, **params) -> Exp
         **params,
     )
     controls.chat = chat_poster(ui.interface)
-    ui.interface.message_params = {**ui.interface.message_params, "sx": MESSAGE_STYLE}
+    ui.interface.message_params = {**ui.interface.message_params, "stylesheets": [MESSAGE_CSS]}
     ui.interface.param.watch(lambda event: _record_questions(script, ui.interface, event),
                              "objects")
     return ui
