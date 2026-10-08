@@ -13,6 +13,7 @@ lumen-napari connects [napari](https://napari.org) to [Lumen](https://github.com
 
 ## What it does
 
+- **Upload** an image in the chat (the + button, or drag and drop): png, tif, OME-TIFF, CZI, ND2 or LIF. It opens in napari, one layer per channel with the file's pixel size, and is segmented and measured, ready for questions.
 - **Segment** an image layer (Otsu with watershed splitting, or Cellpose) and add the result as a labels layer.
 - **Measure** every object (area, centroid, bounding box, shape, intensity) in physical units taken from the layer scale. Measurements are also stored on the labels layer, so hovering an object in napari shows its values.
 - **Load features** that other plugins wrote on points, shapes, labels, tracks, surface or vectors layers.
