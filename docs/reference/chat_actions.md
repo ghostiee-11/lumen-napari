@@ -15,7 +15,7 @@ Find the objects in an image layer, add a labels layer and measure each object. 
 | Parameter | Type | Default | |
 |---|---|---|---|
 | `image_layer` | str | required | Image layer to segment |
-| `method` | `otsu`, `cellpose`, `stardist`, `bioimageio` | `otsu` | |
+| `method` | `auto`, `otsu`, `cellpose`, `stardist`, `bioimageio` | `auto` | `auto` picks from the image |
 | `model` | str | `""` | StarDist model or BioImage.IO id |
 | `reason` | str | `""` | Why this method fits, shown in the chat |
 | `min_size` | int | 20 | Drop objects with fewer pixels |
@@ -92,7 +92,8 @@ Segment a very large 2D image at full resolution, tile by tile. Guide: [Large im
 |---|---|---|---|
 | `image_layer` | str | required | |
 | `tile_size` | int | 2048 | Tile side in pixels |
-| `method`, `model`, `reason`, `min_size`, `split_touching` | | as Segment Layer | |
+| `method` | `otsu`, `cellpose`, `stardist`, `bioimageio` | `otsu` | No `auto`: tiles share one threshold |
+| `model`, `reason`, `min_size`, `split_touching` | | as Segment Layer | |
 
 Adds points layer `<image> objects`. Table: `<image>_objects`.
 

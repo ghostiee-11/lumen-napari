@@ -4,7 +4,7 @@ lumen-napari is early software. These are the known limits, so you can judge whe
 
 ## Science
 
-- **Check the segmentation.** Every number depends on it. Look at the outline image in the chat, or the labels in napari, before reading the statistics. Otsu is fast but fails on tissue, uneven illumination and crowded cells; use Cellpose or StarDist there.
+- **Check the segmentation.** Every number depends on it. Look at the outline image in the chat, or the labels in napari, before reading the statistics. Otsu is fast but fails on tissue, uneven illumination and crowded cells. With Cellpose installed, stained tissue switches to it automatically; for crowded fluorescence, ask for Cellpose.
 - **Automatic object detection** (bright, dark, or cells inside walls) is a rule of thumb from the thresholded image. Check the outline image; say "the objects are dark" or "bright" to override it.
 - **Otsu on folders uses one threshold per image.** Images with very different brightness are cut differently. Whole-slide segmentation, by contrast, uses one threshold for the whole slide.
 - **Sizes in pixels** cannot be compared across instruments. Set a pixel size, or use files that carry one.

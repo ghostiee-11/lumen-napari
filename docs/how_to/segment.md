@@ -21,7 +21,12 @@ Asking for the same segmentation twice reuses the first result instead of recomp
 
 ## Choose a method
 
-Ask which methods are available:
+You usually don't have to. The default, `auto`, looks at the image:
+
+- **Objects that stand out** (fluorescence, galaxies, cells inside walls): Otsu, instantly.
+- **Stained tissue or brightfield** (dark objects on a bright background): Cellpose, if installed. Otherwise Otsu, and the chat tells you how to install Cellpose.
+
+The chat card says which method ran and why. To choose yourself, or see what's installed, ask:
 
 > Which segmentation methods can I use?
 
@@ -57,7 +62,7 @@ The chat says what it detected ("detected from the image: dark objects inside wa
 
 ### Deep learning methods
 
-- **Cellpose** runs `CellposeModel` on the CPU.
+- **Cellpose** runs Cellpose-SAM on the GPU when there is one (CUDA, or Apple silicon through MPS) and on the CPU otherwise. The model (about 1 GB) downloads on first use and is loaded once per session. Expect about 25 seconds for a 512 × 512 image on a laptop GPU, much longer on a CPU. Volumes are segmented in 3D.
 - **StarDist** uses `2D_versatile_fluo` for 2D and `3D_demo` for 3D unless you name another model. Images are normalised to the 1st and 99.8th percentile first.
 - **BioImage.IO** models that output labels are used as is. Models that output a foreground probability are thresholded at 0.5 and split with a watershed.
 
@@ -67,7 +72,7 @@ Say them in plain language, or name them:
 
 | Setting | Default | Meaning |
 |---|---|---|
-| `method` | `otsu` | See above |
+| `method` | `auto` | See above |
 | `model` | empty | StarDist model name or BioImage.IO id |
 | `min_size` | 20 | Drop objects with fewer pixels |
 | `split_touching` | from the image | Watershed split of touching objects (Otsu only) |
