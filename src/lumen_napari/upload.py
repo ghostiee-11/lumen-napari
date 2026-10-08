@@ -7,6 +7,7 @@ import re
 import tempfile
 from pathlib import Path
 
+import numpy as np
 from superqt.utils import ensure_main_thread
 
 from .files import read_file
@@ -43,18 +44,22 @@ def upload_image(controls, extension: str, context, file_obj, alias: str, filena
 @ensure_main_thread(await_return=True, timeout=60_000)
 def _add_channels(viewer, stem: str, file) -> list[str]:
     """Add each channel as an image layer, to the right of what is already open, so uploads
-    sit side by side instead of hiding each other."""
+    sit side by side instead of hiding each other. Several channels open the way napari opens
+    a multichannel image: one colormap each, blended additively."""
     offset = _right_edge(viewer)
-    names = []
-    for channel, data in file.channels.items():
-        name = stem if len(file.channels) == 1 else f"{stem} {channel}"
-        kwargs = {"scale": file.spacing, "units": (file.unit,) * len(file.spacing)} \
-            if file.spacing else {}
-        translate = (0.0,) * (data.ndim - 1) + (offset,)
-        viewer.add_image(data, name=name, translate=translate, **kwargs)
-        names.append(viewer.layers[-1].name)
+    channels = list(file.channels)
+    data = next(iter(file.channels.values()))
+    kwargs = {"scale": file.spacing, "units": (file.unit,) * len(file.spacing)} \
+        if file.spacing else {}
+    translate = (0.0,) * (data.ndim - 1) + (offset,)
+    if len(channels) == 1:
+        layers = [viewer.add_image(data, name=stem, translate=translate, **kwargs)]
+    else:
+        layers = viewer.add_image(np.stack(list(file.channels.values())), channel_axis=0,
+                                  name=[f"{stem} {c}" for c in channels], translate=translate,
+                                  **kwargs)
     viewer.fit_to_view()
-    return names
+    return [layer.name for layer in layers]
 
 
 def _right_edge(viewer) -> float:

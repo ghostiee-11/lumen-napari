@@ -61,6 +61,8 @@ def test_uploaded_ome_tiff_keeps_channels_and_pixel_size(qtbot, controls, tmp_pa
     viewer = controls.viewer
     assert [layer.name for layer in viewer.layers] == ["site dapi", "site actin", "site dapi labels"]
     assert tuple(viewer.layers["site dapi"].scale) == (0.5, 0.5)
+    assert viewer.layers["site actin"].blending == "additive"  # channels overlay in color
+    assert viewer.layers["site dapi"].colormap.name != viewer.layers["site actin"].colormap.name
     df = source.execute("SELECT area_um2, intensity_mean_site_actin FROM site_dapi_labels")
     assert df.area_um2[0] == 25 and df.intensity_mean_site_actin[0] == 300
 
