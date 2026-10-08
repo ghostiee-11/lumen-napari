@@ -154,3 +154,26 @@ def test_source_agent_path_keeps_our_table_name(qtbot, controls):
     result = store[0]["result"]
     assert isinstance(result, SourceResult)
     assert result.table == "nuclei_labels"
+
+
+def test_folder_table_joins_an_uploaded_plate_map(qtbot, controls, plate):
+    """The SQL agent mirrors tables from separate sources into one DuckDB to join them."""
+    from types import SimpleNamespace
+
+    from lumen.ai.agents.sql import SQLAgent
+    from lumen.sources.duckdb import DuckDBSource
+
+    result = run(qtbot, controls, "Segment Folder", folder=str(plate), pattern="*.png", min_size=0)
+    plate_map = DuckDBSource.from_df(tables={"plate_map": pd.DataFrame({
+        "well": ["A01", "A02", "B01"], "compound": ["DMSO", "taxol", "taxol"],
+    })})
+    plate_map.tables["plate_map"] = "SELECT * FROM plate_map"
+    sources = {("napari", result.table): result.sources[0], ("upload", "plate_map"): plate_map}
+    refs = [SimpleNamespace(source="napari", table=result.table),
+            SimpleNamespace(source="upload", table="plate_map")]
+    merged, _ = SQLAgent._merge_sources(None, sources, refs)
+    df = merged.execute(
+        f"SELECT compound, COUNT(*) AS n FROM {result.table} o "
+        "JOIN plate_map p USING (well) GROUP BY compound ORDER BY compound"
+    )
+    assert df.to_dict("list") == {"compound": ["DMSO", "taxol"], "n": [1, 5]}
