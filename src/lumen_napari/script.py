@@ -11,7 +11,7 @@ import pandas as pd
 
 from lumen_napari.controls import intensity
 from lumen_napari.measure import measure, to_features
-from lumen_napari.region import load_region
+from lumen_napari.region import load_region, rgb_channels
 from lumen_napari.segment import segment
 
 viewer = napari.Viewer()

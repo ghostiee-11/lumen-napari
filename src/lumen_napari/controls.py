@@ -22,7 +22,7 @@ from superqt.utils import ensure_main_thread, qdebounced
 
 from .batch import join_plate_map, measure_files
 from .measure import measure, to_features
-from .region import choose_level, load_region, visible_region
+from .region import choose_level, load_region, rgb_channels, visible_region
 from .regions import objects_by_region
 from .report import overlay_png, segmentation_report, size_note
 from .script import Script
@@ -183,6 +183,8 @@ class NapariControls(CodeSourceControls):
             table_name(name): load_region(self._layer(name, Image), level, region)[0]
             for name in measure_layers or []
         }
+        if layer.rgb:
+            channels |= rgb_channels(load_region(layer, level, region, gray=False)[0])
         df = measure(labels, image, spacing=scale, unit=unit, origin=translate, channels=channels)
         _publish_labels(self.viewer, name, labels, to_features(df), scale, translate)
         self._segmented[name] = key
@@ -196,6 +198,10 @@ class NapariControls(CodeSourceControls):
             f"{table_name(name)!r}: load_region(viewer.layers[{name!r}], {level!r}, {region!r})[0]"
             for name in measure_layers or []
         )
+        if layer.rgb:
+            rgb = (f"**rgb_channels(load_region(viewer.layers[{layer.name!r}], {level!r}, "
+                   f"{region!r}, gray=False)[0])")
+            channel_code = f"{channel_code}, {rgb}" if channel_code else rgb
         self.script.add(
             f"image, scale, translate = load_region(viewer.layers[{layer.name!r}], "
             f"level={level!r}, region={region!r})",

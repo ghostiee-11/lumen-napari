@@ -462,3 +462,15 @@ def test_segment_layer_measures_the_other_channels_by_default(qtbot, controls):
     df = result.sources[0].execute("SELECT * FROM nuclei_labels")
     assert df.sort_values("label").intensity_mean_lignin.tolist() == [7, 0]
     assert "intensity_mean_elsewhere" not in df.columns
+
+
+def test_rgb_images_measure_each_color(qtbot, controls):
+    image = np.zeros((40, 40, 3), np.uint8)
+    image[5:15, 5:15] = (200, 40, 10)  # a red object
+    image[25:35, 25:35] = (20, 60, 220)  # a blue one
+    controls.viewer.add_image(image, name="sky", rgb=True)
+    result = run(qtbot, controls, "Segment Layer", image_layer="sky", min_size=0)
+    df = result.sources[0].execute("SELECT * FROM sky_labels ORDER BY label")
+    assert df.intensity_mean_red.tolist() == [200, 20]
+    assert df.intensity_mean_blue.tolist() == [10, 220]
+    assert "rgb_channels" in controls.script.render()

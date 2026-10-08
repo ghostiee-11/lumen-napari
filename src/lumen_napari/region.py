@@ -59,10 +59,11 @@ def choose_level(layer: Image, region: Region | None = None, budget: int | None 
 
 
 def load_region(
-    layer: Image, level: int = 0, region: Region | None = None
+    layer: Image, level: int = 0, region: Region | None = None, gray: bool = True
 ) -> tuple[np.ndarray, tuple[float, ...], tuple[float, ...]]:
     """Read one level of the layer, cropped to a full-resolution region, as one intensity
-    channel. Returns the pixels and the world scale and translate that place them."""
+    channel (or, with gray=False, RGB images as they are). Returns the pixels and the world
+    scale and translate that place them."""
     f = factors(layer)[level]
     region = region or tuple((0, n) for n in levels(layer)[0].shape[: layer.ndim])
     starts = [int(a // s) for (a, _), s in zip(region, f, strict=True)]
@@ -70,10 +71,15 @@ def load_region(
     # ponytail: ignores the half-pixel shift of downsampled pyramid levels
     crop = tuple(slice(a, b) for a, b in zip(starts, stops, strict=True))
     image = np.asarray(levels(layer)[level][crop])
-    if layer.rgb:
+    if layer.rgb and gray:
         image = rgb2gray(image[..., :3])
     scale = tuple(float(s) for s in np.asarray(layer.scale) * f)
     translate = tuple(
         float(t + a * s) for t, a, s in zip(layer.translate, starts, scale, strict=True)
     )
     return image, scale, translate
+
+
+def rgb_channels(image: np.ndarray) -> dict[str, np.ndarray]:
+    """The red, green and blue planes of an RGB image, to measure each color."""
+    return {name: image[..., i] for i, name in enumerate(("red", "green", "blue"))}
