@@ -243,7 +243,7 @@ def make_tools(viewer: ViewerModel, controls=None) -> list[ViewerTool]:
         ViewerTool(color_objects_by, provides=provides, done=done, controls=controls),
         ViewerTool(filter_objects, provides=provides, done=done, controls=controls),
         ViewerTool(set_pixel_size, provides=provides, done=done, controls=controls),
-        ViewerTool(segmentation_methods),
+        ViewerTool(segmentation_methods, provides=["data"], done=done),
     ] + ([_compare_tool(controls)] if controls is not None else [])
 
 
