@@ -56,14 +56,20 @@ def table_name(layer_name: str) -> str:
 
 def find_layer(layers, name: str) -> Layer | None:
     """The layer with this name, also matched by its table name, since the LLM often uses the
-    table name ("nuclei_labels") for the layer ("nuclei labels")."""
+    table name ("nuclei_labels") for the layer ("nuclei labels"), then loosely."""
     for layer in layers:
         if layer.name == name:
             return layer
     for layer in layers:
         if table_name(layer.name) == table_name(name):
             return layer
-    return None
+    # People name layers loosely ("the nuclei layer" for 'hela_nuclei'): take the one layer
+    # whose name contains it, or the only layer there is.
+    layers = list(layers)
+    partial = [layer for layer in layers if table_name(name) in table_name(layer.name)]
+    if len(partial) == 1:
+        return partial[0]
+    return layers[0] if len(layers) == 1 else None
 
 
 class NapariControls(CodeSourceControls):

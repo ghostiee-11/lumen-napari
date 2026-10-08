@@ -85,9 +85,10 @@ def test_points_features_include_positions(qtbot, viewer, controls):
 
 
 def test_missing_layer_lists_available_ones(qtbot, controls):
+    controls.viewer.add_image(np.zeros((10, 10)), name="actin")
     result = run(qtbot, controls, "Segment Layer", image_layer="cells")
     assert not result.sources
-    assert "Available: 'nuclei'" in result.message
+    assert "Available: 'nuclei', 'actin'" in result.message
 
 
 def test_lumen_source_agent_builds_every_action(controls):
@@ -416,3 +417,16 @@ def test_remeasuring_keeps_the_source_image_intensities(qtbot, controls):
     run(qtbot, controls, "Segment Layer", image_layer="nuclei", min_size=0)
     result = run(qtbot, controls, "Measure Layer", labels_layer="nuclei labels")
     assert "intensity_mean" in query(result, "SELECT * FROM nuclei_labels").columns
+
+
+def test_find_layer_by_part_of_its_name():
+    from types import SimpleNamespace
+
+    from lumen_napari.controls import find_layer
+
+    hela, mito = SimpleNamespace(name="hela_nuclei"), SimpleNamespace(name="mito stain")
+    assert find_layer([hela, mito], "nuclei") is hela
+    assert find_layer([hela], "dapi") is hela  # the only layer
+    assert find_layer([hela, mito], "dapi") is None
+    both = [hela, SimpleNamespace(name="mouse_nuclei")]
+    assert find_layer(both, "nuclei") is None  # ambiguous
