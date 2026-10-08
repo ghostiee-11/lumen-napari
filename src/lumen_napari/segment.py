@@ -59,7 +59,7 @@ def segment(
     touch; dark objects on a bright background (brightfield) are found by inverting; cells
     inside a network of bright walls or membranes are found without splitting, since the
     walls already separate them."""
-    image = np.asarray(image)
+    image = _fill_nan(np.asarray(image))
     if method == "otsu" and threshold is None and (dark_objects is None or split_touching is None):
         dark, walls = polarity(image)
         dark_objects = dark if dark_objects is None else dark_objects
@@ -101,7 +101,7 @@ def polarity(image: np.ndarray) -> tuple[bool, bool]:
     """(dark objects, inside walls) for an intensity image. Above Otsu's threshold, most of
     the image means a bright background (brightfield), and one bright component spanning the
     image means walls or membranes around dark cells. Otherwise the objects are bright."""
-    image = np.asarray(image, dtype=float)
+    image = _fill_nan(np.asarray(image, dtype=float))
     if image.ndim == 3:
         image = filters.gaussian(image, sigma=2)
     if image.min() == image.max():
@@ -116,6 +116,13 @@ def polarity(image: np.ndarray) -> tuple[bool, bool]:
     background = mask.mean() > 0.5
     walls = not background and sizes.max() >= 0.6 * mask.sum() and span >= 0.8
     return bool(walls or background), bool(walls)
+
+
+def _fill_nan(image: np.ndarray) -> np.ndarray:
+    """Missing (NaN) pixels become background, the image's minimum."""
+    if np.issubdtype(image.dtype, np.floating) and np.isnan(image).any():
+        return np.where(np.isnan(image), np.nanmin(image), image)
+    return image
 
 
 def _peak_distance(objects: np.ndarray) -> int:

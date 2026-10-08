@@ -197,3 +197,10 @@ def test_dark_objects_are_detected():
 def test_blank_image_has_no_objects():
     assert segment(np.zeros((20, 20))).max() == 0
     assert segment(np.full((20, 20), 7.0)).max() == 0
+
+
+def test_nan_pixels_are_background():
+    image = np.zeros((30, 30))
+    image[5:12, 5:12] = 1
+    image[0, :] = np.nan
+    assert segment(image).max() == 1
