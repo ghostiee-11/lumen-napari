@@ -23,6 +23,7 @@ Find the objects in an image layer, add a labels layer and measure each object. 
 | `visible_only` | bool | `False` | Only the region on screen |
 | `level` | int | -1 | Pyramid level; -1 picks the finest that fits |
 | `measure_layers` | list[str] | none | More channels to measure intensity in |
+| `dark_objects` | bool | `False` | Find dark objects inside bright walls (Otsu only) |
 
 Adds layer `<image> labels`. Table: `<image>_labels`.
 

@@ -64,8 +64,17 @@ Say them in plain language, or name them:
 | `visible_only` | off | Segment only what is on screen, see [Large images](large_images.md) |
 | `level` | finest that fits | Pyramid level of a multiscale image, 0 is full resolution |
 | `measure_layers` | none | Other channels to measure intensity in |
+| `dark_objects` | off | Find dark objects, such as cells outlined by bright walls (Otsu only) |
 
 > Segment the nuclei with min_size 50 and without splitting touching objects
+
+## Cells outlined by walls or membranes
+
+Plant tissue and membrane stains show bright walls around dark cells. Ask for dark objects, without watershed splitting, since the walls already separate the cells:
+
+> Segment the cells in lily-blue as dark objects inside bright walls, without splitting touching objects, and measure lily-green too
+
+Try it on **File > Open Sample > Lumen > Lily stem cells (4 channels)**: about 1,700 cells, with `lily-green` marking the lignified walls of the vascular bundles. Very dim corners can merge into a few large objects; hide them with a size filter.
 
 ## Measure more channels
 

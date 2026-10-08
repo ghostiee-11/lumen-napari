@@ -39,11 +39,13 @@ Tables uploaded in the chat use Lumen's own readers, which accept more formats.
 
 ## Samples
 
-The plugin adds two samples under **File > Open Sample > Lumen**:
+The plugin adds three samples under **File > Open Sample > Lumen**:
 
 | Sample | Key | Content |
 |---|---|---|
 | HeLa nuclei (2D) | `mitosis` | scikit-image `human_mitosis`, 512 × 512, no pixel size |
 | Mouse embryo nuclei (3D) | `cells3d` | nuclei channel of scikit-image `cells3d`, 60 × 256 × 256, voxel 0.29 × 0.26 × 0.26 µm |
+
+| Lily stem cells (4 channels) | `lily` | scikit-image `lily`, 922 × 922, four layers `lily-magenta`, `lily-green`, `lily-yellow`, `lily-blue` |
 
 Open them from Python with `viewer.open_sample("lumen-napari", "mitosis")`.
