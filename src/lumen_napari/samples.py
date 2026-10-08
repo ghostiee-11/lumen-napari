@@ -13,3 +13,12 @@ def cells3d():
     nuclei = data.cells3d()[:, 1]
     meta = {"name": "nuclei", "scale": (0.29, 0.26, 0.26), "units": ("um", "um", "um")}
     return [(nuclei, meta, "image")]
+
+
+def lily():
+    """Lily of the valley stem, a confocal section in four channels: cell walls (magenta),
+    lignified walls of the vascular bundles (green) and two more stains."""
+    image = data.lily()
+    colors = ("magenta", "green", "yellow", "blue")
+    return [(image[..., i], {"name": f"lily-{c}", "colormap": c, "blending": "additive"}, "image")
+            for i, c in enumerate(colors)]

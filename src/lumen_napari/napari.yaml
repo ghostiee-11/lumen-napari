@@ -11,6 +11,9 @@ contributions:
     - id: lumen-napari.cells3d
       title: Load 3D nuclei sample
       python_name: lumen_napari.samples:cells3d
+    - id: lumen-napari.lily
+      title: Load lily stem sample
+      python_name: lumen_napari.samples:lily
   widgets:
     - command: lumen-napari.widget
       display_name: Ask Lumen
@@ -21,3 +24,6 @@ contributions:
     - key: cells3d
       display_name: Mouse embryo nuclei (3D)
       command: lumen-napari.cells3d
+    - key: lily
+      display_name: Lily stem cells (4 channels)
+      command: lumen-napari.lily
