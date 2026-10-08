@@ -8,7 +8,9 @@ import re
 import duckdb
 import numpy as np
 import param
+from lumen.ai.schemas import get_metaset
 from lumen.ai.tools import FunctionTool
+from lumen.ai.utils import describe_data
 from lumen.pipeline import Pipeline
 from napari.components import ViewerModel
 from napari.layers import Image, Labels, Layer
@@ -52,7 +54,14 @@ class ViewerTool(FunctionTool):
             out["data"] = "Done in napari:\n" + "\n".join(f"- {step}" for step in self.done)
         if self.controls is not None and (table := self.controls.current_table()):
             source = self.controls._source
-            out.update(source=source, table=table, pipeline=Pipeline(source=source, table=table))
+            pipeline = Pipeline(source=source, table=table)
+            # The same table summary and metadata Lumen's source step gives its agents, so
+            # charts and SQL see the columns, with what napari did on top.
+            summary = await describe_data(pipeline.data, reduce_enums=False)
+            done = f"{out['data']}\n\n" if "data" in out else ""
+            out.update(source=source, table=table, pipeline=pipeline,
+                       metaset=await get_metaset([source], [table]),
+                       data=f"{done}Table {table}:\n{summary}")
         return outputs, out
 
 
@@ -61,7 +70,8 @@ def make_tools(viewer: ViewerModel, controls=None) -> list[ViewerTool]:
     controls, statistics on their tables are a tool too."""
 
     done: list[str] = []
-    provides = ["data", "source", "table", "pipeline"] if controls is not None else ["data"]
+    provides = (["data", "source", "table", "pipeline", "metaset"] if controls is not None
+                else ["data"])
 
     def objects_layer(name: str) -> Labels:
         """The labels layer to act on, segmenting the first image first if nothing is
