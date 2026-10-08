@@ -2,8 +2,7 @@
 
 from __future__ import annotations
 
-from collections.abc import Callable
-
+from lumen.ai.tools import FunctionTool
 from napari.components import ViewerModel
 from napari.layers import Image, Labels, Layer
 from superqt.utils import ensure_main_thread
@@ -11,8 +10,16 @@ from superqt.utils import ensure_main_thread
 from .focus import focus_label
 
 
-def make_tools(viewer: ViewerModel) -> list[Callable]:
-    """Build the viewer tools as plain functions, which Lumen wraps as FunctionTools."""
+class ViewerTool(FunctionTool):
+    """FunctionTool that ignores the step title Lumen's planner passes to every actor."""
+
+    # ponytail: drop once Lumen's FunctionTool stops forwarding step_title to the function
+    async def respond(self, messages, context, step_title=None, **kwargs):
+        return await super().respond(messages, context, **kwargs)
+
+
+def make_tools(viewer: ViewerModel) -> list[ViewerTool]:
+    """Build the Lumen tools that read and steer the viewer."""
 
     def list_napari_layers() -> str:
         """List the layers open in napari with their type, shape and pixel size."""
@@ -34,7 +41,7 @@ def make_tools(viewer: ViewerModel) -> list[Callable]:
         _focus(viewer, layer, int(label))
         return f"Showing object {label} of {layer.name!r} in napari."
 
-    return [list_napari_layers, show_object_in_napari]
+    return [ViewerTool(list_napari_layers), ViewerTool(show_object_in_napari)]
 
 
 def _describe(layer: Layer) -> str:

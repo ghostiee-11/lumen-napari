@@ -2,7 +2,6 @@ import threading
 
 import numpy as np
 import pytest
-from lumen.ai.tools import FunctionTool
 from napari.components import ViewerModel
 
 from lumen_napari.tools import make_tools
@@ -21,12 +20,12 @@ def viewer(qapp):
 
 @pytest.fixture
 def tools(viewer):
-    return {tool.__name__: tool for tool in make_tools(viewer)}
+    return {tool.name: tool.function for tool in make_tools(viewer)}
 
 
-def test_tools_wrap_as_lumen_function_tools(tools):
-    for tool in tools.values():
-        FunctionTool(tool)
+async def test_tools_ignore_the_planner_step_title(viewer):
+    outputs, _ = await make_tools(viewer)[0].respond([], {}, step_title="List layers")
+    assert "napari layers" in outputs[0]
 
 
 def test_list_layers(tools):
@@ -36,7 +35,7 @@ def test_list_layers(tools):
 
 
 def test_list_layers_empty(qapp):
-    assert make_tools(ViewerModel())[0]() == "napari has no layers open."
+    assert make_tools(ViewerModel())[0].function() == "napari has no layers open."
 
 
 def test_show_object_from_another_thread(qtbot, viewer, tools):
@@ -50,6 +49,6 @@ def test_show_object_from_another_thread(qtbot, viewer, tools):
 
 
 def test_show_object_needs_labels(qapp):
-    show = make_tools(ViewerModel())[1]
+    show = make_tools(ViewerModel())[1].function
     with pytest.raises(ValueError, match="Segment an image first"):
         show(1)
