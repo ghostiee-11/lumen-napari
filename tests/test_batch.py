@@ -33,7 +33,7 @@ def test_measure_files_keys_rows_by_image(tmp_path):
     assert df.groupby("well").size().to_dict() == {"A01": 1, "B03": 3}
     assert df.path.iloc[0] == str(paths[0].resolve())
     assert SEGMENTED_WITH[str(paths[0].resolve())] == {
-        "image_id": "plate_A01", "method": "otsu", "min_size": 0, "channel": "image",
+        "image_id": "plate_A01", "method": "otsu", "min_size": 0, "model": "", "channel": "image",
     }
 
 

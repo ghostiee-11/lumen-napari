@@ -44,7 +44,7 @@ def tiles(shape: tuple[int, int], tile: int, overlap: int):
 
 
 def segment_tiled(layer: Image, tile: int = 2048, overlap: int = 64, method: str = "otsu",
-                  min_size: int = 20, split_touching: bool = True,
+                  min_size: int = 20, split_touching: bool = True, model: str = "",
                   unit: str | None = None) -> tuple[pd.DataFrame, int]:
     """Measure every object of a 2D image, tile by tile. Returns the table, in world units,
     and the number of tiles. Labels are renumbered to be unique across the image."""
@@ -58,7 +58,7 @@ def segment_tiled(layer: Image, tile: int = 2048, overlap: int = 64, method: str
     for core, crop in tiles(shape, tile, overlap):
         count += 1
         image = _gray(full[crop], layer.rgb)
-        labels = segment(image, method=method, min_size=min_size,
+        labels = segment(image, method=method, min_size=min_size, model=model,
                          split_touching=split_touching, threshold=threshold)
         if not labels.max():
             continue

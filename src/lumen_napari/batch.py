@@ -45,6 +45,7 @@ def measure_files(
     paths: Iterable[Path],
     method: str = "otsu",
     min_size: int = 20,
+    model: str = "",
     channels: dict[str, str] | None = None,
     segment_channel: str | None = None,
 ) -> pd.DataFrame:
@@ -58,14 +59,15 @@ def measure_files(
         raise ValueError(f"segment_channel must be one of {list(channels)}.")
     tables = []
     for site, path, channel, image, others, file in _sites(paths, channels, segment_channel):
-        labels = segment(image, method=method, min_size=min_size)
+        labels = segment(image, method=method, min_size=min_size, model=model)
         df = measure(labels, image, spacing=file.spacing, unit=file.unit, channels=others or None)
         resolved = str(path.resolve())
         df.insert(0, "image_id", site)
         df["well"] = file.well or well_of(site)
         df["path"] = resolved
         SEGMENTED_WITH[resolved] = {
-            "image_id": site, "method": method, "min_size": min_size, "channel": channel,
+            "image_id": site, "method": method, "min_size": min_size, "model": model,
+            "channel": channel,
         }
         tables.append(df)
     if not tables:
