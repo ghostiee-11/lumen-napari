@@ -192,3 +192,23 @@ async def test_compare_tool_hands_its_results_to_the_answer(qapp):
     _, context = await tool.respond([], {}, table="objects", measurement="area",
                                     condition="compound", control="DMSO", replicate="well", dose="")
     assert "`x`: fold change 2.05" in context["data"]
+
+
+def test_tools_segment_first_when_nothing_is_segmented(qtbot, qapp):
+    import threading
+
+    from lumen_napari.controls import NapariControls
+
+    viewer = ViewerModel()
+    image = np.zeros((40, 40))
+    image[5:15, 5:15] = 1
+    image[25:30, 25:30] = 1
+    viewer.add_image(image, name="nuclei")
+    controls = NapariControls(viewer=viewer)
+    color = make_tools(viewer, controls)[2].function
+    out = {}
+    thread = threading.Thread(target=lambda: out.update(msg=color("area")))
+    thread.start()
+    qtbot.waitUntil(lambda: not thread.is_alive(), timeout=60_000)
+    assert "nuclei labels" in viewer.layers
+    assert out["msg"].startswith("Colored 'nuclei labels' by area")

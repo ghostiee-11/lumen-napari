@@ -39,6 +39,18 @@ def make_tools(viewer: ViewerModel, controls=None) -> list[ViewerTool]:
     """Build the Lumen tools that read and steer the viewer. With the session's napari
     controls, statistics on their tables are a tool too."""
 
+    def objects_layer(name: str) -> Labels:
+        """The labels layer to act on, segmenting the first image first if nothing is
+        segmented yet, so a question works whatever order it is asked in."""
+        nothing_segmented = not any(isinstance(layer, Labels) for layer in viewer.layers)
+        images = [layer.name for layer in viewer.layers if isinstance(layer, Image)]
+        if controls is not None and nothing_segmented and images:
+            controls.segment_layer(
+                image_layer=images[0],
+                reason="Nothing was segmented yet, so the image was segmented first.",
+            )
+        return _labels_layer(viewer, name)
+
     def list_napari_layers() -> str:
         """List the layers open in napari with their type, shape and pixel size."""
         if not len(viewer.layers):
@@ -72,7 +84,7 @@ def make_tools(viewer: ViewerModel, controls=None) -> list[ViewerTool]:
             For objects from a segmented folder: the image_id of their image, which is then
             opened in napari.
         """
-        layer = open_in_viewer(viewer, image_id) if image_id else _labels_layer(viewer, labels_layer)
+        layer = open_in_viewer(viewer, image_id) if image_id else objects_layer(labels_layer)
         why = ""
         if rank_by:
             label = _ranked_label(layer, rank_by, smallest)
@@ -96,7 +108,7 @@ def make_tools(viewer: ViewerModel, controls=None) -> list[ViewerTool]:
         colormap : str
             Name of a colormap such as 'viridis', 'magma' or 'turbo'.
         """
-        layer = _labels_layer(viewer, labels_layer)
+        layer = objects_layer(labels_layer)
         if not column:
             _set_colormap(layer, label_colormap())
             return f"Reset the colors of {layer.name!r}."
@@ -124,7 +136,7 @@ def make_tools(viewer: ViewerModel, controls=None) -> list[ViewerTool]:
         as_new_layer : bool
             Put the matching objects in a new labels layer instead of hiding the others.
         """
-        layer = _labels_layer(viewer, labels_layer)
+        layer = objects_layer(labels_layer)
         if not where:
             _set_colormap(layer, label_colormap())
             return f"Showing every object of {layer.name!r}."
