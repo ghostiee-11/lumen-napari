@@ -4,6 +4,8 @@ No `from __future__ import annotations` here: Lumen rebuilds the action signatur
 real annotation objects, not strings.
 """
 
+import asyncio
+import functools
 import re
 from pathlib import Path
 from typing import Literal
@@ -11,7 +13,7 @@ from typing import Literal
 import numpy as np
 import pandas as pd
 import param
-from lumen.ai.controls import CodeSourceControls
+from lumen.ai.controls import CodeSourceControls, SourceResult
 from napari.components import ViewerModel
 from napari.layers import Image, Labels, Layer, Points, Shapes, Surface, Tracks, Vectors
 from skimage.color import rgb2gray
@@ -48,12 +50,8 @@ class NapariControls(CodeSourceControls):
     label = '<span class="material-icons" style="vertical-align: middle;">biotech</span> napari'
 
     def __init__(self, viewer: ViewerModel, **params):
-        functions = {
-            "segment_layer": self.segment_layer,
-            "measure_layer": self.measure_layer,
-            "layer_features": self.layer_features,
-            "segment_folder": self.segment_folder,
-        }
+        actions = (self.segment_layer, self.measure_layer, self.layer_features, self.segment_folder)
+        functions = {action.__name__: self._named(action) for action in actions}
         params.setdefault("script", Script())
         super().__init__(viewer=viewer, functions=functions, **params)
 
@@ -205,6 +203,23 @@ class NapariControls(CodeSourceControls):
             f"tables[{self.table_name!r}] = pd.concat(rows, ignore_index=True)",
         )
         return pd.concat(tables, ignore_index=True)
+
+    def _named(self, action):
+        """Return the action's table under our name. Lumen would otherwise derive one from the
+        arguments, which can start with a digit and break SQL."""
+
+        @functools.wraps(action)
+        def run(**params) -> SourceResult:
+            df = action(**params)
+            return SourceResult.from_dataframe(df, self.table_name)
+
+        return run
+
+    async def _fetch_data(self, action_name: str, **params) -> SourceResult:
+        try:
+            return await asyncio.to_thread(self._actions[action_name], **params)
+        except Exception as e:  # noqa: BLE001 - shown to the user and the LLM, as Lumen does
+            return SourceResult.empty(f"Error calling {action_name}: {e}")
 
     def _layer(self, name: str, kind: type[Layer] | tuple[type[Layer], ...]) -> Layer:
         layers = [layer for layer in self.viewer.layers if isinstance(layer, kind)]

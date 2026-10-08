@@ -139,3 +139,18 @@ def test_segment_folder_makes_one_table(qtbot, controls, plate):
 def test_segment_folder_without_matches(qtbot, controls, plate):
     result = run(qtbot, controls, "Segment Folder", folder=str(plate), pattern="*.tif")
     assert "No files match '*.tif'" in result.message
+
+
+def test_source_agent_path_keeps_our_table_name(qtbot, controls):
+    from lumen.ai.agents.source import SourceAgent
+    from lumen.ai.controls import SourceResult
+
+    store = []
+    [tool] = [t for t in SourceAgent._build_tools({"source_controls": [controls]}, result_store=store)
+              if t.name == "segment_layer"]
+    thread = threading.Thread(target=lambda: tool.function(image_layer="nuclei", min_size=0))
+    thread.start()
+    qtbot.waitUntil(lambda: not thread.is_alive(), timeout=60_000)
+    result = store[0]["result"]
+    assert isinstance(result, SourceResult)
+    assert result.table == "nuclei_labels"
