@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import duckdb
 import numpy as np
+import param
 from lumen.ai.tools import FunctionTool
 from napari.components import ViewerModel
 from napari.layers import Image, Labels, Layer
@@ -16,11 +17,19 @@ from .focus import focus_label
 
 
 class ViewerTool(FunctionTool):
-    """FunctionTool that ignores the step title Lumen's planner passes to every actor."""
+    """FunctionTool that ignores the step title Lumen's planner passes to every actor, and
+    shows its failures in the chat."""
 
-    # ponytail: drop once Lumen's FunctionTool stops forwarding step_title to the function
+    chat = param.Callable(default=None, doc="post(markdown) that shows a failure in the chat.")
+
+    # ponytail: drop step_title once Lumen's FunctionTool stops forwarding it to the function
     async def respond(self, messages, context, step_title=None, **kwargs):
-        return await super().respond(messages, context, **kwargs)
+        try:
+            return await super().respond(messages, context, **kwargs)
+        except Exception as e:
+            if self.chat is not None:
+                self.chat(f"⚠️ **napari tool `{self.name}` failed**: {e}")
+            raise
 
 
 def make_tools(viewer: ViewerModel) -> list[ViewerTool]:
@@ -60,12 +69,15 @@ def make_tools(viewer: ViewerModel) -> list[ViewerTool]:
             opened in napari.
         """
         layer = open_in_viewer(viewer, image_id) if image_id else _labels_layer(viewer, labels_layer)
+        why = ""
         if rank_by:
             label = _ranked_label(layer, rank_by, smallest)
+            value = _column(layer, rank_by)[layer.features["index"] == label].iat[0]
+            why = f", the {'smallest' if smallest else 'largest'} by {rank_by} ({value:g})"
         elif not label:
             raise ValueError("Give a label, or rank_by a measurement column such as 'area'.")
         _focus(viewer, layer, int(label))
-        return f"Showing object {label} of {layer.name!r} in napari."
+        return f"Showing object {label} of {layer.name!r} in napari{why}."
 
     def color_objects_by(column: str = "", labels_layer: str = "", colormap: str = "viridis") -> str:
         """Color every object in a napari labels layer by one of its measurements, a heatmap on

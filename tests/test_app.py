@@ -78,3 +78,8 @@ def test_reports_reach_the_chat(qapp, llm):
     assert message.user == "napari"
     assert message.object.objects[0].object == "**Segmented**"
     assert message.object.objects[1].object == png
+
+
+def test_tools_post_failures_to_the_chat(qapp, llm):
+    ui = build_ui(ViewerModel(), llm=llm)
+    assert all(tool.chat is ui.source_controls[0].chat for tool in ui.tools)

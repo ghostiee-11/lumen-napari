@@ -37,6 +37,8 @@ def build_ui(viewer: ViewerModel, script: Script | None = None, **params) -> Exp
         **params,
     )
     controls.chat = chat_poster(ui.interface)
+    for tool in ui.tools:
+        tool.chat = controls.chat
     return ui
 
 

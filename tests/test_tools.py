@@ -69,8 +69,9 @@ def ranked_viewer(qapp):
 def test_show_largest_by_measurement(qtbot, qapp):
     viewer = ranked_viewer(qapp)
     show = make_tools(viewer)[1].function
-    assert show(rank_by="area") == "Showing object 2 of 'cells' in napari."
-    assert show(rank_by="area", smallest=True) == "Showing object 1 of 'cells' in napari."
+    assert show(rank_by="area") == "Showing object 2 of 'cells' in napari, the largest by area (400)."
+    assert show(rank_by="area", smallest=True) == (
+        "Showing object 1 of 'cells' in napari, the smallest by area (4).")
     assert viewer.layers["cells"].selected_label == 1
 
 
@@ -94,7 +95,7 @@ def test_show_object_from_a_folder_image(qapp, tmp_path):
     measure_files([tmp_path / "C07.png"], min_size=0)
     viewer = ViewerModel()
     show = make_tools(viewer)[1].function
-    assert show(image_id="C07", rank_by="area") == "Showing object 2 of 'C07 labels' in napari."
+    assert show(image_id="C07", rank_by="area").startswith("Showing object 2 of 'C07 labels' in napari")
 
 
 def test_color_objects_by_a_measurement(qapp):
@@ -156,3 +157,15 @@ def test_set_voxel_size_in_3d(qapp):
     viewer.add_image(np.zeros((4, 8, 8)), name="stack")
     make_tools(viewer)[4].function(0.26, z_size=0.29)
     assert tuple(viewer.layers["stack"].scale) == (0.29, 0.26, 0.26)
+
+
+async def test_tool_failures_are_posted(qapp):
+    posted = []
+    tool = make_tools(ViewerModel())[1]
+    tool.chat = posted.append
+    with pytest.raises(ValueError):
+        await tool.respond([], {}, label=1, rank_by="", smallest=False, labels_layer="", image_id="")
+    assert posted == [(
+        "⚠️ **napari tool `show_object_in_napari` failed**: "
+        "napari has no labels layer. Segment an image first."
+    )]
