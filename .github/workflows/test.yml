@@ -18,3 +18,14 @@ jobs:
       - run: uv pip install -e ".[qt,test]" ruff
       - run: ruff check src tests
       - run: xvfb-run -a pytest -p no:warnings
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          activate-environment: true
+      - run: uv pip install -e ".[docs]"
+      - run: mkdocs build --strict
