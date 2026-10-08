@@ -38,8 +38,9 @@ def test_size_note_warns_about_pixels():
 
 
 def test_segmentation_report_shows_the_work():
-    text = segmentation_report("nuclei", 348, {"method": "otsu", "min_size": 20}, None, (1, 1),
-                               "nuclei_labels")
+    text = segmentation_report("nuclei", 348, {"method": "otsu", "min_size": 20},
+                               size_note(None, (1, 1)), "nuclei_labels")
     assert "**Segmented `nuclei`: 348 objects**" in text
     assert "method='otsu', min_size=20" in text
     assert "Does the outline look right?" in text
+    assert "Sizes are in pixels" in text

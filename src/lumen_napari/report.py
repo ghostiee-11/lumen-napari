@@ -43,14 +43,13 @@ def size_note(unit: str | None, spacing) -> str:
     )
 
 
-def segmentation_report(
-    source: str, count: int, settings: dict, unit: str | None, spacing, table: str
-) -> str:
-    """Markdown describing one segmentation, ending with the check question."""
+def segmentation_report(source: str, count: int, settings: dict, units: str, table: str) -> str:
+    """Markdown describing one segmentation, ending with the check question. `units` is the
+    sentence from `size_note`."""
     shown = ", ".join(f"{k}={v!r}" for k, v in settings.items())
     return (
         f"**Segmented `{source}`: {count:,} objects** into table `{table}`.\n\n"
-        f"Settings: {shown}.\n\n{size_note(unit, spacing)}\n\n"
+        f"Settings: {shown}.\n\n{units}\n\n"
         "**Does the outline look right?** If not, ask me to segment again with other settings "
         "(for example a larger min_size, or method='cellpose'), or fix objects by hand in "
         "napari: they are measured again automatically."
