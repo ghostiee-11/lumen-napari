@@ -441,3 +441,13 @@ def test_segment_layer_finds_dark_cells(qtbot, controls):
                  split_touching=False, min_size=0)
     assert len(result.sources[0].execute("SELECT * FROM walls_labels")) == 9
     assert "dark_objects=True" in controls.script.render()
+
+
+def test_file_name_finds_its_first_channel():
+    from types import SimpleNamespace
+
+    from lumen_napari.controls import find_layer
+
+    walls, lignin = SimpleNamespace(name="lily_stem walls"), SimpleNamespace(name="lily_stem lignin")
+    assert find_layer([walls, lignin], "lily_stem") is walls
+    assert find_layer([walls, lignin], "lignin") is lignin

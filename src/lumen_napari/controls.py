@@ -66,6 +66,11 @@ def find_layer(layers, name: str) -> Layer | None:
     # People name layers loosely ("the nuclei layer" for 'hela_nuclei'): take the one layer
     # whose name contains it, or the only layer there is.
     layers = list(layers)
+    # A file's name stands for its channels ("lily_stem" for "lily_stem walls", ...): take the
+    # first, the one an upload segments.
+    prefix = f"{table_name(name)}_"
+    if channels := [layer for layer in layers if table_name(layer.name).startswith(prefix)]:
+        return channels[0]
     partial = [layer for layer in layers if table_name(name) in table_name(layer.name)]
     if len(partial) == 1:
         return partial[0]
