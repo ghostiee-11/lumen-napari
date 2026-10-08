@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import io
 import webbrowser
 from pathlib import Path
 from weakref import WeakKeyDictionary
@@ -15,8 +16,10 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
+from skimage.io import imsave
 
 from .app import LumenServer
+from .report import report_html
 
 _servers: WeakKeyDictionary = WeakKeyDictionary()
 
@@ -39,14 +42,18 @@ class LumenWidget(QWidget):
         self.open = QPushButton("Open in browser")
         self.export = QPushButton("Export script")
         self.export.setToolTip("Save the segmentation and measurement steps as a Python script.")
+        self.report = QPushButton("Export report")
+        self.report.setToolTip("Save an HTML report: questions, checks, charts, a napari "
+                               "snapshot and the methods, to share.")
         self.status = QLabel("Ask questions about your layers in plain language.")
         self.status.setWordWrap(True)
         self.status.setOpenExternalLinks(True)
         self.toggle.clicked.connect(self._toggle)
         self.open.clicked.connect(lambda: webbrowser.open(self.server.url))
         self.export.clicked.connect(self._export)
+        self.report.clicked.connect(self._export_report)
         layout = QVBoxLayout(self)
-        for widget in (self.toggle, self.open, self.export, self.status):
+        for widget in (self.toggle, self.open, self.export, self.report, self.status):
             layout.addWidget(widget)
         layout.addStretch()
         self._refresh()
@@ -69,6 +76,26 @@ class LumenWidget(QWidget):
         if path:
             Path(path).write_text(self.server.script.render())
             self.status.setText(f"Saved the analysis script to {path}")
+
+    def _export_report(self, path: str | None = None) -> None:
+        script = self.server.script
+        if not (script.lines or script.questions):
+            self.status.setText("Nothing to report yet. Ask Lumen a question first.")
+            return
+        if path is None:
+            path, _ = QFileDialog.getSaveFileName(self, "Export report", "report.html", "HTML (*.html)")
+        if path:
+            Path(path).write_text(report_html(script, snapshot=self._snapshot()))
+            self.status.setText(f"Saved the report to {path}")
+
+    def _snapshot(self) -> bytes | None:
+        """A PNG of the napari canvas, when there is a real window to grab."""
+        viewer = self.server.viewer
+        if not isinstance(viewer, napari.Viewer):
+            return None
+        buffer = io.BytesIO()
+        imsave(buffer, viewer.screenshot(canvas_only=True, flash=False), extension=".png")
+        return buffer.getvalue()
 
     def _refresh(self) -> None:
         running = self.server.running

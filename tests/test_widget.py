@@ -66,3 +66,16 @@ def test_napari_plugin_proxy_is_unwrapped(qtbot, qapp):
     with warnings.catch_warnings():
         warnings.filterwarnings("error", message="Private attribute access")
         build_ui(widget.server.viewer, llm=OpenAI(api_key="sk-test"))
+
+
+def test_export_report(qtbot, tmp_path):
+    widget = LumenWidget(ViewerModel())
+    qtbot.addWidget(widget)
+    widget._export_report(str(tmp_path / "r.html"))
+    assert "Nothing to report yet" in widget.status.text()
+
+    widget.server.script.questions.append("How many nuclei?")
+    widget._export_report(str(tmp_path / "r.html"))
+    page = (tmp_path / "r.html").read_text()
+    assert "<li>How many nuclei?</li>" in page
+    assert "Saved the report" in widget.status.text()
