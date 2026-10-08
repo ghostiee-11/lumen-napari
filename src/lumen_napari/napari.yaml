@@ -5,6 +5,19 @@ contributions:
     - id: lumen-napari.widget
       title: Ask Lumen
       python_name: lumen_napari.widget:LumenWidget
+    - id: lumen-napari.mitosis
+      title: Load HeLa nuclei sample
+      python_name: lumen_napari.samples:mitosis
+    - id: lumen-napari.cells3d
+      title: Load 3D nuclei sample
+      python_name: lumen_napari.samples:cells3d
   widgets:
     - command: lumen-napari.widget
       display_name: Ask Lumen
+  sample_data:
+    - key: mitosis
+      display_name: HeLa nuclei (2D)
+      command: lumen-napari.mitosis
+    - key: cells3d
+      display_name: Mouse embryo nuclei (3D)
+      command: lumen-napari.cells3d
