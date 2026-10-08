@@ -21,7 +21,7 @@ def viewer(qapp):
 
 @pytest.fixture
 def tools(viewer):
-    return dict((tool.__name__, tool) for tool in make_tools(viewer))
+    return {tool.__name__: tool for tool in make_tools(viewer)}
 
 
 def test_tools_wrap_as_lumen_function_tools(tools):
