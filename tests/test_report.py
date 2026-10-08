@@ -64,3 +64,8 @@ def test_report_html_has_every_section():
     assert page.count("vegaEmbed('#chart") == 1
     assert "</script><script>x()" not in page
     assert "labels = segment(image)" in page
+
+
+def test_segmentation_report_explains_no_objects():
+    text = segmentation_report("blank", 0, {"method": "otsu"}, "Sizes are in pixels.", "blank_labels")
+    assert "No objects found" in text and "min_size" in text

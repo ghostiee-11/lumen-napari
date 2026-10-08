@@ -52,6 +52,12 @@ def segmentation_report(source: str, count: int, settings: dict, units: str, tab
     """Markdown describing one segmentation, ending with the check question. `units` is the
     sentence from `size_note`."""
     shown = ", ".join(f"{k}={v!r}" for k, v in settings.items())
+    if not count:
+        return (
+            f"**No objects found in `{source}`** (settings: {shown}).\n\n"
+            "The image may be blank or out of focus, or the objects smaller than min_size. "
+            "Ask me to try a smaller min_size, or method='cellpose' for tissue and crowded cells."
+        )
     return (
         f"**Segmented `{source}`: {count:,} objects** into table `{table}`.\n\n"
         f"Settings: {shown}.\n\n{units}\n\n"
