@@ -29,6 +29,7 @@ from .report import overlay_png, segmentation_report, size_note
 from .script import Script
 from .segment import segment
 from .stats import compare, dose_response
+from .tiles import segment_tiled
 
 # pandas reader and keyword arguments for each table file type.
 READERS = {
@@ -83,6 +84,7 @@ class NapariControls(CodeSourceControls):
         actions = (
             self.segment_layer, self.measure_layer, self.layer_features, self.segment_folder,
             self.load_table, self.measure_regions, self.compare_conditions,
+            self.segment_whole_slide,
         )
         functions = {action.__name__: self._reporting(action) for action in actions}
         params.setdefault("script", Script())
@@ -378,6 +380,58 @@ class NapariControls(CodeSourceControls):
 
         _watch(self.viewer.layers[name], "paint", remeasure)
 
+    def segment_whole_slide(
+        self,
+        image_layer: str,
+        tile_size: int = 2048,
+        method: Literal["otsu", "cellpose"] = "otsu",
+        min_size: int = 20,
+        split_touching: bool = True,
+    ) -> SourceResult:
+        """Segment and measure every object of a whole-slide or other very large 2D image at
+        full resolution, tile by tile, without loading it all. Use this instead of Segment
+        Layer when the image is too big to segment at once. Objects are added to napari as a
+        points layer at their centroids, and measured in one table.
+
+        Parameters
+        ----------
+        image_layer : str
+            Name of the napari image layer.
+        tile_size : int
+            Tile side in pixels. Smaller tiles use less memory.
+        method : str
+            'otsu' for a fast threshold (one threshold for the whole slide), 'cellpose' for a
+            deep learning model.
+        min_size : int
+            Objects with fewer pixels than this are dropped.
+        split_touching : bool
+            Split touching objects with a watershed (otsu only).
+        """
+        layer = self._layer(image_layer, Image)
+        unit = unit_of(layer)
+        df, count = segment_tiled(layer, tile=tile_size, method=method, min_size=min_size,
+                                  split_touching=split_touching, unit=unit)
+        name = f"{layer.name} objects"
+        suffix = f"_{unit}" if unit else ""
+        positions = df[[f"centroid_0{suffix}", f"centroid_1{suffix}"]].to_numpy()
+        _publish_points(self.viewer, name, positions, df)
+        table = table_name(name)
+        self.script.load(layer)
+        self.script.add(
+            "from lumen_napari.tiles import segment_tiled",
+            f"tables[{table!r}], _ = segment_tiled(viewer.layers[{layer.name!r}], "
+            f"tile={tile_size!r}, method={method!r}, min_size={min_size!r}, "
+            f"split_touching={split_touching!r}, unit={unit!r})",
+        )
+        self._post(
+            f"**Segmented `{layer.name}` in {count} tiles of {tile_size} px: {len(df):,} objects** "
+            f"into table `{table}`, shown in napari as the points layer `{name}`.\n\n"
+            f"Settings: method={method!r}, min_size={min_size!r}, split_touching="
+            f"{split_touching!r}, one threshold for the whole slide.\n\n"
+            f"{self._size_note(unit, layer.scale, layer.name)}"
+        )
+        return self._publish_table(table, df)
+
     def compare_conditions(
         self,
         table: str,
@@ -546,6 +600,13 @@ def _watch(layer: Layer, event: str, callback) -> None:
     debounced = qdebounced(lambda _event=None: callback(), timeout=500)
     layer.metadata[key] = debounced
     emitter.connect(debounced)
+
+
+@ensure_main_thread(await_return=True, timeout=60_000)
+def _publish_points(viewer: ViewerModel, name: str, positions, features: pd.DataFrame) -> None:
+    if name in viewer.layers:
+        viewer.layers.remove(name)
+    viewer.add_points(positions, name=name, features=features, size=6, face_color="orange")
 
 
 def _read_table(path: str) -> tuple[pd.DataFrame, str]:

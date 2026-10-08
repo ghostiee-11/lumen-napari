@@ -47,7 +47,7 @@ def test_table_name():
 def test_actions_are_registered(controls):
     assert [name for name, _ in controls.as_tools()] == [
         "Segment Layer", "Measure Layer", "Layer Features", "Segment Folder", "Load Table",
-        "Measure Regions", "Compare Conditions",
+        "Measure Regions", "Compare Conditions", "Segment Whole Slide",
     ]
 
 
@@ -96,7 +96,7 @@ def test_lumen_source_agent_builds_every_action(controls):
     tools = SourceAgent._build_tools({"source_controls": [controls]}, result_store=[])
     assert [tool.name for tool in tools] == [
         "segment_layer", "measure_layer", "layer_features", "segment_folder", "load_table",
-        "measure_regions", "compare_conditions",
+        "measure_regions", "compare_conditions", "segment_whole_slide",
     ]
 
 
@@ -369,3 +369,18 @@ def test_compare_conditions_needs_a_known_table(qtbot, controls):
     result = run(qtbot, controls, "Compare Conditions", table="nope", measurement="area",
                  condition="compound", control="DMSO")
     assert "No table 'nope'" in result.message
+
+
+def test_segment_whole_slide(qtbot, viewer, controls, posts):
+    image = np.zeros((300, 300))
+    for y in range(20, 290, 40):
+        for x in range(20, 290, 40):
+            image[y - 5:y + 5, x - 5:x + 5] = 1
+    viewer.add_image(image, name="slide", scale=(0.5, 0.5), units=("um", "um"))
+    result = run(qtbot, controls, "Segment Whole Slide", image_layer="slide", tile_size=100,
+                 min_size=0)
+    df = query(result, "SELECT COUNT(*) AS n, MIN(area_um2) AS a FROM slide_objects")
+    assert df.n[0] == 49 and df.a[0] == 25
+    points = viewer.layers["slide objects"]
+    assert len(points.data) == 49
+    assert "in 9 tiles of 100 px: 49 objects" in posts[-1][0]
