@@ -194,7 +194,7 @@ def _compare_tool(controls) -> ViewerTool:
     def compare_conditions(**params) -> str:
         return controls.compare_conditions(**params)
 
-    return ViewerTool(compare_conditions, provides=["comparison"])
+    return ViewerTool(compare_conditions, provides=["data"])
 
 
 def _describe(layer: Layer) -> str:

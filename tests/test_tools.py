@@ -191,4 +191,4 @@ async def test_compare_tool_hands_its_results_to_the_answer(qapp):
     assert tool.name == "compare_conditions"
     _, context = await tool.respond([], {}, table="objects", measurement="area",
                                     condition="compound", control="DMSO", replicate="well", dose="")
-    assert "`x`: fold change 2.05" in context["comparison"]
+    assert "`x`: fold change 2.05" in context["data"]
