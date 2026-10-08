@@ -19,11 +19,11 @@ Find the objects in an image layer, add a labels layer and measure each object. 
 | `model` | str | `""` | StarDist model or BioImage.IO id |
 | `reason` | str | `""` | Why this method fits, shown in the chat |
 | `min_size` | int | 20 | Drop objects with fewer pixels |
-| `split_touching` | bool | `True` | Watershed split (Otsu only) |
+| `split_touching` | bool | from the image | Watershed split (Otsu only) |
 | `visible_only` | bool | `False` | Only the region on screen |
 | `level` | int | -1 | Pyramid level; -1 picks the finest that fits |
-| `measure_layers` | list[str] | none | More channels to measure intensity in |
-| `dark_objects` | bool | `False` | Find dark objects inside bright walls (Otsu only) |
+| `measure_layers` | list[str] | aligned layers | More channels to measure intensity in |
+| `dark_objects` | bool | from the image | Dark objects inside walls or on a bright background (Otsu only) |
 
 Adds layer `<image> labels`. Table: `<image>_labels`.
 

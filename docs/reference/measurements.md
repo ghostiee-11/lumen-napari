@@ -27,6 +27,8 @@ With an intensity image (the segmented image, or the labels' source image):
 | `intensity_min` | Minimum |
 | `intensity_max` | Maximum |
 
+RGB images add `intensity_mean_red`, `intensity_mean_green`, `intensity_mean_blue` (and min, max).
+
 Each extra channel adds the same three with the channel's name: `intensity_mean_tubulin`, `intensity_min_tubulin`, `intensity_max_tubulin`. For image layers, the name is the layer's table name (`screen_a01_actin`); for files, the channel name (`actin`).
 
 ## Units

@@ -8,7 +8,7 @@ In the chat, click the **+** button next to the input, or drag files onto the ch
 
 | Extension | Read with | Metadata kept |
 |---|---|---|
-| `.png`, `.jpg`, `.jpeg`, `.tif`, `.tiff` | scikit-image | none, one channel (RGB becomes gray) |
+| `.png`, `.jpg`, `.jpeg`, `.tif`, `.tiff` | scikit-image | none; color images stay in color |
 | `.ome.tif`, `.ome.tiff` | bioio (`[bioio]` extra) | channel names, pixel size, plate well |
 | `.czi` | bioio + `bioio-czi` | channel names, pixel size |
 | `.nd2` | bioio + `bioio-nd2` | channel names, pixel size |
@@ -22,7 +22,7 @@ For each uploaded image:
 
 1. **One napari layer per channel.** A single-channel file becomes a layer named after the file (`hela_nuclei`). A multi-channel file becomes one layer per channel (`screen_A01 dapi`, `screen_A01 actin`), with the file's pixel size and unit set on each layer.
 2. **Side by side.** Each upload is placed to the right of what is already open, so several uploads do not hide each other. napari zooms out to show them all.
-3. **Segmented and measured.** The first channel is segmented with Otsu. The other channels are measured inside each object, as columns such as `intensity_mean_screen_a01_actin`.
+3. **Segmented and measured.** The first channel is segmented with Otsu, which detects whether the objects are bright, dark, or cells inside walls. The other channels are measured inside each object, as columns such as `intensity_mean_screen_a01_actin`.
 4. **Ready to query.** The table is named after the labels layer, such as `hela_nuclei_labels`. A napari message in the chat shows the outlines to check.
 
 Then ask about it:

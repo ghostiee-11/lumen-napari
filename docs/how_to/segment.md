@@ -40,6 +40,16 @@ When Lumen chooses the method itself, it says why in the chat ("**Why cellpose:*
 
 ### How Otsu works here
 
+lumen-napari first looks at the image to decide what the objects are:
+
+| The image | Detected as | Example |
+|---|---|---|
+| Bright objects on a dark background | bright objects, split where they touch | fluorescent nuclei, galaxies |
+| A bright network spanning the image | dark cells inside walls, not split (the walls separate them) | plant tissue, membrane stains |
+| Mostly bright | dark objects on a bright background | brightfield |
+
+The chat says what it detected ("detected from the image: dark objects inside walls"). Say otherwise in plain words to override it. Then:
+
 1. In 3D, the volume is smoothed (Gaussian, sigma 2) first, so textured nuclei do not shatter into pieces. 2D images are not smoothed.
 2. Pixels brighter than Otsu's threshold are foreground; holes are filled.
 3. Objects smaller than `min_size` pixels are dropped.
@@ -60,25 +70,25 @@ Say them in plain language, or name them:
 | `method` | `otsu` | See above |
 | `model` | empty | StarDist model name or BioImage.IO id |
 | `min_size` | 20 | Drop objects with fewer pixels |
-| `split_touching` | on | Watershed split of touching objects (Otsu only) |
+| `split_touching` | from the image | Watershed split of touching objects (Otsu only) |
 | `visible_only` | off | Segment only what is on screen, see [Large images](large_images.md) |
 | `level` | finest that fits | Pyramid level of a multiscale image, 0 is full resolution |
 | `measure_layers` | none | Other channels to measure intensity in |
-| `dark_objects` | off | Find dark objects, such as cells outlined by bright walls (Otsu only) |
+| `dark_objects` | from the image | Find dark objects, such as cells outlined by bright walls (Otsu only) |
 
 > Segment the nuclei with min_size 50 and without splitting touching objects
 
 ## Cells outlined by walls or membranes
 
-Plant tissue and membrane stains show bright walls around dark cells. Ask for dark objects, without watershed splitting, since the walls already separate the cells:
+Plant tissue and membrane stains show bright walls around dark cells. This is detected automatically, so just ask:
 
-> Segment the cells in lily-blue as dark objects inside bright walls, without splitting touching objects, and measure lily-green too
+> How many cells are in lily-blue?
 
 Try it on **File > Open Sample > Lumen > Lily stem cells (4 channels)**: about 1,700 cells, with `lily-green` marking the lignified walls of the vascular bundles. Very dim corners can merge into a few large objects; hide them with a size filter.
 
 ## Measure more channels
 
-If each channel is its own image layer, measure them inside the segmented objects:
+Every other image layer that lines up with the segmented one (same shape, scale and position, such as the other channels of one file) is measured automatically. Name channels to pick only some:
 
 > Segment the dapi layer and measure the actin and tubulin layers too
 
@@ -99,6 +109,16 @@ Points, shapes, labels, tracks, surface and vectors layers can carry a `features
 > Load the features of the tracks layer
 
 For points and other layers with coordinates, the table gets `position_0`, `position_1`... columns. Moving points re-loads the table.
+
+## Color images
+
+RGB images (photos, H&E and IHC slides, astronomy) are segmented in gray, and each object also gets `intensity_mean_red`, `intensity_mean_green` and `intensity_mean_blue`, so you can ask "which galaxies are the reddest?". Stained tissue segments much better with `cellpose` than with Otsu.
+
+## Images it cannot segment
+
+- **Blank or empty images:** the chat says no objects were found and what to try.
+- **Missing pixels (NaN)** are treated as background.
+- **4D and higher** (time and z together): open one time point as its own layer first.
 
 ## 3D images
 
