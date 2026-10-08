@@ -1,0 +1,89 @@
+import asyncio
+import threading
+
+import numpy as np
+import pandas as pd
+import pytest
+from napari.components import ViewerModel
+
+from lumen_napari.controls import NapariControls, table_name
+
+
+@pytest.fixture
+def viewer(qapp):
+    viewer = ViewerModel()
+    image = np.zeros((40, 40))
+    image[5:12, 5:12] = 1
+    image[25:35, 25:35] = 2
+    viewer.add_image(image, name="nuclei", scale=(0.5, 0.5))
+    return viewer
+
+
+@pytest.fixture
+def controls(viewer):
+    return NapariControls(viewer=viewer)
+
+
+def run(qtbot, controls, action, **params):
+    """Run an action off the Qt thread, as the Lumen server does, while Qt keeps processing events."""
+    out = {}
+    thread = threading.Thread(
+        target=lambda: out.update(result=asyncio.run(controls.load_action(action, **params)))
+    )
+    thread.start()
+    qtbot.waitUntil(lambda: not thread.is_alive(), timeout=60_000)
+    return out["result"]
+
+
+def query(result, sql):
+    return result.sources[0].execute(sql)
+
+
+def test_table_name():
+    assert table_name("nuclei labels") == "nuclei_labels"
+    assert table_name("C1-cells (2)") == "c1_cells_2"
+
+
+def test_actions_are_registered(controls):
+    assert [name for name, _ in controls.as_tools()] == [
+        "Segment Layer", "Measure Layer", "Layer Features",
+    ]
+
+
+def test_segment_layer_adds_labels_and_a_table(qtbot, viewer, controls):
+    result = run(qtbot, controls, "Segment Layer", image_layer="nuclei", min_size=0)
+    assert result.table == "nuclei_labels"
+    df = query(result, "SELECT label, area, intensity_mean FROM nuclei_labels ORDER BY label")
+    assert list(df.area) == [49 * 0.25, 100 * 0.25]
+    labels = viewer.layers["nuclei labels"]
+    assert labels.data.max() == 2
+    assert labels.scale[0] == 0.5
+    assert "area: 25" in labels.get_status((30, 30))["coordinates"]
+
+
+def test_segment_twice_updates_the_same_layer(qtbot, viewer, controls):
+    run(qtbot, controls, "Segment Layer", image_layer="nuclei")
+    run(qtbot, controls, "Segment Layer", image_layer="nuclei")
+    assert [layer.name for layer in viewer.layers] == ["nuclei", "nuclei labels"]
+
+
+def test_measure_existing_labels(qtbot, viewer, controls):
+    labels = np.zeros((40, 40), int)
+    labels[0:4, 0:4] = 7
+    viewer.add_labels(labels, name="manual")
+    result = run(qtbot, controls, "Measure Layer", labels_layer="manual", image_layer="nuclei")
+    df = query(result, "SELECT label, area FROM manual")
+    assert list(df.label) == [7]
+
+
+def test_points_features_include_positions(qtbot, viewer, controls):
+    viewer.add_points([[1, 2], [3, 4]], name="spots", features=pd.DataFrame({"kind": ["a", "b"]}))
+    result = run(qtbot, controls, "Layer Features", layer="spots")
+    df = query(result, "SELECT kind, position_0, position_1 FROM spots")
+    assert df.to_dict("list") == {"kind": ["a", "b"], "position_0": [1, 3], "position_1": [2, 4]}
+
+
+def test_missing_layer_lists_available_ones(qtbot, controls):
+    result = run(qtbot, controls, "Segment Layer", image_layer="cells")
+    assert not result.sources
+    assert "Available: 'nuclei'" in result.message
