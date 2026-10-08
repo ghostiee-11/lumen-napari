@@ -17,7 +17,7 @@ lumen-napari connects [napari](https://napari.org) to [Lumen](https://github.com
 - **Measure** every object (area, centroid, bounding box, shape, intensity) in physical units taken from the layer scale. Measurements are also stored on the labels layer, so hovering an object in napari shows its values.
 - **Load features** that other plugins wrote on points, shapes, labels, tracks, surface or vectors layers.
 - **Large images** (OME-Zarr, multiscale, dask) are read at the finest pyramid level that fits in memory, or only for the region on screen at full detail ("segment what I'm looking at"). Only the needed chunks are read.
-- **Batch** a whole folder or plate into one table without opening each image. Rows are keyed by `image_id` and by `well` when file names contain one (`plate1_B02_s1.tif`). Pass a plate map (`.csv`, `.tsv`, `.xlsx`, `.parquet` with a `well` or `image_id` column) to join compounds and doses onto every object.
+- **Batch** a whole folder or plate into one table without opening each image. Rows are keyed by `image_id` and by `well` when file names contain one (`plate1_B02_s1.tif`). OME-TIFF, OME-Zarr and CZI files (with the `[bioio]` extra) supply their own channel names, pixel size and plate well, so sizes come out in micrometers with no setup. Pass a plate map (`.csv`, `.tsv`, `.xlsx`, `.parquet` with a `well` or `image_id` column) to join compounds and doses onto every object.
 - **Ask** follow-up questions in plain language. Lumen writes the SQL and charts, and you can upload a CSV (a plate map, treatments) to join with the measurements.
 - **Show** any object in napari: "show me the largest nucleus" zooms the viewer to it and selects it.
 - **Plate heatmap** of any per-well measurement on a 96 or 384 well layout. Clicking a well opens its image in napari.
@@ -32,7 +32,7 @@ lumen-napari currently tracks the `main` branches of Lumen and napari.
 pip install "lumen-napari[qt] @ git+https://github.com/ghostiee-11/lumen-napari.git"
 ```
 
-Add `[cellpose]` for the Cellpose segmentation method.
+Add `[cellpose]` for the Cellpose segmentation method and `[bioio]` to read metadata from OME-TIFF and OME-Zarr files (install `bioio-czi` too for CZI).
 
 Lumen needs an LLM. Set the key for your provider before starting napari, for example:
 
