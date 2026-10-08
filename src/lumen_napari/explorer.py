@@ -6,11 +6,8 @@ import panel as pn
 import param
 from lumen.ai.analysis import Analysis
 from napari.components import ViewerModel
-from napari.layers import Labels
 
-from .batch import open_in_viewer
-from .controls import table_name
-from .tools import _focus, _labels_layer
+from .pick import show_row
 
 hv.extension("bokeh", logo=False)
 
@@ -33,27 +30,21 @@ class ObjectExplorer(Analysis):
         default_x, default_y = _default_axes(df)
         x, y = self.x or default_x, self.y or default_y
         _show_choice(self, x=x, y=y)
-        batch = "image_id" in df.columns
-        layer = None if batch else _layer_for(self.viewer, pipeline.table)
-        where = "open its image in napari" if batch else f"show it in napari ({layer.name!r})"
+        where = "open its image in napari" if "image_id" in df.columns else "show it in napari"
         points = hv.Points(df, kdims=[x, y], vdims=[c for c in df.columns if c not in (x, y)]).opts(
             tools=["tap", "hover"], size=6, responsive=True, height=400,
             selection_color="#e8590c", nonselection_alpha=0.3,
             title=f"Click an object to {where}",
         )
         self._selection = hv.streams.Selection1D(source=points)
-        self._selection.add_subscriber(lambda index: self.show(df, layer, index))
+        self._selection.add_subscriber(lambda index: self.show(df, pipeline.table, index))
         return pn.pane.HoloViews(points, sizing_mode="stretch_width")
 
-    def show(self, df: pd.DataFrame, layer: Labels | None, index: list[int]) -> None:
-        if not index:
-            return
-        row = df.iloc[index[0]]
-        label = int(row["label"])
-        if layer is None:
-            layer = open_in_viewer(self.viewer, row["image_id"])
-        _focus(self.viewer, layer, label)
-        self._dynamic_provides = {"selected_object": label}
+    def show(self, df: pd.DataFrame, table: str, index: list[int]) -> None:
+        if index:
+            row = df.iloc[index[0]].to_dict()
+            show_row(self.viewer, table, row)
+            self._dynamic_provides = {"selected_object": int(row["label"])}
 
 
 def _show_choice(analysis: Analysis, **values) -> None:
@@ -69,14 +60,6 @@ def explorer_for(viewer: ViewerModel) -> type[ObjectExplorer]:
     return type("ObjectExplorer", (ObjectExplorer,), {"viewer": param.ClassSelector(
         class_=ViewerModel, default=viewer, instantiate=False, precedence=-1,
     )})
-
-
-def _layer_for(viewer: ViewerModel, table: str) -> Labels:
-    """The labels layer a table was measured from, else the most recent labels layer."""
-    for layer in viewer.layers:
-        if isinstance(layer, Labels) and table_name(layer.name) == table:
-            return layer
-    return _labels_layer(viewer, "")
 
 
 def _default_axes(df: pd.DataFrame) -> tuple[str, str]:
