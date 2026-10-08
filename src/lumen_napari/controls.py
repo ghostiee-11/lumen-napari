@@ -45,7 +45,10 @@ class NapariControls(CodeSourceControls):
         min_size: int = 20,
         split_touching: bool = True,
     ) -> pd.DataFrame:
-        """Segment objects in a napari image layer, add them as a labels layer and measure each one.
+        """Find the objects (cells, nuclei, spots) in a napari image layer and measure each one.
+
+        Use this to segment an image. It adds a labels layer to napari and returns one row per
+        object with its area, shape and intensity.
 
         Parameters
         ----------
@@ -68,7 +71,10 @@ class NapariControls(CodeSourceControls):
         return df
 
     def measure_layer(self, labels_layer: str, image_layer: str | None = None) -> pd.DataFrame:
-        """Measure every object of an existing napari labels layer.
+        """Measure the objects of a napari labels layer that already exists.
+
+        Only for labels layers, such as ones drawn by hand or made by another plugin. To find
+        objects in an image layer, use Segment Layer instead.
 
         Parameters
         ----------
