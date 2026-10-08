@@ -6,6 +6,7 @@ from napari.components import ViewerModel
 from lumen_napari import controls as controls_module
 from lumen_napari.controls import NapariControls
 from lumen_napari.measure import measure, to_features
+from lumen_napari.region import load_region
 from lumen_napari.script import HEADER, Script
 from lumen_napari.segment import segment
 
@@ -27,6 +28,7 @@ def replay(script, viewer):
     namespace = {
         "viewer": fresh, "tables": {}, "pd": pd, "segment": segment, "measure": measure,
         "to_features": to_features, "intensity": controls_module.intensity,
+        "load_region": load_region,
     }
     exec(script.body(), namespace)  # noqa: S102
     return fresh, namespace["tables"]

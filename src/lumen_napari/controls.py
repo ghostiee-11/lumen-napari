@@ -22,6 +22,7 @@ from superqt.utils import ensure_main_thread
 
 from .batch import join_plate_map, measure_files
 from .measure import measure, to_features
+from .region import choose_level, load_region, visible_region
 from .script import Script
 from .segment import segment
 
@@ -76,11 +77,15 @@ class NapariControls(CodeSourceControls):
         method: Literal["otsu", "cellpose"] = "otsu",
         min_size: int = 20,
         split_touching: bool = True,
+        visible_only: bool = False,
+        level: int = -1,
     ) -> SourceResult:
         """Find the objects (cells, nuclei, spots) in a napari image layer and measure each one.
 
         Use this to segment an image. It adds a labels layer to napari and returns one row per
-        object with its area, shape and intensity.
+        object with its area, shape and intensity. Large and multiscale images (such as
+        OME-Zarr) are read at the finest resolution level that fits in memory; set
+        visible_only to segment just the part on screen at full detail.
 
         Parameters
         ----------
@@ -92,26 +97,33 @@ class NapariControls(CodeSourceControls):
             Objects with fewer pixels than this are dropped.
         split_touching : bool
             Split touching objects with a watershed (otsu only).
+        visible_only : bool
+            Segment only the region currently visible in napari.
+        level : int
+            Resolution level of a multiscale image, 0 being full resolution. -1 picks the
+            finest level that fits in memory.
         """
         layer = self._layer(image_layer, Image)
-        image = intensity(layer)
+        region = visible_region(layer) if visible_only else None
+        level = choose_level(layer, region) if level < 0 else level
+        image, scale, translate = load_region(layer, level, region)
         labels = segment(image, method=method, min_size=min_size, split_touching=split_touching)
-        spacing = _floats(layer.scale[-labels.ndim:])
         unit = unit_of(layer)
-        df = measure(labels, image, spacing=spacing, unit=unit)
+        df = measure(labels, image, spacing=scale, unit=unit, origin=translate)
         name = f"{layer.name} labels"
-        self._publish(name, labels, df, layer)
+        _publish_labels(self.viewer, name, labels, to_features(df), scale, translate)
         table = table_name(name)
         self.script.load(layer)
         self.script.created(name)
         self.script.add(
-            f"image = intensity(viewer.layers[{layer.name!r}])",
+            f"image, scale, translate = load_region(viewer.layers[{layer.name!r}], "
+            f"level={level!r}, region={region!r})",
             f"labels = segment(image, method={method!r}, min_size={min_size!r}, "
             f"split_touching={split_touching!r})",
-            f"table = tables[{table!r}] = measure(labels, image, spacing={spacing!r}, "
-            f"unit={unit!r})",
+            f"table = tables[{table!r}] = measure(labels, image, spacing=scale, unit={unit!r}, "
+            "origin=translate)",
             f"viewer.add_labels(labels, name={name!r}, features=to_features(table), "
-            f"scale={spacing!r}, translate={_floats(layer.translate[-labels.ndim:])!r})",
+            "scale=scale, translate=translate)",
         )
         return self._publish_table(table, df)
 
@@ -135,7 +147,9 @@ class NapariControls(CodeSourceControls):
         spacing = _floats(layer.scale)
         unit = unit_of(layer)
         df = measure(labels, image, spacing=spacing, unit=unit)
-        self._publish(layer.name, labels, df, layer)
+        _publish_labels(
+            self.viewer, layer.name, labels, to_features(df), layer.scale, layer.translate
+        )
         table = table_name(layer.name)
         self.script.load(layer)
         image_code = "None"
@@ -265,23 +279,16 @@ class NapariControls(CodeSourceControls):
         what = " or ".join(k.__name__.lower() for k in kinds)
         raise ValueError(f"No {what} layer named {name!r}. Available: {names}.")
 
-    def _publish(self, name: str, labels: np.ndarray, df: pd.DataFrame, like: Layer) -> None:
-        _publish_labels(self.viewer, name, labels, to_features(df), like)
-
-
 @ensure_main_thread(await_return=True, timeout=60_000)
-def _publish_labels(
-    viewer: ViewerModel, name: str, labels: np.ndarray, features: pd.DataFrame, like: Layer
-) -> None:
+def _publish_labels(viewer: ViewerModel, name: str, labels: np.ndarray, features: pd.DataFrame,
+                    scale, translate) -> None:
     if name in viewer.layers:
         layer = viewer.layers[name]
         layer.data = labels
+        layer.scale, layer.translate = scale, translate
         layer.features = features
     else:
-        viewer.add_labels(
-            labels, name=name, features=features, scale=like.scale[-labels.ndim:],
-            translate=like.translate[-labels.ndim:],
-        )
+        viewer.add_labels(labels, name=name, features=features, scale=scale, translate=translate)
 
 
 def _read_table(path: str) -> tuple[pd.DataFrame, str]:

@@ -221,3 +221,33 @@ def test_segment_folder_joins_a_plate_map(qtbot, controls, plate, tmp_path):
                  plate_map=str(tmp_path / "map.csv"))
     df = query(result, f"SELECT compound, COUNT(*) AS n FROM {result.table} GROUP BY 1 ORDER BY 1")
     assert df.to_dict("list") == {"compound": ["DMSO", "taxol"], "n": [1, 5]}
+
+
+@pytest.fixture
+def big(viewer):
+    full = np.zeros((80, 80))
+    full[10:30, 10:30] = 1
+    full[50:70, 50:70] = 1
+    return viewer.add_image([full, full[::2, ::2]], multiscale=True, name="slide")
+
+
+def test_large_images_use_a_coarser_level(qtbot, viewer, controls, big, monkeypatch):
+    monkeypatch.setattr("lumen_napari.region.MAX_PIXELS", 2000)
+    result = run(qtbot, controls, "Segment Layer", image_layer="slide", min_size=0)
+    labels = viewer.layers["slide labels"]
+    assert labels.data.shape == (40, 40)
+    assert labels.scale[0] == 2
+    df = query(result, "SELECT area, centroid_0 FROM slide_labels ORDER BY label")
+    assert list(df.area) == [400, 400]
+    assert list(df.centroid_0) == [19, 59]
+
+
+def test_visible_only_segments_the_crop_at_full_detail(qtbot, viewer, controls, big):
+    big.data_level = 1
+    big.corner_pixels = np.array([[20, 20], [39, 39]])
+    result = run(qtbot, controls, "Segment Layer", image_layer="slide", min_size=0,
+                 visible_only=True)
+    labels = viewer.layers["slide labels"]
+    assert labels.data.shape == (40, 40)
+    assert tuple(labels.translate) == (40, 40)
+    assert query(result, "SELECT COUNT(*) AS n FROM slide_labels").n[0] == 1
