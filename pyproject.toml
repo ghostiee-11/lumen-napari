@@ -21,7 +21,8 @@ dependencies = [
 [project.optional-dependencies]
 qt = ["pyqt6"]
 cellpose = ["cellpose>=4"]
-test = ["pytest", "pytest-asyncio", "pytest-qt", "pooch"]
+bioio = ["bioio", "bioio-ome-tiff", "bioio-ome-zarr"]
+test = ["pytest", "pytest-asyncio", "pytest-qt", "pooch", "lumen-napari[bioio]"]
 
 [project.entry-points."napari.manifest"]
 lumen-napari = "lumen_napari:napari.yaml"
