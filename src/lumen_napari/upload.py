@@ -42,11 +42,24 @@ def upload_image(controls, extension: str, context, file_obj, alias: str, filena
 
 @ensure_main_thread(await_return=True, timeout=60_000)
 def _add_channels(viewer, stem: str, file) -> list[str]:
+    """Add each channel as an image layer, to the right of what is already open, so uploads
+    sit side by side instead of hiding each other."""
+    offset = _right_edge(viewer)
     names = []
     for channel, data in file.channels.items():
         name = stem if len(file.channels) == 1 else f"{stem} {channel}"
         kwargs = {"scale": file.spacing, "units": (file.unit,) * len(file.spacing)} \
             if file.spacing else {}
-        viewer.add_image(data, name=name, **kwargs)
+        translate = (0.0,) * (data.ndim - 1) + (offset,)
+        viewer.add_image(data, name=name, translate=translate, **kwargs)
         names.append(viewer.layers[-1].name)
+    viewer.fit_to_view()
     return names
+
+
+def _right_edge(viewer) -> float:
+    """Where the next image goes along x: past the open layers, with a 5% gap."""
+    if not len(viewer.layers):
+        return 0.0
+    right = max(layer.extent.world[1][-1] for layer in viewer.layers)
+    return float(right + 0.05 * abs(right))

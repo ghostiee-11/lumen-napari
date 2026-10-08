@@ -79,3 +79,14 @@ def test_lumen_uploader_sends_images_to_napari(qapp):
     assert [layer.name for layer in viewer.layers] == ["cells", "cells labels"]
     sources = uploader.outputs.get("sources", [])
     assert any("cells_labels" in source.get_tables() for source in sources)
+
+
+def test_uploads_sit_side_by_side(qtbot, controls):
+    handlers = image_upload_handlers(controls)
+    run(qtbot, handlers["png"], {}, png_bytes(), "first", "first")
+    run(qtbot, handlers["png"], {}, png_bytes(), "second", "second")
+    viewer = controls.viewer
+    first = viewer.layers["first"].extent.world
+    second = viewer.layers["second"].extent.world
+    assert second[0][-1] > first[1][-1]
+    assert tuple(viewer.layers["second labels"].translate) == tuple(viewer.layers["second"].translate)
