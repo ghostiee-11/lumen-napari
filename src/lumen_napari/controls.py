@@ -26,7 +26,7 @@ from .region import choose_level, load_region, visible_region
 from .regions import objects_by_region
 from .report import overlay_png, segmentation_report, size_note
 from .script import Script
-from .segment import segment
+from .segment import polarity, segment
 from .stats import compare, dose_response
 from .tiles import segment_tiled
 
@@ -114,11 +114,11 @@ class NapariControls(CodeSourceControls):
         model: str = "",
         reason: str = "",
         min_size: int = 20,
-        split_touching: bool = True,
+        split_touching: bool | None = None,
         visible_only: bool = False,
         level: int = -1,
         measure_layers: list[str] | None = None,
-        dark_objects: bool = False,
+        dark_objects: bool | None = None,
     ) -> SourceResult:
         """Find the objects (cells, nuclei, spots) in a napari image layer and measure each one.
 
@@ -141,7 +141,8 @@ class NapariControls(CodeSourceControls):
         min_size : int
             Objects with fewer pixels than this are dropped.
         split_touching : bool
-            Split touching objects with a watershed (otsu only).
+            Split touching objects with a watershed (otsu only). Leave empty to decide from
+            the image: off for cells inside walls, on otherwise.
         visible_only : bool
             Segment only the region currently visible in napari.
         level : int
@@ -153,8 +154,8 @@ class NapariControls(CodeSourceControls):
             layer that lines up with this one, such as the other channels of the same file.
         dark_objects : bool
             Find dark objects instead of bright ones (otsu only): cells outlined by bright
-            walls or membranes, as in plant tissue or a membrane stain. Use with
-            split_touching False, since the walls already separate the cells.
+            walls or membranes, or objects on a bright (brightfield) background. Leave empty
+            to detect it from the image, which is usually right.
         """
         layer = self._layer(image_layer, Image)
         if not measure_layers:
@@ -169,6 +170,12 @@ class NapariControls(CodeSourceControls):
             # Same image, same settings: reuse the result (hand edits keep it current).
             return SourceResult.from_source(self._source, table=table_name(name))
         image, scale, translate = load_region(layer, level, region)
+        detected = method == "otsu" and (dark_objects is None or split_touching is None)
+        if detected:
+            dark, walls = polarity(image)
+            dark_objects = dark if dark_objects is None else dark_objects
+            split_touching = (not walls) if split_touching is None else split_touching
+        split_touching = True if split_touching is None else split_touching
         labels = segment(image, method=method, min_size=min_size, split_touching=split_touching,
                          model=model, dark_objects=dark_objects)
         unit = unit_of(layer)
@@ -202,6 +209,9 @@ class NapariControls(CodeSourceControls):
         settings = {"method": method, **({"model": model} if model else {}),
                     "min_size": min_size, "split_touching": split_touching,
                     **({"dark_objects": True} if dark_objects else {}),
+                    **({"detected from the image": "dark objects inside walls" if dark_objects
+                        and not split_touching else "dark objects" if dark_objects
+                        else "bright objects"} if detected else {}),
                     "level": level, "region": region or "whole image"}
         self._post(
             segmentation_report(layer.name, len(df), settings,
