@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import functools
 import importlib.util
 from typing import Literal
 
@@ -11,7 +12,7 @@ from skimage import feature, filters, morphology, segmentation
 from skimage.color import rgb2gray
 from skimage.io import imread
 
-Method = Literal["otsu", "cellpose", "stardist", "bioimageio"]
+Method = Literal["auto", "otsu", "cellpose", "stardist", "bioimageio"]
 
 # When each method fits, shown to the LLM so it can pick and explain its choice.
 METHODS = {
@@ -60,6 +61,8 @@ def segment(
     inside a network of bright walls or membranes are found without splitting, since the
     walls already separate them."""
     image = _fill_nan(np.asarray(image))
+    if method == "auto":
+        method = choose_method(image)[0]
     if method == "otsu" and threshold is None and (dark_objects is None or split_touching is None):
         dark, walls = polarity(image)
         dark_objects = dark if dark_objects is None else dark_objects
@@ -95,6 +98,18 @@ def segment(
     markers = np.zeros(mask.shape, dtype=np.int32)
     markers[tuple(peaks.T)] = np.arange(1, len(peaks) + 1)
     return segmentation.watershed(-distance, markers, mask=mask).astype(np.int32)
+
+
+def choose_method(image: np.ndarray) -> tuple[str, str]:
+    """The method for an image and why: Cellpose for objects on a bright background (stained
+    tissue, brightfield), where a threshold fails, when it is installed; Otsu otherwise."""
+    dark, walls = polarity(image)
+    if not dark or walls:
+        return "otsu", "the objects stand out from the background, so a threshold finds them."
+    if available()["cellpose"]:
+        return "cellpose", "this looks like stained tissue or brightfield, where a threshold fails."
+    return "otsu", ("this looks like stained tissue or brightfield, which Cellpose segments much "
+                    f"better; install it with {INSTALL['cellpose']}.")
 
 
 def polarity(image: np.ndarray) -> tuple[bool, bool]:
@@ -147,12 +162,19 @@ def _missing(method: str) -> ImportError:
 
 
 def _cellpose(image: np.ndarray, diameter: float | None) -> np.ndarray:
+    masks = _cellpose_model().eval(image, diameter=diameter)[0]
+    return np.asarray(masks, dtype=np.int32)
+
+
+@functools.cache
+def _cellpose_model():
+    """The Cellpose model, loaded once (its weights are about a gigabyte), on the GPU (CUDA or
+    Apple MPS) when there is one, else the CPU."""
     try:
         from cellpose import models
     except ImportError as e:
         raise _missing("cellpose") from e
-    masks = models.CellposeModel(gpu=False).eval(image, diameter=diameter)[0]
-    return np.asarray(masks, dtype=np.int32)
+    return models.CellposeModel(gpu=True)
 
 
 def _stardist(image: np.ndarray, model: str) -> np.ndarray:

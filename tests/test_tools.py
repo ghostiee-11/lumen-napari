@@ -159,7 +159,11 @@ def test_set_voxel_size_in_3d(qapp):
     assert tuple(viewer.layers["stack"].scale) == (0.29, 0.26, 0.26)
 
 
-def test_segmentation_methods_lists_what_is_installed(qapp):
+def test_segmentation_methods_lists_what_is_installed(qapp, monkeypatch):
+    from lumen_napari import tools
+
+    monkeypatch.setattr(tools, "available", lambda: {
+        "otsu": True, "cellpose": False, "stardist": False, "bioimageio": False})
     text = make_tools(ViewerModel())[5].function()
     assert text.splitlines()[0].startswith("- otsu (installed): Fast global threshold")
     assert "- cellpose (not installed: pip install 'lumen-napari[cellpose]')" in text

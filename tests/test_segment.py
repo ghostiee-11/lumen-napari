@@ -52,7 +52,16 @@ def test_textured_3d_nuclei_do_not_shatter():
     assert 20 <= nuclei.max() <= 45
 
 
-def test_cellpose_is_called_on_cpu(monkeypatch):
+@pytest.fixture
+def fresh_cellpose():
+    from lumen_napari.segment import _cellpose_model
+
+    _cellpose_model.cache_clear()
+    yield
+    _cellpose_model.cache_clear()
+
+
+def test_cellpose_uses_the_gpu_when_there_is_one(monkeypatch, fresh_cellpose):
     import sys
     import types
 
@@ -69,11 +78,11 @@ def test_cellpose_is_called_on_cpu(monkeypatch):
     models = types.SimpleNamespace(CellposeModel=CellposeModel)
     monkeypatch.setitem(sys.modules, "cellpose", types.SimpleNamespace(models=models))
     labels = segment(blobs(), method="cellpose", diameter=12)
-    assert calls == {"gpu": False, "diameter": 12}
+    assert calls == {"gpu": True, "diameter": 12}  # Cellpose falls back to the CPU itself
     assert labels.dtype == np.int32
 
 
-def test_cellpose_missing_explains_the_extra(monkeypatch):
+def test_cellpose_missing_explains_the_extra(monkeypatch, fresh_cellpose):
     import sys
 
     monkeypatch.setitem(sys.modules, "cellpose", None)
@@ -204,3 +213,16 @@ def test_nan_pixels_are_background():
     image[5:12, 5:12] = 1
     image[0, :] = np.nan
     assert segment(image).max() == 1
+
+
+def test_auto_picks_cellpose_for_brightfield_when_installed(monkeypatch):
+    from lumen_napari import segment as seg
+
+    brightfield = np.ones((60, 60))
+    brightfield[10:20, 10:20] = brightfield[40:50, 40:50] = 0  # dark objects, bright background
+    monkeypatch.setattr(seg, "available", lambda: {"otsu": True, "cellpose": True})
+    assert seg.choose_method(brightfield)[0] == "cellpose"
+    assert seg.choose_method(grid_of_walls())[0] == "otsu"
+    monkeypatch.setattr(seg, "available", lambda: {"otsu": True, "cellpose": False})
+    method, why = seg.choose_method(brightfield)
+    assert method == "otsu" and "lumen-napari[cellpose]" in why

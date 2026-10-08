@@ -26,7 +26,7 @@ from .region import choose_level, load_region, rgb_channels, visible_region
 from .regions import objects_by_region
 from .report import overlay_png, segmentation_report, size_note
 from .script import Script
-from .segment import polarity, segment
+from .segment import choose_method, polarity, segment
 from .stats import compare, dose_response
 from .tiles import segment_tiled
 
@@ -110,7 +110,7 @@ class NapariControls(CodeSourceControls):
     def segment_layer(
         self,
         image_layer: str,
-        method: Literal["otsu", "cellpose", "stardist", "bioimageio"] = "otsu",
+        method: Literal["auto", "otsu", "cellpose", "stardist", "bioimageio"] = "auto",
         model: str = "",
         reason: str = "",
         min_size: int = 20,
@@ -132,9 +132,9 @@ class NapariControls(CodeSourceControls):
         image_layer : str
             Name of the napari image layer to segment.
         method : str
-            Segmentation method: 'otsu', 'cellpose', 'stardist' or 'bioimageio'. Use otsu
-            unless the user asks for another; it needs no setup and detects bright or dark
-            objects by itself.
+            Segmentation method: 'auto', 'otsu', 'cellpose', 'stardist' or 'bioimageio'.
+            Keep 'auto' unless the user asks for a method: it picks Otsu, or Cellpose for
+            stained tissue and brightfield when installed, and says why.
         model : str
             For stardist or bioimageio: the model name or BioImage.IO id. Usually empty.
         reason : str
@@ -176,6 +176,9 @@ class NapariControls(CodeSourceControls):
             # Same image, same settings: reuse the result (hand edits keep it current).
             return SourceResult.from_source(self._source, table=table_name(name))
         image, scale, translate = load_region(layer, level, region)
+        if method == "auto":
+            method, why = choose_method(image)
+            reason = reason or why
         detected = method == "otsu" and (dark_objects is None or split_touching is None)
         if detected:
             dark, walls = polarity(image)
@@ -322,7 +325,7 @@ class NapariControls(CodeSourceControls):
         self,
         folder: str,
         pattern: str = "*.tif",
-        method: Literal["otsu", "cellpose", "stardist", "bioimageio"] = "otsu",
+        method: Literal["auto", "otsu", "cellpose", "stardist", "bioimageio"] = "auto",
         model: str = "",
         reason: str = "",
         min_size: int = 20,
@@ -347,9 +350,9 @@ class NapariControls(CodeSourceControls):
         pattern : str
             Glob pattern for the image files, such as '*.tif' or '*.png'.
         method : str
-            Segmentation method: 'otsu', 'cellpose', 'stardist' or 'bioimageio'. Use otsu
-            unless the user asks for another; it needs no setup and detects bright or dark
-            objects by itself.
+            Segmentation method: 'auto', 'otsu', 'cellpose', 'stardist' or 'bioimageio'.
+            Keep 'auto' unless the user asks for a method: it picks Otsu, or Cellpose for
+            stained tissue and brightfield when installed, and says why.
         model : str
             For stardist or bioimageio: the model name or BioImage.IO id. Usually empty.
         reason : str
