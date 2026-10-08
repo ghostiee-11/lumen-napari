@@ -105,3 +105,16 @@ def test_folder_with_plate_map_replays(viewer, tmp_path):
     result = controls.segment_folder(str(tmp_path), "*.png", min_size=0, plate_map=str(tmp_path / "map.csv"))
     _, tables = replay(controls.script, viewer)
     pd.testing.assert_frame_equal(tables[result.table], table(result))
+
+
+def test_channel_steps_replay(viewer):
+    viewer.add_image(viewer.layers["nuclei"].data * 3, name="actin", scale=(0.5, 0.5))
+    controls = NapariControls(viewer=viewer)
+    df = table(controls.segment_layer("nuclei", min_size=0, measure_layers=["actin"]))
+    fresh = ViewerModel()
+    fresh.add_image(viewer.layers["nuclei"].data, name="nuclei", scale=(0.5, 0.5))
+    fresh.add_image(viewer.layers["actin"].data, name="actin", scale=(0.5, 0.5))
+    namespace = {"viewer": fresh, "tables": {}, "segment": segment, "measure": measure,
+                 "to_features": to_features, "load_region": load_region}
+    exec(controls.script.body(), namespace)  # noqa: S102
+    pd.testing.assert_frame_equal(namespace["tables"]["nuclei_labels"], df)

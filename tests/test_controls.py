@@ -251,3 +251,15 @@ def test_visible_only_segments_the_crop_at_full_detail(qtbot, viewer, controls, 
     assert labels.data.shape == (40, 40)
     assert tuple(labels.translate) == (40, 40)
     assert query(result, "SELECT COUNT(*) AS n FROM slide_labels").n[0] == 1
+
+
+def test_measure_other_channels(qtbot, viewer, controls):
+    viewer.add_image(viewer.layers["nuclei"].data * 10, name="Tubulin")
+    result = run(qtbot, controls, "Segment Layer", image_layer="nuclei", min_size=0,
+                 measure_layers=["Tubulin"])
+    df = query(result, "SELECT intensity_mean, intensity_mean_tubulin FROM nuclei_labels ORDER BY label")
+    assert list(df.intensity_mean_tubulin) == list(df.intensity_mean * 10)
+
+    result = run(qtbot, controls, "Measure Layer", labels_layer="nuclei labels",
+                 measure_layers=["Tubulin"])
+    assert "intensity_max_tubulin" in query(result, "SELECT * FROM nuclei_labels").columns

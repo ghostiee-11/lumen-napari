@@ -79,6 +79,7 @@ class NapariControls(CodeSourceControls):
         split_touching: bool = True,
         visible_only: bool = False,
         level: int = -1,
+        measure_layers: list[str] | None = None,
     ) -> SourceResult:
         """Find the objects (cells, nuclei, spots) in a napari image layer and measure each one.
 
@@ -102,6 +103,9 @@ class NapariControls(CodeSourceControls):
         level : int
             Resolution level of a multiscale image, 0 being full resolution. -1 picks the
             finest level that fits in memory.
+        measure_layers : list[str]
+            Other image layers (channels such as tubulin or actin) to measure intensity in,
+            each giving columns like intensity_mean_tubulin.
         """
         layer = self._layer(image_layer, Image)
         region = visible_region(layer) if visible_only else None
@@ -109,25 +113,40 @@ class NapariControls(CodeSourceControls):
         image, scale, translate = load_region(layer, level, region)
         labels = segment(image, method=method, min_size=min_size, split_touching=split_touching)
         unit = unit_of(layer)
-        df = measure(labels, image, spacing=scale, unit=unit, origin=translate)
+        channels = {
+            table_name(name): load_region(self._layer(name, Image), level, region)[0]
+            for name in measure_layers or []
+        }
+        df = measure(labels, image, spacing=scale, unit=unit, origin=translate, channels=channels)
         name = f"{layer.name} labels"
         _publish_labels(self.viewer, name, labels, to_features(df), scale, translate)
         table = table_name(name)
         self.script.load(layer)
         self.script.created(name)
+        for name in measure_layers or []:
+            self.script.load(self._layer(name, Image))
+        channel_code = ", ".join(
+            f"{table_name(name)!r}: load_region(viewer.layers[{name!r}], {level!r}, {region!r})[0]"
+            for name in measure_layers or []
+        )
         self.script.add(
             f"image, scale, translate = load_region(viewer.layers[{layer.name!r}], "
             f"level={level!r}, region={region!r})",
             f"labels = segment(image, method={method!r}, min_size={min_size!r}, "
             f"split_touching={split_touching!r})",
             f"table = tables[{table!r}] = measure(labels, image, spacing=scale, unit={unit!r}, "
-            "origin=translate)",
+            f"origin=translate, channels={{{channel_code}}})",
             f"viewer.add_labels(labels, name={name!r}, features=to_features(table), "
             "scale=scale, translate=translate)",
         )
         return self._publish_table(table, df)
 
-    def measure_layer(self, labels_layer: str, image_layer: str | None = None) -> SourceResult:
+    def measure_layer(
+        self,
+        labels_layer: str,
+        image_layer: str | None = None,
+        measure_layers: list[str] | None = None,
+    ) -> SourceResult:
         """Measure the objects of a napari labels layer that already exists.
 
         Only for labels layers, such as ones drawn by hand or made by another plugin. To find
@@ -139,6 +158,9 @@ class NapariControls(CodeSourceControls):
             Name of the napari labels layer to measure.
         image_layer : str
             Optional image layer to measure intensities from.
+        measure_layers : list[str]
+            More image layers (channels) to measure intensity in, each giving columns like
+            intensity_mean_actin.
         """
         layer = self._layer(labels_layer, Labels)
         labels = np.asarray(layer.data)
@@ -146,7 +168,10 @@ class NapariControls(CodeSourceControls):
         image = intensity(image_source) if image_source else None
         spacing = _floats(layer.scale)
         unit = unit_of(layer)
-        df = measure(labels, image, spacing=spacing, unit=unit)
+        channels = {
+            table_name(name): intensity(self._layer(name, Image)) for name in measure_layers or []
+        }
+        df = measure(labels, image, spacing=spacing, unit=unit, channels=channels)
         _publish_labels(
             self.viewer, layer.name, labels, to_features(df), layer.scale, layer.translate
         )
@@ -156,10 +181,15 @@ class NapariControls(CodeSourceControls):
         if image_source:
             self.script.load(image_source)
             image_code = f"intensity(viewer.layers[{image_source.name!r}])"
+        for name in measure_layers or []:
+            self.script.load(self._layer(name, Image))
+        channel_code = ", ".join(
+            f"{table_name(name)!r}: intensity(viewer.layers[{name!r}])" for name in measure_layers or []
+        )
         self.script.add(
             f"labels = viewer.layers[{layer.name!r}].data",
             f"table = tables[{table!r}] = measure(labels, {image_code}, "
-            f"spacing={spacing!r}, unit={unit!r})",
+            f"spacing={spacing!r}, unit={unit!r}, channels={{{channel_code}}})",
             f"viewer.layers[{layer.name!r}].features = to_features(table)",
         )
         return self._publish_table(table, df)
