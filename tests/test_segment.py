@@ -50,3 +50,32 @@ def test_textured_3d_nuclei_do_not_shatter():
     nuclei = segment(data.cells3d()[:, 1], min_size=20)
     # About thirty nuclei are in view; the old seeding found over a thousand pieces.
     assert 20 <= nuclei.max() <= 45
+
+
+def test_cellpose_is_called_on_cpu(monkeypatch):
+    import sys
+    import types
+
+    calls = {}
+
+    class CellposeModel:
+        def __init__(self, gpu):
+            calls["gpu"] = gpu
+
+        def eval(self, image, diameter=None):
+            calls["diameter"] = diameter
+            return np.ones(image.shape, np.uint16), None, None
+
+    models = types.SimpleNamespace(CellposeModel=CellposeModel)
+    monkeypatch.setitem(sys.modules, "cellpose", types.SimpleNamespace(models=models))
+    labels = segment(blobs(), method="cellpose", diameter=12)
+    assert calls == {"gpu": False, "diameter": 12}
+    assert labels.dtype == np.int32
+
+
+def test_cellpose_missing_explains_the_extra(monkeypatch):
+    import sys
+
+    monkeypatch.setitem(sys.modules, "cellpose", None)
+    with pytest.raises(ImportError, match=r"lumen-napari\[cellpose\]"):
+        segment(blobs(), method="cellpose")
