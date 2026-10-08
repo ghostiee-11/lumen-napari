@@ -36,3 +36,11 @@ def test_sessions_share_the_server_script(qapp, llm):
     server = LumenServer(ViewerModel(), llm=llm)
     ui = build_ui(server.viewer, server.script, llm=llm)
     assert ui.source_controls[0].script is server.script
+
+
+def test_object_explorer_is_available(qapp, llm):
+    viewer = ViewerModel()
+    ui = build_ui(viewer, llm=llm)
+    [explorer] = ui.analyses
+    assert explorer.name == "ObjectExplorer"
+    assert explorer.instance().viewer is viewer

@@ -11,6 +11,7 @@ from lumen.ai.ui import ExplorerUI
 from napari.components import ViewerModel
 
 from .controls import NapariControls
+from .explorer import explorer_for
 from .script import Script
 from .tools import make_tools
 
@@ -18,6 +19,7 @@ SUGGESTIONS = [
     ("biotech", "Segment the nuclei layer and plot the distribution of object area"),
     ("search", "Which objects are the brightest? Show the top one in napari"),
     ("scatter_plot", "Plot area against mean intensity for every object"),
+    ("touch_app", "Explore the objects and click one to see it in napari"),
 ]
 
 
@@ -29,6 +31,7 @@ def build_ui(viewer: ViewerModel, script: Script | None = None, **params) -> Exp
     return ExplorerUI(
         source_controls=[controls, UploadSourceControls],
         tools=make_tools(viewer),
+        analyses=[explorer_for(viewer)],
         **params,
     )
 
