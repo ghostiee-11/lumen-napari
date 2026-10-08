@@ -16,6 +16,7 @@ lumen-napari connects [napari](https://napari.org) to [Lumen](https://github.com
 - **Segment** an image layer (Otsu with watershed splitting, or Cellpose) and add the result as a labels layer.
 - **Measure** every object (area, centroid, bounding box, shape, intensity) in physical units taken from the layer scale. Measurements are also stored on the labels layer, so hovering an object in napari shows its values.
 - **Load features** that other plugins wrote on points, shapes, labels, tracks, surface or vectors layers.
+- **Batch** a whole folder or plate into one table without opening each image. Rows are keyed by `image_id` and by `well` when file names contain one (`plate1_B02_s1.tif`). Pass a plate map (`.csv`, `.tsv`, `.xlsx`, `.parquet` with a `well` or `image_id` column) to join compounds and doses onto every object.
 - **Ask** follow-up questions in plain language. Lumen writes the SQL and charts, and you can upload a CSV (a plate map, treatments) to join with the measurements.
 - **Show** any object in napari: "show me the largest nucleus" zooms the viewer to it and selects it.
 - **Click back** from a chart: ask to "explore the objects" for a scatter of every object. Clicking a point zooms napari to that object.
@@ -48,6 +49,7 @@ Lumen supports OpenAI, Anthropic, Google, Mistral, Azure, Ollama, llama.cpp and 
    - "Which objects are the brightest? Show the top one in napari"
    - "Plot area against mean intensity for every object"
    - "Explore the objects and click one to see it in napari"
+   - "Segment every image in ~/data/plate1 with the plate map ~/data/plate1_map.csv. Which compounds shrink nuclei compared to DMSO?"
 
 The chat server only listens on `localhost`, and it stops when napari closes.
 
