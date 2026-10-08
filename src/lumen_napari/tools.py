@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+import functools
+
 import duckdb
 import numpy as np
 import param
@@ -33,8 +35,9 @@ class ViewerTool(FunctionTool):
             raise
 
 
-def make_tools(viewer: ViewerModel) -> list[ViewerTool]:
-    """Build the Lumen tools that read and steer the viewer."""
+def make_tools(viewer: ViewerModel, controls=None) -> list[ViewerTool]:
+    """Build the Lumen tools that read and steer the viewer. With the session's napari
+    controls, statistics on their tables are a tool too."""
 
     def list_napari_layers() -> str:
         """List the layers open in napari with their type, shape and pixel size."""
@@ -180,7 +183,18 @@ def make_tools(viewer: ViewerModel) -> list[ViewerTool]:
         ViewerTool(filter_objects),
         ViewerTool(set_pixel_size),
         ViewerTool(segmentation_methods),
-    ]
+    ] + ([_compare_tool(controls)] if controls is not None else [])
+
+
+def _compare_tool(controls) -> ViewerTool:
+    """compare_conditions as its own planner step, after the measurements exist, so its
+    results reach the answer as text."""
+
+    @functools.wraps(controls.compare_conditions)
+    def compare_conditions(**params) -> str:
+        return controls.compare_conditions(**params)
+
+    return ViewerTool(compare_conditions, provides=["comparison"])
 
 
 def _describe(layer: Layer) -> str:

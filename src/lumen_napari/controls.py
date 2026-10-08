@@ -83,8 +83,7 @@ class NapariControls(CodeSourceControls):
     def __init__(self, viewer: ViewerModel, **params):
         actions = (
             self.segment_layer, self.measure_layer, self.layer_features, self.segment_folder,
-            self.load_table, self.measure_regions, self.compare_conditions,
-            self.segment_whole_slide,
+            self.load_table, self.measure_regions, self.segment_whole_slide,
         )
         functions = {action.__name__: self._reporting(action) for action in actions}
         params.setdefault("script", Script())
@@ -465,7 +464,7 @@ class NapariControls(CodeSourceControls):
         control: str,
         replicate: str = "well",
         dose: str = "",
-    ) -> SourceResult:
+    ) -> str:
         """Compare conditions (compounds, treatments) against a control the statistically sound
         way. Use this, not a plain average over cells, for questions like "which compounds
         change nuclear size compared to DMSO?".
@@ -507,7 +506,7 @@ class NapariControls(CodeSourceControls):
             f"tables[{name!r}] = compare(tables[{table!r}], {measurement!r}, {condition!r}, "
             f"{control!r}, {replicate!r})",
         )
-        self._post(
+        text = (
             f"**Compared `{measurement}` across `{condition}` against `{control}`** into table "
             f"`{name}`.\n\nMethod: each {replicate} is one replicate, summarised by the median "
             f"of its objects, so wells with many cells do not outweigh wells with few. Means, "
@@ -517,7 +516,9 @@ class NapariControls(CodeSourceControls):
             + (f" Dose-response: four-parameter logistic fit against `{dose}`." if dose else "")
             + "\n\n" + _verdicts(result, condition, control)
         )
-        return self._publish_table(name, result)
+        self._post(text)
+        self._publish_table(name, result)
+        return f"{text}\n\n{_markdown_table(result)}"
 
     def _post(self, text: str, png: bytes | None = None) -> None:
         self.script.cards.append((text, png))
@@ -591,6 +592,13 @@ def _publish_labels(viewer: ViewerModel, name: str, labels: np.ndarray, features
 def _why(method: str, reason: str) -> str:
     """The method choice, explained."""
     return f"\n\n**Why {method}:** {reason}" if reason else ""
+
+
+def _markdown_table(df: pd.DataFrame) -> str:
+    """A small table as markdown, numbers rounded."""
+    rows = [[f"{v:.3g}" if isinstance(v, float) else str(v) for v in row] for row in df.to_numpy()]
+    lines = ["| " + " | ".join(map(str, df.columns)) + " |", "|" + "---|" * len(df.columns)]
+    return "\n".join(lines + ["| " + " | ".join(row) + " |" for row in rows])
 
 
 def _verdicts(result: pd.DataFrame, condition: str, control: str) -> str:

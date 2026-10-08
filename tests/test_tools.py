@@ -175,3 +175,20 @@ def test_segmentation_methods_lists_what_is_installed(qapp):
     text = make_tools(ViewerModel())[5].function()
     assert text.splitlines()[0].startswith("- otsu (installed): Fast global threshold")
     assert "- cellpose (not installed: pip install 'lumen-napari[cellpose]')" in text
+
+
+async def test_compare_tool_hands_its_results_to_the_answer(qapp):
+    import pandas as pd
+
+    from lumen_napari.controls import NapariControls
+
+    viewer = ViewerModel()
+    controls = NapariControls(viewer=viewer)
+    controls._publish_table("objects", pd.DataFrame({
+        "well": ["A1", "A2", "B1", "B2"], "compound": ["DMSO", "DMSO", "x", "x"],
+        "area": [100.0, 110.0, 200.0, 230.0]}))
+    tool = make_tools(viewer, controls)[-1]
+    assert tool.name == "compare_conditions"
+    _, context = await tool.respond([], {}, table="objects", measurement="area",
+                                    condition="compound", control="DMSO", replicate="well", dose="")
+    assert "`x`: fold change 2.05" in context["comparison"]

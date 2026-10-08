@@ -47,7 +47,7 @@ def test_table_name():
 def test_actions_are_registered(controls):
     assert [name for name, _ in controls.as_tools()] == [
         "Segment Layer", "Measure Layer", "Layer Features", "Segment Folder", "Load Table",
-        "Measure Regions", "Compare Conditions", "Segment Whole Slide",
+        "Measure Regions", "Segment Whole Slide",
     ]
 
 
@@ -96,7 +96,7 @@ def test_lumen_source_agent_builds_every_action(controls):
     tools = SourceAgent._build_tools({"source_controls": [controls]}, result_store=[])
     assert [tool.name for tool in tools] == [
         "segment_layer", "measure_layer", "layer_features", "segment_folder", "load_table",
-        "measure_regions", "compare_conditions", "segment_whole_slide",
+        "measure_regions", "segment_whole_slide",
     ]
 
 
@@ -353,10 +353,11 @@ def test_compare_conditions_uses_wells_as_replicates(qtbot, controls, posts, tmp
         rows += [{"well": well, "compound": compound, "area": area}] * n
     pd.DataFrame(rows).to_csv(tmp_path / "objects.csv", index=False)
     run(qtbot, controls, "Load Table", path=str(tmp_path / "objects.csv"))
-    result = run(qtbot, controls, "Compare Conditions", table="objects", measurement="area",
-                 condition="compound", control="DMSO")
-    assert result.table == "objects_vs_dmso"
-    df = query(result, "SELECT compound, replicates, mean_area FROM objects_vs_dmso ORDER BY compound")
+    answer = controls.compare_conditions(table="objects", measurement="area",
+                                         condition="compound", control="DMSO")
+    assert "| compound | replicates | objects | mean_area |" in answer
+    df = controls._source.execute(
+        "SELECT compound, replicates, mean_area FROM objects_vs_dmso ORDER BY compound")
     assert df.to_dict("list") == {"compound": ["DMSO", "nocodazole", "taxol"],
                                   "replicates": [2, 1, 2], "mean_area": [105.0, 60.0, 210.0]}
     text = posts[-1][0]
@@ -365,10 +366,10 @@ def test_compare_conditions_uses_wells_as_replicates(qtbot, controls, posts, tmp
     assert "`taxol`: fold change 2.00" in text
 
 
-def test_compare_conditions_needs_a_known_table(qtbot, controls):
-    result = run(qtbot, controls, "Compare Conditions", table="nope", measurement="area",
-                 condition="compound", control="DMSO")
-    assert "No table 'nope'" in result.message
+def test_compare_conditions_needs_a_known_table(controls):
+    with pytest.raises(ValueError, match="No table 'nope'"):
+        controls.compare_conditions(table="nope", measurement="area", condition="compound",
+                                    control="DMSO")
 
 
 def test_segment_whole_slide(qtbot, viewer, controls, posts):

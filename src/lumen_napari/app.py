@@ -35,7 +35,7 @@ def build_ui(viewer: ViewerModel, script: Script | None = None, **params) -> Exp
     params.setdefault("suggestions", SUGGESTIONS)
     ui = ExplorerUI(
         source_controls=[controls, UploadSourceControls],
-        tools=make_tools(viewer),
+        tools=make_tools(viewer, controls),
         analyses=[explorer_for(viewer), plate_for(viewer)],
         **params,
     )
