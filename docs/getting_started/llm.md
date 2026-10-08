@@ -30,6 +30,26 @@ napari
 !!! warning "Keep keys out of files"
     Do not paste API keys into scripts, notebooks or the chat. Set them in your shell or a secret manager, and rotate a key that was shared by accident.
 
+## Use your Claude, ChatGPT, Copilot or Antigravity subscription
+
+Lumen can run on a coding CLI you are already signed in to, so no API key is needed. Install and sign in to the CLI first, then name the provider in `LUMEN_NAPARI_PROVIDER` before starting napari:
+
+| Subscription | CLI to sign in to | `LUMEN_NAPARI_PROVIDER` |
+|---|---|---|
+| Claude (Pro, Max, Team) | [Claude Code](https://claude.com/claude-code) (`claude`) | `claude-code` |
+| ChatGPT (Plus, Pro, Team) | [Codex CLI](https://github.com/openai/codex) (`codex`) | `codex-cli` |
+| GitHub Copilot | [Copilot CLI](https://github.com/github/copilot-cli) (`copilot`) | `copilot-cli` |
+| Google Antigravity | Antigravity CLI (`agy`) | `antigravity-cli` |
+
+```bash
+export LUMEN_NAPARI_PROVIDER=claude-code
+napari
+```
+
+These providers run the CLI in a read-only or planning mode and are meant for local use. They are slower than an API key, because each answer waits for the CLI to finish, and they cannot read images.
+
+`LUMEN_NAPARI_PROVIDER` takes any Lumen provider name, so it also forces a key-based one when several keys are set, for example `anthropic` or `ollama`. An unknown name fails with the list of valid ones.
+
 ## Choosing a model in Python
 
 To pick the provider and model yourself, start the chat from Python and pass an `llm`. Every keyword argument of `LumenServer` goes to Lumen's `ExplorerUI`:
