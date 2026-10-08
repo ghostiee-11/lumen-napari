@@ -90,3 +90,11 @@ def test_read_image_converts_rgb_to_gray(tmp_path):
     imsave(tmp_path / "gray.png", np.zeros((6, 6), np.uint8), check_contrast=False)
     assert read_image(tmp_path / "rgb.png").shape == (6, 6)
     assert read_image(tmp_path / "gray.png").shape == (6, 6)
+
+
+def test_a_fixed_threshold_replaces_otsu():
+    image = np.zeros((20, 20))
+    image[2:6, 2:6] = 10
+    image[10:14, 10:14] = 3
+    assert segment(image, split_touching=False).max() == 2
+    assert segment(image, split_touching=False, threshold=5).max() == 1

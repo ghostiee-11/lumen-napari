@@ -27,8 +27,10 @@ def segment(
     min_size: int = 0,
     split_touching: bool = True,
     diameter: float | None = None,
+    threshold: float | None = None,
 ) -> np.ndarray:
-    """Segment bright objects in a 2D or 3D image and return a label image."""
+    """Segment bright objects in a 2D or 3D image and return a label image. `threshold`
+    replaces Otsu's, so tiles of one large image share a single cut-off."""
     image = np.asarray(image)
     if method == "cellpose":
         return _cellpose(image, diameter)
@@ -38,7 +40,8 @@ def segment(
         # Volumes are noisy and nuclei textured; unsmoothed they shatter into thousands of
         # pieces. 2D stays unsmoothed, since smoothing shifts edges by about a pixel.
         image = filters.gaussian(image.astype(float), sigma=2)
-    mask = ndi.binary_fill_holes(image > filters.threshold_otsu(image))
+    cut = filters.threshold_otsu(image) if threshold is None else threshold
+    mask = ndi.binary_fill_holes(image > cut)
     if min_size:
         mask = morphology.remove_small_objects(mask, max_size=min_size - 1)
     objects = ndi.label(mask)[0]
