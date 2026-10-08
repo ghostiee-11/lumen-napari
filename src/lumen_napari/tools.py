@@ -11,6 +11,7 @@ from napari.utils.colormaps import DirectLabelColormap, ensure_colormap, label_c
 from superqt.utils import ensure_main_thread
 
 from .batch import open_in_viewer
+from .controls import find_layer
 from .focus import focus_label
 
 
@@ -181,9 +182,8 @@ def _labels_layer(viewer: ViewerModel, name: str) -> Labels:
         raise ValueError("napari has no labels layer. Segment an image first.")
     if not name:
         return layers[-1]
-    for layer in layers:
-        if layer.name == name:
-            return layer
+    if found := find_layer(layers, name):
+        return found
     raise ValueError(f"No labels layer named {name!r}. Available: {[l.name for l in layers]}.")
 
 

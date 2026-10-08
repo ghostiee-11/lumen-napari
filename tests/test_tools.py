@@ -133,3 +133,10 @@ def test_filter_sql_cannot_read_files(qapp):
     filter_objects = make_tools(ranked_viewer(qapp))[3].function
     with pytest.raises(Exception, match="disabled"):
         filter_objects("label IN (SELECT 1 FROM read_csv('/etc/hosts'))")
+
+
+def test_layers_are_found_by_their_table_name(qapp):
+    viewer = ViewerModel()
+    viewer.add_labels(np.ones((4, 4), int), name="nuclei labels")
+    show = make_tools(viewer)[1].function
+    assert show(1, labels_layer="nuclei_labels") == "Showing object 1 of 'nuclei labels' in napari."

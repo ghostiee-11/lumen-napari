@@ -51,6 +51,18 @@ def table_name(layer_name: str) -> str:
     return re.sub(r"[^0-9A-Za-z]+", "_", layer_name).strip("_").lower() or "layer"
 
 
+def find_layer(layers, name: str) -> Layer | None:
+    """The layer with this name, also matched by its table name, since the LLM often uses the
+    table name ("nuclei_labels") for the layer ("nuclei labels")."""
+    for layer in layers:
+        if layer.name == name:
+            return layer
+    for layer in layers:
+        if table_name(layer.name) == table_name(name):
+            return layer
+    return None
+
+
 class NapariControls(CodeSourceControls):
     """Expose segmentation and measurement of napari layers as Lumen data sources."""
 
@@ -358,9 +370,8 @@ class NapariControls(CodeSourceControls):
 
     def _layer(self, name: str, kind: type[Layer] | tuple[type[Layer], ...]) -> Layer:
         layers = [layer for layer in self.viewer.layers if isinstance(layer, kind)]
-        for layer in layers:
-            if layer.name == name:
-                return layer
+        if found := find_layer(layers, name):
+            return found
         names = ", ".join(repr(layer.name) for layer in layers) or "none"
         kinds = kind if isinstance(kind, tuple) else (kind,)
         what = " or ".join(k.__name__.lower() for k in kinds)
