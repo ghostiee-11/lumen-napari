@@ -263,3 +263,7 @@ def test_measure_other_channels(qtbot, viewer, controls):
     result = run(qtbot, controls, "Measure Layer", labels_layer="nuclei labels",
                  measure_layers=["Tubulin"])
     assert "intensity_max_tubulin" in query(result, "SELECT * FROM nuclei_labels").columns
+
+
+def test_table_names_are_ascii():
+    assert table_name("Kern β-Färbung") == "kern_f_rbung"

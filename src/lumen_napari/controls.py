@@ -47,7 +47,7 @@ def unit_of(layer: Layer) -> str | None:
 
 def table_name(layer_name: str) -> str:
     """SQL-safe table name for a layer."""
-    return re.sub(r"\W+", "_", layer_name).strip("_").lower() or "layer"
+    return re.sub(r"[^0-9A-Za-z]+", "_", layer_name).strip("_").lower() or "layer"
 
 
 class NapariControls(CodeSourceControls):
