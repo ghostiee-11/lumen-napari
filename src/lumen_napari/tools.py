@@ -8,6 +8,7 @@ import re
 import duckdb
 import numpy as np
 import param
+from lumen.ai.agents.source import SourceOutputs
 from lumen.ai.schemas import get_metaset
 from lumen.ai.tools import FunctionTool
 from lumen.ai.utils import describe_data
@@ -35,6 +36,13 @@ class ViewerTool(FunctionTool):
         The session's napari controls. With them, the tool also hands Lumen the current
         measurement table (source, table, pipeline), so charts and SQL can build on objects a
         tool segmented.""")
+
+    def __init__(self, function, **params):
+        super().__init__(function, **params)
+        if "table" in self.provides:
+            # The planner checks what a step provides through output_schema, not provides;
+            # without it, charts after a napari tool look blocked and every plan is rejected.
+            self.output_schema = SourceOutputs
 
     # ponytail: drop step_title once Lumen's FunctionTool stops forwarding it to the function
     async def respond(self, messages, context, step_title=None, **kwargs):

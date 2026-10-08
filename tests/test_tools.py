@@ -298,3 +298,12 @@ async def test_action_tools_segment_and_hand_lumen_the_table(qapp):
     assert "nuclei labels" in viewer.layers
     assert out["table"] == "nuclei_labels"
     assert "Loaded 1 rows" in out["data"]
+
+
+def test_table_tools_tell_the_planner_what_they_provide(qapp):
+    from lumen_napari.controls import NapariControls
+
+    viewer = ViewerModel()
+    tools = {t.function.__name__: t for t in make_tools(viewer, NapariControls(viewer=viewer))}
+    assert {"table", "pipeline", "data"} <= set(tools["color_objects_by"].output_schema.__annotations__)
+    assert "table" not in tools["segmentation_methods"].output_schema.__annotations__
