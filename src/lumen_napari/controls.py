@@ -201,7 +201,15 @@ class NapariControls(CodeSourceControls):
             More image layers (channels) to measure intensity in, each giving columns like
             intensity_mean_actin.
         """
-        layer = self._layer(labels_layer, Labels)
+        existing = [layer for layer in self.viewer.layers if isinstance(layer, Labels)]
+        images = [layer.name for layer in self.viewer.layers if isinstance(layer, Image)]
+        if not existing and (image_layer or images):
+            # Nothing is segmented yet: segment the image rather than fail.
+            return self.segment_layer(
+                image_layer=image_layer or images[0], measure_layers=measure_layers,
+                reason="There was no labels layer yet, so the image was segmented first.",
+            )
+        layer = self._layer(labels_layer, Labels) if labels_layer else existing[-1]
         labels = np.asarray(layer.data)
         image_source = self._layer(image_layer, Image) if image_layer else None
         image = intensity(image_source) if image_source else None

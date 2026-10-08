@@ -392,3 +392,16 @@ def test_the_method_reason_is_reported(qtbot, controls, posts):
         reason="Bright, well separated nuclei on a dark background.")
     assert posts[-1][0].endswith(
         "**Why otsu:** Bright, well separated nuclei on a dark background.")
+
+
+def test_measuring_without_labels_segments_first(qtbot, viewer, controls, posts):
+    result = run(qtbot, controls, "Measure Layer", labels_layer="")
+    assert result.table == "nuclei_labels"
+    assert "nuclei labels" in viewer.layers
+    assert "no labels layer yet" in posts[-1][0]
+
+
+def test_measuring_with_no_name_uses_the_latest_labels(qtbot, viewer, controls):
+    run(qtbot, controls, "Segment Layer", image_layer="nuclei", min_size=0)
+    result = run(qtbot, controls, "Measure Layer", labels_layer="")
+    assert result.table == "nuclei_labels"
