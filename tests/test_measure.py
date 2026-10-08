@@ -62,3 +62,9 @@ def test_3d_size_is_called_volume():
     labels = np.zeros((4, 6, 6), int)
     labels[1:3, 1:4, 1:4] = 1
     assert measure(labels, unit="um").volume_um3[0] == 18
+
+
+def test_origin_moves_centroids_to_world_space():
+    df = measure(two_objects(), origin=(100, 200))
+    assert list(df.centroid_0) == [101.5, 106.5]
+    assert list(df.centroid_1) == [201.5, 206.5]

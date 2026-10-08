@@ -21,11 +21,13 @@ def measure(
     intensity: np.ndarray | None = None,
     spacing: Sequence[float] | None = None,
     unit: str | None = None,
+    origin: Sequence[float] | None = None,
 ) -> pd.DataFrame:
     """Return one row per label with shape and, if an image is given, intensity columns.
 
     In 3D `area` is called `volume`. With a `unit` (the physical unit of `spacing`), size
     columns get it as a suffix, such as `area_um2` or `centroid_0_um`. `bbox` stays in pixels.
+    `origin` is added to the centroids, to place objects of a cropped image in world space.
     """
     labels = np.asarray(labels)
     properties = SHAPE + (SHAPE_2D if labels.ndim == 2 else ())
@@ -36,6 +38,8 @@ def measure(
     )
     df = pd.DataFrame(table)
     df.columns = [c.replace("-", "_") for c in df.columns]
+    for axis, offset in enumerate(origin or ()):
+        df[f"centroid_{axis}"] += offset
     size = "area" if labels.ndim == 2 else "volume"
     df = df.rename(columns={"area": size})
     if unit:
