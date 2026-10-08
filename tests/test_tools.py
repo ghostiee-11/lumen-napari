@@ -169,3 +169,9 @@ async def test_tool_failures_are_posted(qapp):
         "⚠️ **napari tool `show_object_in_napari` failed**: "
         "napari has no labels layer. Segment an image first."
     )]
+
+
+def test_segmentation_methods_lists_what_is_installed(qapp):
+    text = make_tools(ViewerModel())[5].function()
+    assert text.splitlines()[0].startswith("- otsu (installed): Fast global threshold")
+    assert "- cellpose (not installed: pip install 'lumen-napari[cellpose]')" in text

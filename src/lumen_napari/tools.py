@@ -14,6 +14,7 @@ from superqt.utils import ensure_main_thread
 from .batch import open_in_viewer
 from .controls import find_layer
 from .focus import focus_label
+from .segment import INSTALL, METHODS, available
 
 
 class ViewerTool(FunctionTool):
@@ -163,12 +164,22 @@ def make_tools(viewer: ViewerModel) -> list[ViewerTool]:
                 f"{f' with {z_size:g} {unit} between slices' if z_size else ''}. "
                 f"Segment or measure it again to get sizes in {unit}.")
 
+    def segmentation_methods() -> str:
+        """List the segmentation methods installed here and when each fits the image. Call
+        this before segmenting to pick a method, and give the reason when you segment."""
+        found = available()
+        return "\n".join(
+            f"- {name} ({'installed' if found[name] else 'not installed: ' + INSTALL[name]}): "
+            f"{text}" for name, text in METHODS.items()
+        )
+
     return [
         ViewerTool(list_napari_layers),
         ViewerTool(show_object_in_napari),
         ViewerTool(color_objects_by),
         ViewerTool(filter_objects),
         ViewerTool(set_pixel_size),
+        ViewerTool(segmentation_methods),
     ]
 
 
