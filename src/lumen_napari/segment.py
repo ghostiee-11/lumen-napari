@@ -162,7 +162,8 @@ def _missing(method: str) -> ImportError:
 
 
 def _cellpose(image: np.ndarray, diameter: float | None) -> np.ndarray:
-    masks = _cellpose_model().eval(image, diameter=diameter)[0]
+    volume = {"do_3D": True, "z_axis": 0} if image.ndim == 3 else {}
+    masks = _cellpose_model().eval(image, diameter=diameter, **volume)[0]
     return np.asarray(masks, dtype=np.int32)
 
 

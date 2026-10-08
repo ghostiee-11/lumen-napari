@@ -226,3 +226,26 @@ def test_auto_picks_cellpose_for_brightfield_when_installed(monkeypatch):
     monkeypatch.setattr(seg, "available", lambda: {"otsu": True, "cellpose": False})
     method, why = seg.choose_method(brightfield)
     assert method == "otsu" and "lumen-napari[cellpose]" in why
+
+
+def test_cellpose_segments_volumes_in_3d(monkeypatch, fresh_cellpose):
+    import sys
+    import types
+
+    calls = {}
+
+    class CellposeModel:
+        def __init__(self, gpu):
+            pass
+
+        def eval(self, image, diameter=None, **kwargs):
+            calls.update(kwargs)
+            return np.ones(image.shape, np.uint16), None, None
+
+    models = types.SimpleNamespace(CellposeModel=CellposeModel)
+    monkeypatch.setitem(sys.modules, "cellpose", types.SimpleNamespace(models=models))
+    segment(np.zeros((4, 10, 10)), method="cellpose")
+    assert calls == {"do_3D": True, "z_axis": 0}
+    calls.clear()
+    segment(np.zeros((10, 10)), method="cellpose")
+    assert calls == {}
