@@ -41,6 +41,12 @@ class Script:
         """Mark a layer the script itself creates, so it is never loaded from disk."""
         self._loaded.add(name)
 
+    def edited(self, name: str) -> None:
+        """Note, once, that a layer was corrected by hand, which the script cannot replay."""
+        note = f"# {name!r} was edited by hand in napari; save that layer to reproduce the edits."
+        if note not in self.lines:
+            self.add(note)
+
     def add(self, *lines: str) -> None:
         self.lines.extend(lines)
         self.lines.append("")
