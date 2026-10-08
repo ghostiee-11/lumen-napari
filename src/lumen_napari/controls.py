@@ -23,6 +23,7 @@ from superqt.utils import ensure_main_thread
 from .batch import join_plate_map, measure_files
 from .measure import measure, to_features
 from .region import choose_level, load_region, visible_region
+from .regions import objects_by_region
 from .script import Script
 from .segment import segment
 
@@ -63,7 +64,7 @@ class NapariControls(CodeSourceControls):
     def __init__(self, viewer: ViewerModel, **params):
         actions = (
             self.segment_layer, self.measure_layer, self.layer_features, self.segment_folder,
-            self.load_table,
+            self.load_table, self.measure_regions,
         )
         functions = {action.__name__: action for action in actions}
         params.setdefault("script", Script())
@@ -290,6 +291,31 @@ class NapariControls(CodeSourceControls):
         df, code = _read_table(path)
         table = table_name(Path(path).expanduser().stem)
         self.script.add(f"tables[{table!r}] = {code}")
+        return self._publish_table(table, df)
+
+    def measure_regions(self, labels_layer: str, shapes_layer: str) -> SourceResult:
+        """Assign every object of a labels layer to the drawn shape it lies in, to compare
+        regions: density, counts or intensity inside versus outside a drawn area.
+
+        Returns one row per object with its measurements, a `region` column (the shape's name,
+        "region 1", "region 2"..., or "outside") and `region_area`, the region's area. Density
+        is COUNT(*) / region_area per region.
+
+        Parameters
+        ----------
+        labels_layer : str
+            Name of the napari labels layer with the objects.
+        shapes_layer : str
+            Name of the napari shapes layer with the drawn regions.
+        """
+        labels = self._layer(labels_layer, Labels)
+        shapes = self._layer(shapes_layer, Shapes)
+        df = objects_by_region(labels, shapes)
+        unit = unit_of(labels)
+        if unit:
+            df = df.rename(columns={"region_area": f"region_area_{unit}2"})
+        table = table_name(f"{labels.name} by region")
+        self.script.add(f"# Regions from {shapes.name!r} are not replayed by this script.")
         return self._publish_table(table, df)
 
     def _publish_table(self, name: str, df: pd.DataFrame) -> SourceResult:

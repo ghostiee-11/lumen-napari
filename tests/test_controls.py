@@ -47,6 +47,7 @@ def test_table_name():
 def test_actions_are_registered(controls):
     assert [name for name, _ in controls.as_tools()] == [
         "Segment Layer", "Measure Layer", "Layer Features", "Segment Folder", "Load Table",
+        "Measure Regions",
     ]
 
 
@@ -95,6 +96,7 @@ def test_lumen_source_agent_builds_every_action(controls):
     tools = SourceAgent._build_tools({"source_controls": [controls]}, result_store=[])
     assert [tool.name for tool in tools] == [
         "segment_layer", "measure_layer", "layer_features", "segment_folder", "load_table",
+        "measure_regions",
     ]
 
 
@@ -267,3 +269,16 @@ def test_measure_other_channels(qtbot, viewer, controls):
 
 def test_table_names_are_ascii():
     assert table_name("Kern β-Färbung") == "kern_f_rbung"
+
+
+def test_measure_regions(qtbot, viewer, controls):
+    run(qtbot, controls, "Segment Layer", image_layer="nuclei", min_size=0)
+    viewer.layers["nuclei"].units = ("um", "um")
+    viewer.layers["nuclei labels"].units = ("um", "um")
+    viewer.add_shapes([[[0, 0], [0, 8], [8, 8], [8, 0]]], shape_type="rectangle", name="roi")
+    result = run(qtbot, controls, "Measure Regions", labels_layer="nuclei labels", shapes_layer="roi")
+    assert result.table == "nuclei_labels_by_region"
+    df = query(result, "SELECT region, COUNT(*) AS n, ANY_VALUE(region_area_um2) AS a "
+                       "FROM nuclei_labels_by_region GROUP BY region ORDER BY region")
+    assert df.region.tolist() == ["outside", "region 1"]
+    assert df.n.tolist() == [1, 1]
