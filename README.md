@@ -18,6 +18,7 @@ lumen-napari connects [napari](https://napari.org) to [Lumen](https://github.com
 - **Load features** that other plugins wrote on points, shapes, labels, tracks, surface or vectors layers.
 - **Ask** follow-up questions in plain language. Lumen writes the SQL and charts, and you can upload a CSV (a plate map, treatments) to join with the measurements.
 - **Show** any object in napari: "show me the largest nucleus" zooms the viewer to it and selects it.
+- **Export** the segmentation and measurement steps as a Python script with **Export script** in the dock, so the analysis can be rerun without the chat.
 
 ## Install
 
