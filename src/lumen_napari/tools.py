@@ -7,6 +7,7 @@ from napari.components import ViewerModel
 from napari.layers import Image, Labels, Layer
 from superqt.utils import ensure_main_thread
 
+from .batch import open_in_viewer
 from .focus import focus_label
 
 
@@ -28,7 +29,11 @@ def make_tools(viewer: ViewerModel) -> list[ViewerTool]:
         return "napari layers:\n" + "\n".join(_describe(layer) for layer in viewer.layers)
 
     def show_object_in_napari(
-        label: int = 0, rank_by: str = "", smallest: bool = False, labels_layer: str = ""
+        label: int = 0,
+        rank_by: str = "",
+        smallest: bool = False,
+        labels_layer: str = "",
+        image_id: str = "",
     ) -> str:
         """Zoom the napari viewer to one segmented object and select it.
 
@@ -46,8 +51,11 @@ def make_tools(viewer: ViewerModel) -> list[ViewerTool]:
             With rank_by, show the smallest object instead of the largest.
         labels_layer : str
             Name of the napari labels layer. Defaults to the most recently added one.
+        image_id : str
+            For objects from a segmented folder: the image_id of their image, which is then
+            opened in napari.
         """
-        layer = _labels_layer(viewer, labels_layer)
+        layer = open_in_viewer(viewer, image_id) if image_id else _labels_layer(viewer, labels_layer)
         if rank_by:
             label = _ranked_label(layer, rank_by, smallest)
         elif not label:

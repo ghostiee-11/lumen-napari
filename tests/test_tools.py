@@ -80,3 +80,18 @@ def test_show_refuses_to_guess(qapp):
         show()
     with pytest.raises(ValueError, match="no 'volume' measurement"):
         show(rank_by="volume")
+
+
+def test_show_object_from_a_folder_image(qapp, tmp_path):
+    from skimage.io import imsave
+
+    from lumen_napari.batch import measure_files
+
+    image = np.zeros((30, 50), np.uint8)
+    image[5:8, 5:8] = 200
+    image[5:20, 25:45] = 200
+    imsave(tmp_path / "C07.png", image, check_contrast=False)
+    measure_files([tmp_path / "C07.png"], min_size=0)
+    viewer = ViewerModel()
+    show = make_tools(viewer)[1].function
+    assert show(image_id="C07", rank_by="area") == "Showing object 2 of 'C07 labels' in napari."
