@@ -61,3 +61,19 @@ def test_page_shows_the_app_once(qapp, llm):
             assert [type(r).__name__ for r in roots].count("ReactComponent") == 1
     finally:
         server.stop()
+
+
+def test_reports_reach_the_chat(qapp, llm):
+    ui = build_ui(ViewerModel(), llm=llm)
+    before = len(ui.interface.objects)
+    import numpy as np
+
+    from lumen_napari.report import overlay_png
+
+    png = overlay_png(np.zeros((8, 8)), np.ones((8, 8), int))
+    ui.source_controls[0].chat("**Segmented**", png)
+    message = ui.interface.objects[-1]
+    assert len(ui.interface.objects) == before + 1
+    assert message.user == "napari"
+    assert message.object.objects[0].object == "**Segmented**"
+    assert message.object.objects[1].object == png

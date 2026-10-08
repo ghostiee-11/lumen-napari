@@ -30,12 +30,34 @@ def build_ui(viewer: ViewerModel, script: Script | None = None, **params) -> Exp
     controls = NapariControls(viewer=viewer, script=script or Script())
     params.setdefault("title", "Lumen for napari")
     params.setdefault("suggestions", SUGGESTIONS)
-    return ExplorerUI(
+    ui = ExplorerUI(
         source_controls=[controls, UploadSourceControls],
         tools=make_tools(viewer),
         analyses=[explorer_for(viewer), plate_for(viewer)],
         **params,
     )
+    controls.chat = chat_poster(ui.interface)
+    return ui
+
+
+def chat_poster(interface):
+    """post(markdown, png=None) adding a "napari" message to the chat. Steps run on worker
+    threads, so in a served session the message is added on the document's next tick."""
+    doc = pn.state.curdoc
+
+    def post(text: str, png: bytes | None = None) -> None:
+        def send():
+            parts = [pn.pane.Markdown(text, sizing_mode="stretch_width")]
+            if png:
+                parts.append(pn.pane.PNG(png, width=360))
+            interface.send(pn.Column(*parts), user="napari", respond=False)
+
+        if doc is not None and doc.session_context is not None:
+            doc.add_next_tick_callback(send)
+        else:
+            send()
+
+    return post
 
 
 def free_port() -> int:
