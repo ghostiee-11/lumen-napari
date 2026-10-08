@@ -537,6 +537,15 @@ class NapariControls(CodeSourceControls):
         self._publish_table(name, result)
         return f"{text}\n\n{_markdown_table(result)}"
 
+    def current_table(self) -> str | None:
+        """The measurement table of the most recent labels layer, if it has one."""
+        if self._source is None:
+            return None
+        for layer in reversed(self.viewer.layers):
+            if isinstance(layer, Labels) and table_name(layer.name) in self._source.tables:
+                return table_name(layer.name)
+        return None
+
     def _post(self, text: str, png: bytes | None = None) -> None:
         self.script.cards.append((text, png))
         if self.chat is not None:

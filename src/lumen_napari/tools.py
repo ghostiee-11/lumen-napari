@@ -9,6 +9,7 @@ import duckdb
 import numpy as np
 import param
 from lumen.ai.tools import FunctionTool
+from lumen.pipeline import Pipeline
 from napari.components import ViewerModel
 from napari.layers import Image, Labels, Layer
 from napari.utils.colormaps import DirectLabelColormap, ensure_colormap, label_colormap
@@ -28,13 +29,30 @@ class ViewerTool(FunctionTool):
     done = param.List(default=None, allow_None=True, instantiate=False, doc="""
         Shared list of recent napari actions.""")
 
+    controls = param.Parameter(default=None, doc="""
+        The session's napari controls. With them, the tool also hands Lumen the current
+        measurement table (source, table, pipeline), so charts and SQL can build on objects a
+        tool segmented.""")
+
     # ponytail: drop step_title once Lumen's FunctionTool stops forwarding it to the function
     async def respond(self, messages, context, step_title=None, **kwargs):
-        outputs, out = await super().respond(messages, context, **kwargs)
+        # Lumen's FunctionTool fills only one provided key, so it computes "data" and the
+        # table keys are added here.
+        declared = self.provides
+        with param.edit_constant(self):
+            self.provides = [p for p in declared if p == "data"]
+        try:
+            outputs, out = await super().respond(messages, context, **kwargs)
+        finally:
+            with param.edit_constant(self):
+                self.provides = declared
         if self.done is not None and "data" in out:
             self.done.append(str(out["data"]))
             del self.done[:-5]
             out["data"] = "Done in napari:\n" + "\n".join(f"- {step}" for step in self.done)
+        if self.controls is not None and (table := self.controls.current_table()):
+            source = self.controls._source
+            out.update(source=source, table=table, pipeline=Pipeline(source=source, table=table))
         return outputs, out
 
 
@@ -43,6 +61,7 @@ def make_tools(viewer: ViewerModel, controls=None) -> list[ViewerTool]:
     controls, statistics on their tables are a tool too."""
 
     done: list[str] = []
+    provides = ["data", "source", "table", "pipeline"] if controls is not None else ["data"]
 
     def objects_layer(name: str) -> Labels:
         """The labels layer to act on, segmenting the first image first if nothing is
@@ -190,6 +209,11 @@ def make_tools(viewer: ViewerModel, controls=None) -> list[ViewerTool]:
         targets = [image] + [l for l in viewer.layers
                              if isinstance(l, Labels) and l.name == f"{image.name} labels"]
         _set_scale(targets, scale, unit)
+        labels_name = f"{image.name} labels"
+        if controls is not None and labels_name in viewer.layers:
+            controls.measure_layer(labels_layer=labels_name, image_layer=image.name)
+            return (f"Set the pixel size of {image.name!r} to {size:g} {unit} and measured "
+                    f"{labels_name!r} again, so sizes are now in {unit}.")
         return (f"Set the pixel size of {image.name!r} to {size:g} {unit}"
                 f"{f' with {z_size:g} {unit} between slices' if z_size else ''}. "
                 f"Segment or measure it again to get sizes in {unit}.")
@@ -204,11 +228,11 @@ def make_tools(viewer: ViewerModel, controls=None) -> list[ViewerTool]:
         )
 
     return [
-        ViewerTool(list_napari_layers, provides=["data"]),
-        ViewerTool(show_object_in_napari, provides=["data"], done=done),
-        ViewerTool(color_objects_by, provides=["data"], done=done),
-        ViewerTool(filter_objects, provides=["data"], done=done),
-        ViewerTool(set_pixel_size, provides=["data"], done=done),
+        ViewerTool(list_napari_layers, provides=provides, controls=controls),
+        ViewerTool(show_object_in_napari, provides=provides, done=done, controls=controls),
+        ViewerTool(color_objects_by, provides=provides, done=done, controls=controls),
+        ViewerTool(filter_objects, provides=provides, done=done, controls=controls),
+        ViewerTool(set_pixel_size, provides=provides, done=done, controls=controls),
         ViewerTool(segmentation_methods),
     ] + ([_compare_tool(controls)] if controls is not None else [])
 

@@ -263,3 +263,21 @@ def test_listing_segments_when_nothing_is_segmented(qtbot, qapp):
     qtbot.waitUntil(lambda: not thread.is_alive(), timeout=60_000)
     assert "'nuclei labels': labels" in out["text"] and "1 measured objects" in out["text"]
     assert make_tools(ViewerModel())[0].function() == "napari has no layers open."
+
+
+async def test_tools_hand_lumen_the_current_table(qapp):
+    from lumen_napari.controls import NapariControls
+
+    viewer = ViewerModel()
+    image = np.zeros((40, 40))
+    image[5:15, 5:15] = 1
+    viewer.add_image(image, name="nuclei")
+    controls = NapariControls(viewer=viewer)
+    controls.segment_layer(image_layer="nuclei", min_size=0)
+    tools = make_tools(viewer, controls)
+    _, out = await tools[0].respond([], {})
+    assert out["table"] == "nuclei_labels"
+    assert out["pipeline"].table == "nuclei_labels"
+    _, out = await tools[4].respond([], {}, size=0.5, unit="um", z_size=0, layer="")
+    assert "measured 'nuclei labels' again" in out["data"]
+    assert "area_um2" in out["pipeline"].data.columns
