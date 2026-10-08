@@ -430,3 +430,14 @@ def test_find_layer_by_part_of_its_name():
     assert find_layer([hela, mito], "dapi") is None
     both = [hela, SimpleNamespace(name="mouse_nuclei")]
     assert find_layer(both, "nuclei") is None  # ambiguous
+
+
+def test_segment_layer_finds_dark_cells(qtbot, controls):
+    walls = np.zeros((60, 60))
+    walls[::20, :] = walls[:, ::20] = 1
+    walls[-1, :] = walls[:, -1] = 1
+    controls.viewer.add_image(walls, name="walls")
+    result = run(qtbot, controls, "Segment Layer", image_layer="walls", dark_objects=True,
+                 split_touching=False, min_size=0)
+    assert len(result.sources[0].execute("SELECT * FROM walls_labels")) == 9
+    assert "dark_objects=True" in controls.script.render()

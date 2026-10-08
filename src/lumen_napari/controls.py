@@ -113,6 +113,7 @@ class NapariControls(CodeSourceControls):
         visible_only: bool = False,
         level: int = -1,
         measure_layers: list[str] | None = None,
+        dark_objects: bool = False,
     ) -> SourceResult:
         """Find the objects (cells, nuclei, spots) in a napari image layer and measure each one.
 
@@ -144,11 +145,15 @@ class NapariControls(CodeSourceControls):
         measure_layers : list[str]
             Other image layers (channels such as tubulin or actin) to measure intensity in,
             each giving columns like intensity_mean_tubulin.
+        dark_objects : bool
+            Find dark objects instead of bright ones (otsu only): cells outlined by bright
+            walls or membranes, as in plant tissue or a membrane stain. Use with
+            split_touching False, since the walls already separate the cells.
         """
         layer = self._layer(image_layer, Image)
         region = visible_region(layer) if visible_only else None
         level = choose_level(layer, region) if level < 0 else level
-        key = (layer.name, method, model, min_size, split_touching, level, region,
+        key = (layer.name, method, model, min_size, split_touching, dark_objects, level, region,
                tuple(measure_layers or ()), tuple(layer.scale))
         name = f"{layer.name} labels"
         if self._segmented.get(name) == key and name in self.viewer.layers:
@@ -156,7 +161,7 @@ class NapariControls(CodeSourceControls):
             return SourceResult.from_source(self._source, table=table_name(name))
         image, scale, translate = load_region(layer, level, region)
         labels = segment(image, method=method, min_size=min_size, split_touching=split_touching,
-                         model=model)
+                         model=model, dark_objects=dark_objects)
         unit = unit_of(layer)
         channels = {
             table_name(name): load_region(self._layer(name, Image), level, region)[0]
@@ -179,7 +184,7 @@ class NapariControls(CodeSourceControls):
             f"image, scale, translate = load_region(viewer.layers[{layer.name!r}], "
             f"level={level!r}, region={region!r})",
             f"labels = segment(image, method={method!r}, min_size={min_size!r}, "
-            f"split_touching={split_touching!r}, model={model!r})",
+            f"split_touching={split_touching!r}, model={model!r}, dark_objects={dark_objects!r})",
             f"table = tables[{table!r}] = measure(labels, image, spacing=scale, unit={unit!r}, "
             f"origin=translate, channels={{{channel_code}}})",
             f"viewer.add_labels(labels, name={name!r}, features=to_features(table), "
@@ -187,6 +192,7 @@ class NapariControls(CodeSourceControls):
         )
         settings = {"method": method, **({"model": model} if model else {}),
                     "min_size": min_size, "split_touching": split_touching,
+                    **({"dark_objects": True} if dark_objects else {}),
                     "level": level, "region": region or "whole image"}
         self._post(
             segmentation_report(layer.name, len(df), settings,
