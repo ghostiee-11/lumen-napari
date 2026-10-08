@@ -48,11 +48,15 @@ def segment(
     diameter: float | None = None,
     threshold: float | None = None,
     model: str = "",
+    dark_objects: bool = False,
 ) -> np.ndarray:
     """Segment bright objects in a 2D or 3D image and return a label image. `threshold`
     replaces Otsu's, so tiles of one large image share a single cut-off. `model` names the
-    StarDist or BioImage.IO model."""
+    StarDist or BioImage.IO model. With `dark_objects`, Otsu finds dark objects instead, such
+    as cells outlined by bright walls or membranes."""
     image = np.asarray(image)
+    if dark_objects and method == "otsu":
+        image = image.max() - image.astype(float)
     if method in ("cellpose", "stardist", "bioimageio"):
         backend = {"cellpose": lambda: _cellpose(image, diameter),
                    "stardist": lambda: _stardist(image, model),

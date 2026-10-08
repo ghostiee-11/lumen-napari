@@ -165,3 +165,12 @@ def test_available_methods():
     found = available()
     assert found["otsu"] is True
     assert set(found) == set(METHODS)
+
+
+def test_dark_objects_inside_bright_walls():
+    walls = np.zeros((60, 60))
+    walls[::20, :] = walls[:, ::20] = 1  # a grid of walls, 9 cells
+    walls[-1, :] = walls[:, -1] = 1
+    labels = segment(walls, dark_objects=True, split_touching=False)
+    assert labels.max() == 9
+    assert labels[10, 10] and not labels[0, 10]
