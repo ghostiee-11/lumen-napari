@@ -12,12 +12,14 @@ import pandas as pd
 import param
 from lumen.ai.controls import CodeSourceControls
 from napari.components import ViewerModel
-from napari.layers import Image, Labels, Layer
+from napari.layers import Image, Labels, Layer, Points, Shapes, Surface, Tracks, Vectors
 from skimage.color import rgb2gray
 from superqt.utils import ensure_main_thread
 
 from .measure import measure, to_features
 from .segment import segment
+
+FEATURE_LAYERS = (Labels, Points, Shapes, Surface, Tracks, Vectors)
 
 
 def table_name(layer_name: str) -> str:
@@ -101,7 +103,7 @@ class NapariControls(CodeSourceControls):
         layer : str
             Name of the napari layer whose features to load.
         """
-        source = self._layer(layer, Layer)
+        source = self._layer(layer, FEATURE_LAYERS)
         df = source.features.copy()
         if isinstance(source, Labels):
             df = df.rename(columns={"index": "label"})
@@ -111,13 +113,15 @@ class NapariControls(CodeSourceControls):
         self.table_name = table_name(source.name)
         return df
 
-    def _layer(self, name: str, kind: type[Layer]) -> Layer:
+    def _layer(self, name: str, kind: type[Layer] | tuple[type[Layer], ...]) -> Layer:
         layers = [layer for layer in self.viewer.layers if isinstance(layer, kind)]
         for layer in layers:
             if layer.name == name:
                 return layer
         names = ", ".join(repr(layer.name) for layer in layers) or "none"
-        raise ValueError(f"No {kind.__name__.lower()} layer named {name!r}. Available: {names}.")
+        kinds = kind if isinstance(kind, tuple) else (kind,)
+        what = " or ".join(k.__name__.lower() for k in kinds)
+        raise ValueError(f"No {what} layer named {name!r}. Available: {names}.")
 
     def _publish(self, name: str, labels: np.ndarray, df: pd.DataFrame, like: Layer) -> None:
         _publish_labels(self.viewer, name, labels, to_features(df), like)

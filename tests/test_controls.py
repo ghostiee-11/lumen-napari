@@ -94,3 +94,9 @@ def test_lumen_source_agent_builds_every_action(controls):
 
     tools = SourceAgent._build_tools({"source_controls": [controls]}, result_store=[])
     assert [tool.name for tool in tools] == ["segment_layer", "measure_layer", "layer_features"]
+
+
+def test_layer_features_rejects_image_layers(qtbot, controls):
+    result = run(qtbot, controls, "Layer Features", layer="nuclei")
+    assert not result.sources
+    assert "No labels or points" in result.message
