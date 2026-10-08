@@ -63,3 +63,19 @@ def test_uploaded_ome_tiff_keeps_channels_and_pixel_size(qtbot, controls, tmp_pa
     assert tuple(viewer.layers["site dapi"].scale) == (0.5, 0.5)
     df = source.execute("SELECT area_um2, intensity_mean_site_actin FROM site_dapi_labels")
     assert df.area_um2[0] == 25 and df.intensity_mean_site_actin[0] == 300
+
+
+def test_lumen_uploader_sends_images_to_napari(qapp):
+    from lumen.ai.controls import UploadSourceControls
+    from lumen.ai.llm import OpenAI
+
+    from lumen_napari.app import build_ui
+
+    viewer = ViewerModel()
+    ui = build_ui(viewer, llm=OpenAI(api_key="sk-test"))
+    [uploader] = [c for c in ui.context["source_controls"] if isinstance(c, UploadSourceControls)]
+    uploader._file_input.value = {"cells.png": png_bytes().getvalue()}
+    uploader.param.trigger("add")
+    assert [layer.name for layer in viewer.layers] == ["cells", "cells labels"]
+    sources = uploader.outputs.get("sources", [])
+    assert any("cells_labels" in source.get_tables() for source in sources)
