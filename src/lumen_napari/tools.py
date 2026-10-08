@@ -65,9 +65,10 @@ class ViewerTool(FunctionTool):
         return outputs, out
 
 
-def make_tools(viewer: ViewerModel, controls=None) -> list[ViewerTool]:
+def make_tools(viewer: ViewerModel, controls=None, actions: bool = False) -> list[ViewerTool]:
     """Build the Lumen tools that read and steer the viewer. With the session's napari
-    controls, statistics on their tables are a tool too."""
+    controls, statistics on their tables are a tool too, and with `actions` so are the
+    controls' segment and measure actions, for models that cannot call them natively."""
 
     done: list[str] = []
     provides = (["data", "source", "table", "pipeline", "metaset"] if controls is not None
@@ -244,7 +245,23 @@ def make_tools(viewer: ViewerModel, controls=None) -> list[ViewerTool]:
         ViewerTool(filter_objects, provides=provides, done=done, controls=controls),
         ViewerTool(set_pixel_size, provides=provides, done=done, controls=controls),
         ViewerTool(segmentation_methods, provides=["data"], done=done),
-    ] + ([_compare_tool(controls)] if controls is not None else [])
+    ] + ([_compare_tool(controls)] if controls is not None else []) + (
+        [_action_tool(action, provides, done, controls) for action in controls.actions()]
+        if actions and controls is not None else []
+    )
+
+
+def _action_tool(action, provides, done, controls) -> ViewerTool:
+    """A source action as a tool. Lumen hands source actions to the LLM as native function
+    calls, which coding CLI models (Copilot, Codex, Claude Code) cannot make; tools have
+    their arguments filled through structured output instead, which they can."""
+
+    @functools.wraps(action)
+    def run(**params) -> str:
+        return action(**params).message
+
+    run.__annotations__ = {**action.__annotations__, "return": str}
+    return ViewerTool(run, provides=provides, done=done, controls=controls)
 
 
 def _compare_tool(controls) -> ViewerTool:

@@ -281,3 +281,20 @@ async def test_tools_hand_lumen_the_current_table(qapp):
     _, out = await tools[4].respond([], {}, size=0.5, unit="um", z_size=0, layer="")
     assert "measured 'nuclei labels' again" in out["data"]
     assert "area_um2" in out["pipeline"].data.columns
+
+
+async def test_action_tools_segment_and_hand_lumen_the_table(qapp):
+    from lumen_napari.controls import NapariControls
+
+    viewer = ViewerModel()
+    image = np.zeros((40, 40))
+    image[5:15, 5:15] = 1
+    viewer.add_image(image, name="nuclei")
+    controls = NapariControls(viewer=viewer)
+    tools = {t.function.__name__: t for t in make_tools(viewer, controls, actions=True)}
+    tool = tools["segment_layer"]
+    args = {name: field.default for name, field in tool._model.model_fields.items()}
+    _, out = await tool.respond([], {}, **{**args, "image_layer": "nuclei", "min_size": 0})
+    assert "nuclei labels" in viewer.layers
+    assert out["table"] == "nuclei_labels"
+    assert "Loaded 1 rows" in out["data"]
