@@ -126,3 +126,26 @@ def test_provider_from_environment(monkeypatch):
     monkeypatch.setenv("LUMEN_NAPARI_PROVIDER", "nope")
     with pytest.raises(ValueError, match="copilot-cli"):
         provider_llm()
+
+
+def test_cli_models_get_the_napari_actions_as_tools(qapp):
+    from lumen.ai.llm import ClaudeCode, OpenAI
+    from lumen.ai.tools import FunctionTool
+
+    from lumen_napari.app import build_ui
+    from lumen_napari.controls import NapariControls
+
+    def napari_controls(ui):
+        return next(c for c in ui.context["source_controls"] if isinstance(c, NapariControls))
+
+    def tool_names(ui):
+        return {tool.function.__name__ for tool in ui._coordinator.tools
+                if isinstance(tool, FunctionTool)}
+
+    ui = build_ui(ViewerModel(), llm=ClaudeCode())
+    assert not napari_controls(ui)._supports_tools
+    assert {"segment_layer", "segment_folder", "segment_whole_slide"} <= tool_names(ui)
+
+    ui = build_ui(ViewerModel(), llm=OpenAI(api_key="sk-test"))
+    assert napari_controls(ui)._supports_tools
+    assert "segment_layer" not in tool_names(ui)

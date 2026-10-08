@@ -82,9 +82,13 @@ def build_ui(viewer: ViewerModel, script: Script | None = None, **params) -> Exp
     params.setdefault("suggestions", SUGGESTIONS)
     params.setdefault("coordinator", NapariPlanner)
     params["upload_handlers"] = {**image_upload_handlers(controls), **params.get("upload_handlers", {})}
+    # Coding CLI models cannot make native tool calls, which is how Lumen runs source
+    # actions, so they get the actions as tools instead.
+    cli = isinstance(params.get("llm"), lumen_llm.LlmCli)
+    controls._supports_tools = not cli
     ui = ExplorerUI(
         source_controls=[controls, UploadSourceControls],
-        tools=make_tools(viewer, controls),
+        tools=make_tools(viewer, controls, actions=cli),
         analyses=[explorer_for(viewer), plate_for(viewer)],
         **params,
     )
