@@ -238,13 +238,13 @@ def make_tools(viewer: ViewerModel, controls=None, actions: bool = False) -> lis
                 f"Segment or measure it again to get sizes in {unit}.")
 
     def segmentation_methods() -> str:
-        """List the segmentation methods installed here and when each fits the image. Call
-        this before segmenting to pick a method, and give the reason when you segment."""
+        """List the segmentation methods installed here and when each fits the image. Only
+        for questions about methods: it does not segment, and segmenting does not need it."""
         found = available()
         return "\n".join(
             f"- {name} ({'installed' if found[name] else 'not installed: ' + INSTALL[name]}): "
             f"{text}" for name, text in METHODS.items()
-        )
+        ) + "\n\nThis only lists methods; nothing was segmented. To segment, use segment_layer."
 
     return [
         ViewerTool(list_napari_layers, provides=provides, controls=controls),

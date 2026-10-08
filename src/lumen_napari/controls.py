@@ -132,8 +132,9 @@ class NapariControls(CodeSourceControls):
         image_layer : str
             Name of the napari image layer to segment.
         method : str
-            Segmentation method: 'otsu', 'cellpose', 'stardist' or 'bioimageio'. Call
-            segmentation_methods first to see which are installed and when each fits.
+            Segmentation method: 'otsu', 'cellpose', 'stardist' or 'bioimageio'. Use otsu
+            unless the user asks for another; it needs no setup and detects bright or dark
+            objects by itself.
         model : str
             For stardist or bioimageio: the model name or BioImage.IO id. Usually empty.
         reason : str
@@ -341,8 +342,9 @@ class NapariControls(CodeSourceControls):
         pattern : str
             Glob pattern for the image files, such as '*.tif' or '*.png'.
         method : str
-            Segmentation method: 'otsu', 'cellpose', 'stardist' or 'bioimageio'. Call
-            segmentation_methods first to see which are installed and when each fits.
+            Segmentation method: 'otsu', 'cellpose', 'stardist' or 'bioimageio'. Use otsu
+            unless the user asks for another; it needs no setup and detects bright or dark
+            objects by itself.
         model : str
             For stardist or bioimageio: the model name or BioImage.IO id. Usually empty.
         reason : str
@@ -477,8 +479,9 @@ class NapariControls(CodeSourceControls):
         tile_size : int
             Tile side in pixels. Smaller tiles use less memory.
         method : str
-            Segmentation method: 'otsu', 'cellpose', 'stardist' or 'bioimageio'. Call
-            segmentation_methods first to see which are installed and when each fits.
+            Segmentation method: 'otsu', 'cellpose', 'stardist' or 'bioimageio'. Use otsu
+            unless the user asks for another; it needs no setup and detects bright or dark
+            objects by itself.
         model : str
             For stardist or bioimageio: the model name or BioImage.IO id. Usually empty.
         reason : str
