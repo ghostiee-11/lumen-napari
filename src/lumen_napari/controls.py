@@ -17,6 +17,7 @@ from skimage.color import rgb2gray
 from superqt.utils import ensure_main_thread
 
 from .measure import measure, to_features
+from .script import Script
 from .segment import segment
 
 FEATURE_LAYERS = (Labels, Points, Shapes, Surface, Tracks, Vectors)
@@ -32,6 +33,9 @@ class NapariControls(CodeSourceControls):
 
     viewer = param.ClassSelector(class_=ViewerModel, precedence=-1)
 
+    script = param.ClassSelector(class_=Script, precedence=-1, doc="""
+        Records each step as Python that reproduces it.""")
+
     label = '<span class="material-icons" style="vertical-align: middle;">biotech</span> napari'
 
     def __init__(self, viewer: ViewerModel, **params):
@@ -40,6 +44,7 @@ class NapariControls(CodeSourceControls):
             "measure_layer": self.measure_layer,
             "layer_features": self.layer_features,
         }
+        params.setdefault("script", Script())
         super().__init__(viewer=viewer, functions=functions, **params)
 
     def segment_layer(
@@ -66,12 +71,23 @@ class NapariControls(CodeSourceControls):
             Split touching objects with a watershed (otsu only).
         """
         layer = self._layer(image_layer, Image)
-        image = _intensity(layer)
+        image = intensity(layer)
         labels = segment(image, method=method, min_size=min_size, split_touching=split_touching)
-        df = measure(labels, image, spacing=layer.scale[-labels.ndim:])
+        spacing = _floats(layer.scale[-labels.ndim:])
+        df = measure(labels, image, spacing=spacing)
         name = f"{layer.name} labels"
         self._publish(name, labels, df, layer)
         self.table_name = table_name(name)
+        self.script.load(layer)
+        self.script.created(name)
+        self.script.add(
+            f"image = intensity(viewer.layers[{layer.name!r}])",
+            f"labels = segment(image, method={method!r}, min_size={min_size!r}, "
+            f"split_touching={split_touching!r})",
+            f"table = tables[{self.table_name!r}] = measure(labels, image, spacing={spacing!r})",
+            f"viewer.add_labels(labels, name={name!r}, features=to_features(table), "
+            f"scale={spacing!r}, translate={_floats(layer.translate[-labels.ndim:])!r})",
+        )
         return df
 
     def measure_layer(self, labels_layer: str, image_layer: str | None = None) -> pd.DataFrame:
@@ -89,10 +105,22 @@ class NapariControls(CodeSourceControls):
         """
         layer = self._layer(labels_layer, Labels)
         labels = np.asarray(layer.data)
-        image = _intensity(self._layer(image_layer, Image)) if image_layer else None
-        df = measure(labels, image, spacing=layer.scale)
+        image_source = self._layer(image_layer, Image) if image_layer else None
+        image = intensity(image_source) if image_source else None
+        spacing = _floats(layer.scale)
+        df = measure(labels, image, spacing=spacing)
         self._publish(layer.name, labels, df, layer)
         self.table_name = table_name(layer.name)
+        self.script.load(layer)
+        image_code = "None"
+        if image_source:
+            self.script.load(image_source)
+            image_code = f"intensity(viewer.layers[{image_source.name!r}])"
+        self.script.add(
+            f"labels = viewer.layers[{layer.name!r}].data",
+            f"table = tables[{self.table_name!r}] = measure(labels, {image_code}, spacing={spacing!r})",
+            f"viewer.layers[{layer.name!r}].features = to_features(table)",
+        )
         return df
 
     def layer_features(self, layer: str) -> pd.DataFrame:
@@ -142,7 +170,12 @@ def _publish_labels(
         )
 
 
-def _intensity(layer: Image) -> np.ndarray:
+def _floats(values) -> tuple[float, ...]:
+    return tuple(float(v) for v in values)
+
+
+def intensity(layer: Image) -> np.ndarray:
+    """The layer's pixels as one intensity channel, full resolution."""
     # ponytail: loads the full-resolution array, segment a crop or a lower level if this is too big
     data = np.asarray(layer.data[0] if layer.multiscale else layer.data)
     return rgb2gray(data) if layer.rgb else data
