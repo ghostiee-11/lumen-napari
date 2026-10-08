@@ -5,6 +5,7 @@ real annotation objects, not strings.
 """
 
 import asyncio
+import functools
 import re
 import threading
 from pathlib import Path
@@ -24,6 +25,7 @@ from .batch import join_plate_map, measure_files
 from .measure import measure, to_features
 from .region import choose_level, load_region, visible_region
 from .regions import objects_by_region
+from .report import overlay_png, segmentation_report, size_note
 from .script import Script
 from .segment import segment
 
@@ -71,6 +73,9 @@ class NapariControls(CodeSourceControls):
     script = param.ClassSelector(class_=Script, precedence=-1, doc="""
         Records each step as Python that reproduces it.""")
 
+    chat = param.Callable(default=None, precedence=-1, doc="""
+        post(markdown, png=None) that shows what a step did in the chat.""")
+
     label = '<span class="material-icons" style="vertical-align: middle;">biotech</span> napari'
 
     def __init__(self, viewer: ViewerModel, **params):
@@ -78,10 +83,11 @@ class NapariControls(CodeSourceControls):
             self.segment_layer, self.measure_layer, self.layer_features, self.segment_folder,
             self.load_table, self.measure_regions,
         )
-        functions = {action.__name__: action for action in actions}
+        functions = {action.__name__: self._reporting(action) for action in actions}
         params.setdefault("script", Script())
         super().__init__(viewer=viewer, functions=functions, **params)
         self._source = None
+        self._warned_pixels: set[str] = set()
         self._lock = threading.Lock()
 
     def segment_layer(
@@ -153,6 +159,13 @@ class NapariControls(CodeSourceControls):
             f"viewer.add_labels(labels, name={name!r}, features=to_features(table), "
             "scale=scale, translate=translate)",
         )
+        settings = {"method": method, "min_size": min_size, "split_touching": split_touching,
+                    "level": level, "region": region or "whole image"}
+        self._post(
+            segmentation_report(layer.name, len(df), settings,
+                                self._size_note(unit, scale, layer.name), table),
+            overlay_png(image, labels),
+        )
         return self._publish_table(table, df)
 
     def measure_layer(
@@ -206,6 +219,12 @@ class NapariControls(CodeSourceControls):
             f"table = tables[{table!r}] = measure(labels, {image_code}, "
             f"spacing={spacing!r}, unit={unit!r}, channels={{{channel_code}}})",
             f"viewer.layers[{layer.name!r}].features = to_features(table)",
+        )
+        self._post(
+            f"**Measured `{layer.name}`: {len(df):,} objects** into table `{table}`"
+            f"{f', with intensities from `{image_layer}`' if image_layer else ''}.\n\n"
+            f"{self._size_note(unit, spacing, layer.name)}",
+            overlay_png(image, labels) if image is not None else None,
         )
         return self._publish_table(table, df)
 
@@ -288,6 +307,19 @@ class NapariControls(CodeSourceControls):
             df = join_plate_map(df, plate)
             lines.append(f"tables[{table!r}] = join_plate_map(tables[{table!r}], {code})")
         self.script.add(*lines)
+        counts = df.groupby("image_id").size()
+        unit_cols = [c for c in df.columns if c.startswith(("area_", "volume_"))]
+        self._post(
+            f"**Segmented {len(counts)} images from `{root}`: {len(df):,} objects** into table "
+            f"`{table}`.\n\nSettings: method={method!r}, min_size={min_size!r}"
+            f"{f', segmenting channel {segment_channel!r}' if segment_channel else ''}"
+            f"{f', joined with plate map `{Path(plate_map).name}`' if plate_map else ''}.\n\n"
+            f"Objects per image: median {counts.median():g}, fewest {counts.min()} "
+            f"(`{counts.idxmin()}`), most {counts.max()} (`{counts.idxmax()}`). Check the "
+            "extremes in napari by asking me to show an object from them.\n\n"
+            + ("Sizes come from the files' pixel size." if unit_cols else
+               "⚠️ **Sizes are in pixels**: these files carry no pixel size.")
+        )
         return self._publish_table(table, df)
 
     def load_table(self, path: str) -> SourceResult:
@@ -344,6 +376,30 @@ class NapariControls(CodeSourceControls):
             self.script.edited(name)
 
         _watch(self.viewer.layers[name], "paint", remeasure)
+
+    def _post(self, text: str, png: bytes | None = None) -> None:
+        if self.chat is not None:
+            self.chat(text, png)
+
+    def _size_note(self, unit, spacing, layer: str) -> str:
+        """The units sentence, with the pixel warning only the first time for each layer."""
+        if unit or layer not in self._warned_pixels:
+            self._warned_pixels.add(layer)
+            return size_note(unit, spacing)
+        return "Sizes are in pixels."
+
+    def _reporting(self, action):
+        """Show a failed step in the chat, so a failure is never hidden behind the LLM's reply."""
+
+        @functools.wraps(action)
+        def run(**params):
+            try:
+                return action(**params)
+            except Exception as e:
+                self._post(f"⚠️ **napari step `{action.__name__}` failed**: {e}")
+                raise
+
+        return run
 
     def _publish_table(self, name: str, df: pd.DataFrame) -> SourceResult:
         """Add the table to this session's one DuckDB source and return that source.

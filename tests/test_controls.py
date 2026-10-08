@@ -302,3 +302,44 @@ def test_moving_points_updates_their_table(qtbot, viewer, controls):
     viewer.layers["spots"].data = [[5, 6]]
     qtbot.waitUntil(lambda: query(result, "SELECT position_0 FROM spots").position_0[0] == 5,
                     timeout=5_000)
+
+
+@pytest.fixture
+def posts(controls):
+    posted = []
+    controls.chat = lambda text, png=None: posted.append((text, png))
+    return posted
+
+
+def test_segmenting_posts_the_work_and_an_overlay(qtbot, controls, posts):
+    run(qtbot, controls, "Segment Layer", image_layer="nuclei", min_size=0)
+    text, png = posts[-1]
+    assert text.startswith("**Segmented `nuclei`: 2 objects** into table `nuclei_labels`.")
+    assert "method='otsu', min_size=0" in text
+    assert "Sizes are in pixels" in text and "Tell me the pixel size" in text
+    assert png.startswith(b"\x89PNG")
+
+
+def test_pixel_warning_is_given_once_per_layer(qtbot, controls, posts):
+    run(qtbot, controls, "Segment Layer", image_layer="nuclei", min_size=0)
+    run(qtbot, controls, "Segment Layer", image_layer="nuclei", min_size=0)
+    assert "Tell me the pixel size" not in posts[-1][0]
+    assert "Sizes are in pixels." in posts[-1][0]
+
+
+def test_units_are_reported(qtbot, viewer, controls, posts):
+    viewer.layers["nuclei"].units = ("um", "um")
+    run(qtbot, controls, "Segment Layer", image_layer="nuclei", min_size=0)
+    assert "Sizes are in um (pixel size 0.5, 0.5 um)." in posts[-1][0]
+
+
+def test_failures_are_posted(qtbot, controls, posts):
+    run(qtbot, controls, "Segment Layer", image_layer="cells")
+    assert posts[-1][0].startswith("⚠️ **napari step `segment_layer` failed**: No image layer")
+
+
+def test_folder_report_names_the_extremes(qtbot, controls, plate, posts):
+    run(qtbot, controls, "Segment Folder", folder=str(plate), pattern="*.png", min_size=0)
+    text = posts[-1][0]
+    assert "**Segmented 3 images" in text and "6 objects**" in text
+    assert "fewest 1 (`A01`), most 3 (`B01`)" in text
