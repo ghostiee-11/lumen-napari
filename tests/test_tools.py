@@ -220,3 +220,13 @@ def test_filter_reports_columns_on_bad_sql(qapp):
     filter_objects = make_tools(ranked_viewer(qapp))[3].function
     with pytest.raises(ValueError, match="Columns: \\['area'"):
         filter_objects("size > 3")
+
+
+async def test_actions_reach_the_answer_as_data(qapp):
+    tools = make_tools(ranked_viewer(qapp))
+    color, filter_objects = tools[2], tools[3]
+    await color.respond([], {}, column="area", labels_layer="", colormap="viridis")
+    _, out = await filter_objects.respond([], {}, where="area >= 25", labels_layer="",
+                                          as_new_layer=False)
+    assert out["data"].startswith("Done in napari:\n- Colored 'cells' by area")
+    assert "- Showing 2 of 3 objects of 'cells' where area >= 25." in out["data"]

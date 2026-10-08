@@ -7,6 +7,7 @@ import re
 
 import duckdb
 import numpy as np
+import param
 from lumen.ai.tools import FunctionTool
 from napari.components import ViewerModel
 from napari.layers import Image, Labels, Layer
@@ -20,16 +21,28 @@ from .segment import INSTALL, METHODS, available
 
 
 class ViewerTool(FunctionTool):
-    """FunctionTool that ignores the step title Lumen's planner passes to every actor."""
+    """FunctionTool that ignores the step title Lumen's planner passes to every actor. With a
+    shared `done` list, what it did reaches the answer as data, with the other recent steps,
+    so the reply knows napari was changed."""
 
-    # ponytail: drop once Lumen's FunctionTool stops forwarding step_title to the function
+    done = param.List(default=None, allow_None=True, instantiate=False, doc="""
+        Shared list of recent napari actions.""")
+
+    # ponytail: drop step_title once Lumen's FunctionTool stops forwarding it to the function
     async def respond(self, messages, context, step_title=None, **kwargs):
-        return await super().respond(messages, context, **kwargs)
+        outputs, out = await super().respond(messages, context, **kwargs)
+        if self.done is not None and "data" in out:
+            self.done.append(str(out["data"]))
+            del self.done[:-5]
+            out["data"] = "Done in napari:\n" + "\n".join(f"- {step}" for step in self.done)
+        return outputs, out
 
 
 def make_tools(viewer: ViewerModel, controls=None) -> list[ViewerTool]:
     """Build the Lumen tools that read and steer the viewer. With the session's napari
     controls, statistics on their tables are a tool too."""
+
+    done: list[str] = []
 
     def objects_layer(name: str) -> Labels:
         """The labels layer to act on, segmenting the first image first if nothing is
@@ -182,10 +195,10 @@ def make_tools(viewer: ViewerModel, controls=None) -> list[ViewerTool]:
 
     return [
         ViewerTool(list_napari_layers),
-        ViewerTool(show_object_in_napari),
-        ViewerTool(color_objects_by),
-        ViewerTool(filter_objects),
-        ViewerTool(set_pixel_size),
+        ViewerTool(show_object_in_napari, provides=["data"], done=done),
+        ViewerTool(color_objects_by, provides=["data"], done=done),
+        ViewerTool(filter_objects, provides=["data"], done=done),
+        ViewerTool(set_pixel_size, provides=["data"], done=done),
         ViewerTool(segmentation_methods),
     ] + ([_compare_tool(controls)] if controls is not None else [])
 
