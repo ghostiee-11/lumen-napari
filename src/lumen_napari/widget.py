@@ -32,7 +32,9 @@ def server_for(viewer) -> LumenServer:
 class LumenWidget(QWidget):
     def __init__(self, napari_viewer: napari.Viewer, parent: QWidget | None = None):
         super().__init__(parent)
-        self.server = server_for(napari_viewer)
+        # napari hands plugins a proxy that warns on private attribute access, which param
+        # does when it stores the viewer. Lumen gets the viewer itself.
+        self.server = server_for(getattr(napari_viewer, "__wrapped__", napari_viewer))
         self.toggle = QPushButton("Start Lumen")
         self.open = QPushButton("Open in browser")
         self.export = QPushButton("Export script")

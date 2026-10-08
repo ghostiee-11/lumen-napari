@@ -50,3 +50,19 @@ def test_export_script(qtbot, tmp_path):
     widget._export(str(tmp_path / "a.py"))
     assert "labels = None" in (tmp_path / "a.py").read_text()
     assert "Saved the analysis script" in widget.status.text()
+
+
+def test_napari_plugin_proxy_is_unwrapped(qtbot, qapp):
+    import warnings
+
+    from napari.utils._proxies import PublicOnlyProxy
+
+    from lumen_napari.app import build_ui
+
+    viewer = ViewerModel()
+    widget = LumenWidget(PublicOnlyProxy(viewer))
+    qtbot.addWidget(widget)
+    assert widget.server.viewer is viewer
+    with warnings.catch_warnings():
+        warnings.filterwarnings("error", message="Private attribute access")
+        build_ui(widget.server.viewer, llm=OpenAI(api_key="sk-test"))
