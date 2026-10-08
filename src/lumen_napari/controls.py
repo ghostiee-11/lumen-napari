@@ -149,13 +149,17 @@ class NapariControls(CodeSourceControls):
             finest level that fits in memory.
         measure_layers : list[str]
             Other image layers (channels such as tubulin or actin) to measure intensity in,
-            each giving columns like intensity_mean_tubulin.
+            each giving columns like intensity_mean_tubulin. Defaults to every other image
+            layer that lines up with this one, such as the other channels of the same file.
         dark_objects : bool
             Find dark objects instead of bright ones (otsu only): cells outlined by bright
             walls or membranes, as in plant tissue or a membrane stain. Use with
             split_touching False, since the walls already separate the cells.
         """
         layer = self._layer(image_layer, Image)
+        if not measure_layers:
+            measure_layers = [other.name for other in self.viewer.layers
+                              if _same_grid(other, layer) and other is not layer]
         region = visible_region(layer) if visible_only else None
         level = choose_level(layer, region) if level < 0 else level
         key = (layer.name, method, model, min_size, split_touching, dark_objects, level, region,
@@ -614,6 +618,15 @@ class NapariControls(CodeSourceControls):
         kinds = kind if isinstance(kind, tuple) else (kind,)
         what = " or ".join(k.__name__.lower() for k in kinds)
         raise ValueError(f"No {what} layer named {name!r}. Available: {names}.")
+
+def _same_grid(other: Layer, layer: Image) -> bool:
+    """Whether another image layer covers the same pixels, as the channels of one image do."""
+    def grid(l):
+        shape = l.data[0].shape if l.multiscale else l.data.shape
+        return shape, tuple(l.scale), tuple(l.translate), l.rgb
+
+    return isinstance(other, Image) and grid(other) == grid(layer)
+
 
 @ensure_main_thread(await_return=True, timeout=60_000)
 def _publish_labels(viewer: ViewerModel, name: str, labels: np.ndarray, features: pd.DataFrame,

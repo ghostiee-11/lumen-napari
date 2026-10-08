@@ -451,3 +451,14 @@ def test_file_name_finds_its_first_channel():
     walls, lignin = SimpleNamespace(name="lily_stem walls"), SimpleNamespace(name="lily_stem lignin")
     assert find_layer([walls, lignin], "lily_stem") is walls
     assert find_layer([walls, lignin], "lignin") is lignin
+
+
+def test_segment_layer_measures_the_other_channels_by_default(qtbot, controls):
+    lignin = np.zeros((40, 40))
+    lignin[5:12, 5:12] = 7
+    controls.viewer.add_image(lignin, name="lignin", scale=(0.5, 0.5))
+    controls.viewer.add_image(lignin, name="elsewhere")  # another pixel size: does not line up
+    result = run(qtbot, controls, "Segment Layer", image_layer="nuclei", min_size=0)
+    df = result.sources[0].execute("SELECT * FROM nuclei_labels")
+    assert df.sort_values("label").intensity_mean_lignin.tolist() == [7, 0]
+    assert "intensity_mean_elsewhere" not in df.columns
