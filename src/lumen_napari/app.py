@@ -10,6 +10,7 @@ from lumen.ai.controls import UploadSourceControls
 from lumen.ai.ui import ExplorerUI
 from napari.components import ViewerModel
 
+from .clickable import make_charts_clickable
 from .controls import NapariControls
 from .explorer import explorer_for
 from .plate import plate_for
@@ -28,6 +29,7 @@ SUGGESTIONS = [
 def build_ui(viewer: ViewerModel, script: Script | None = None, **params) -> ExplorerUI:
     """A Lumen ExplorerUI whose data comes from the napari viewer."""
     controls = NapariControls(viewer=viewer, script=script or Script())
+    make_charts_clickable(viewer)
     params.setdefault("title", "Lumen for napari")
     params.setdefault("suggestions", SUGGESTIONS)
     ui = ExplorerUI(
