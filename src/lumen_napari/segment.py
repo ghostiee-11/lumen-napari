@@ -24,16 +24,31 @@ def segment(
         return _cellpose(image, diameter)
     if method != "otsu":
         raise ValueError(f"Unknown method {method!r}, expected 'otsu' or 'cellpose'.")
-    mask = image > filters.threshold_otsu(image)
+    if image.ndim == 3:
+        # Volumes are noisy and nuclei textured; unsmoothed they shatter into thousands of
+        # pieces. 2D stays unsmoothed, since smoothing shifts edges by about a pixel.
+        image = filters.gaussian(image.astype(float), sigma=2)
+    mask = ndi.binary_fill_holes(image > filters.threshold_otsu(image))
     if min_size:
         mask = morphology.remove_small_objects(mask, max_size=min_size - 1)
-    if not split_touching:
-        return ndi.label(mask)[0].astype(np.int32)
+    objects = ndi.label(mask)[0]
+    if not split_touching or not objects.max():
+        return objects.astype(np.int32)
     distance = ndi.distance_transform_edt(mask)
-    peaks = feature.peak_local_max(distance, min_distance=3, labels=ndi.label(mask)[0])
+    peaks = feature.peak_local_max(
+        distance, min_distance=_peak_distance(objects), labels=objects, exclude_border=False
+    )
     markers = np.zeros(mask.shape, dtype=np.int32)
     markers[tuple(peaks.T)] = np.arange(1, len(peaks) + 1)
     return segmentation.watershed(-distance, markers, mask=mask).astype(np.int32)
+
+
+def _peak_distance(objects: np.ndarray) -> int:
+    """Keep watershed seeds at least 0.8 of a typical object radius apart, so objects split
+    where they touch but do not shatter."""
+    sizes = np.bincount(objects.ravel())[1:]
+    radius = np.median(sizes) ** (1 / objects.ndim) / 2
+    return max(2, int(0.8 * radius))
 
 
 def _cellpose(image: np.ndarray, diameter: float | None) -> np.ndarray:

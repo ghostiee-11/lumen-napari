@@ -42,3 +42,11 @@ def test_works_in_3d():
 def test_unknown_method():
     with pytest.raises(ValueError, match="Unknown method"):
         segment(blobs(), method="magic")
+
+
+def test_textured_3d_nuclei_do_not_shatter():
+    from skimage import data
+
+    nuclei = segment(data.cells3d()[:, 1], min_size=20)
+    # About thirty nuclei are in view; the old seeding found over a thousand pieces.
+    assert 20 <= nuclei.max() <= 45
