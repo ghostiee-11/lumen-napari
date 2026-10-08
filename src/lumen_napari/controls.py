@@ -228,7 +228,8 @@ class NapariControls(CodeSourceControls):
         by image_id (the file name without extension) and by well when file names contain plate
         wells like B02. If the user has a plate map file, pass it as plate_map: its columns, such
         as compound or dose, are joined onto every object. The images are not added to napari.
-        Sizes are in pixels.
+        OME-TIFF, OME-Zarr and CZI files supply their own channel names, pixel size (sizes are
+        then in micrometers) and plate well; other files are measured in pixels.
 
         Parameters
         ----------
@@ -248,8 +249,10 @@ class NapariControls(CodeSourceControls):
             For screens with one file per channel: channel name to the token that marks it in
             file names, such as {"dapi": "_w1", "tubulin": "_w2", "actin": "_w4"}.
         segment_channel : str
-            With channels, the channel to segment (usually the nuclear stain). The others are
-            measured as intensity_mean_<channel> columns.
+            The channel to segment, usually the nuclear stain: one of the channels names, or
+            for multi-channel files (OME-TIFF, OME-Zarr, CZI) a channel name stored in the file
+            such as 'dapi'. Defaults to the first channel. The others are measured as
+            intensity_mean_<channel> columns.
         """
         root = Path(folder).expanduser()
         files = sorted(root.glob(pattern))[:max_files]
