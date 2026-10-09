@@ -9,7 +9,6 @@
 [![napari plugin](https://img.shields.io/badge/napari-plugin-80d1ff)](https://napari.org)
 [![Built on Lumen](https://img.shields.io/badge/built%20on-Lumen%20%C2%B7%20HoloViz-fc5c00)](https://lumen.holoviz.org)
 [![Contributions welcome](https://img.shields.io/badge/contributions-welcome%20%E2%9D%A4-e5534b)](CONTRIBUTING.md)
-[![GitHub stars](https://img.shields.io/github/stars/ghostiee-11/lumen-napari?style=social)](https://github.com/ghostiee-11/lumen-napari/stargazers)
 
 [Documentation](https://ghostiee-11.github.io/lumen-napari/) · [Examples](https://ghostiee-11.github.io/lumen-napari/examples/) · [Contributing](CONTRIBUTING.md)
 
