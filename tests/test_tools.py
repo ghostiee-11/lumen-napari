@@ -311,3 +311,25 @@ def test_table_tools_tell_the_planner_what_they_provide(qapp):
     tools = {t.function.__name__: t for t in make_tools(viewer, NapariControls(viewer=viewer))}
     assert {"table", "pipeline", "data"} <= set(tools["color_objects_by"].output_schema.__annotations__)
     assert "table" not in tools["segmentation_methods"].output_schema.__annotations__
+
+
+def test_tools_segment_the_image_the_question_names(qtbot):
+    import threading
+
+    from lumen_napari.controls import NapariControls
+
+    viewer = ViewerModel()
+    image = np.zeros((40, 40))
+    image[5:15, 5:15] = 1
+    viewer.add_image(image, name="lily-magenta", visible=False)
+    viewer.add_image(image, name="lily-blue")
+    controls = NapariControls(viewer=viewer)
+    color = {t.function.__name__: t for t in make_tools(viewer, controls)}["color_objects_by"]
+    out = {}
+    thread = threading.Thread(target=lambda: out.update(
+        text=color.function(column="area", labels_layer="lily-blue")))
+    thread.start()
+    qtbot.waitUntil(lambda: not thread.is_alive(), timeout=60_000)
+    assert "lily-blue labels" in viewer.layers
+    assert "lily-magenta labels" not in viewer.layers
+    assert "'lily-blue labels'" in out["text"]

@@ -83,15 +83,18 @@ def make_tools(viewer: ViewerModel, controls=None, actions: bool = False) -> lis
                 else ["data"])
 
     def objects_layer(name: str) -> Labels:
-        """The labels layer to act on, segmenting the first image first if nothing is
-        segmented yet, so a question works whatever order it is asked in."""
-        nothing_segmented = not any(isinstance(layer, Labels) for layer in viewer.layers)
-        images = [layer.name for layer in viewer.layers if isinstance(layer, Image)]
-        if controls is not None and nothing_segmented and images:
-            controls.segment_layer(
-                image_layer=images[0],
-                reason="Nothing was segmented yet, so the image was segmented first.",
-            )
+        """The labels layer to act on. An image the question names is segmented first if it
+        has no labels yet; with no name, the first visible image is when nothing is
+        segmented, so a question works whatever order it is asked in."""
+        images = [layer for layer in viewer.layers if isinstance(layer, Image)]
+        named = find_layer(images, name) if name else None
+        if named is None and not any(isinstance(layer, Labels) for layer in viewer.layers):
+            named = next((layer for layer in images if layer.visible), None)
+        if controls is not None and named is not None:
+            if f"{named.name} labels" not in viewer.layers:
+                controls.segment_layer(image_layer=named.name,
+                                       reason=f"{named.name} was not segmented yet.")
+            return _labels_layer(viewer, f"{named.name} labels")
         return _labels_layer(viewer, name)
 
     def list_napari_layers() -> str:
