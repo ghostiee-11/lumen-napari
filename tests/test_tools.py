@@ -333,3 +333,13 @@ def test_tools_segment_the_image_the_question_names(qtbot):
     assert "lily-blue labels" in viewer.layers
     assert "lily-magenta labels" not in viewer.layers
     assert "'lily-blue labels'" in out["text"]
+
+
+def test_columns_are_found_from_plain_words():
+    from lumen_napari.tools import resolve_column
+
+    columns = ["label", "area", "intensity_mean", "intensity_mean_lily_green", "intensity_max_lily_green"]
+    assert resolve_column("mean lily-green intensity", columns) == "intensity_mean_lily_green"
+    assert resolve_column("Area", columns) == "area"
+    assert resolve_column("lily green", columns) is None  # mean or max: ambiguous
+    assert resolve_column("volume", columns) is None

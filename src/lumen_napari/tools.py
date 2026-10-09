@@ -314,10 +314,26 @@ def _objects_summary(layer: Labels) -> str:
 
 def _column(layer: Labels, column: str):
     features = layer.features
-    if column not in features.columns:
-        columns = [c for c in features.columns if c != "index"]
+    columns = [c for c in features.columns if c != "index"]
+    found = resolve_column(column, columns)
+    if found is None:
         raise ValueError(f"{layer.name!r} has no {column!r} measurement. Columns: {columns}.")
-    return features[column]
+    return features[found]
+
+
+def resolve_column(name: str, columns) -> str | None:
+    """The column a name means, also in plain words ("mean lily-green intensity" for
+    intensity_mean_lily_green): the one column with the same words, or else the one column
+    containing them all. None when missing or ambiguous."""
+    if name in columns:
+        return name
+    words = set(re.findall(r"[a-z0-9]+", name.lower()))
+    tokens = {c: set(re.findall(r"[a-z0-9]+", c.lower())) for c in columns}
+    for match in (lambda t: t == words, lambda t: words <= t):
+        found = [c for c, t in tokens.items() if words and match(t)]
+        if len(found) == 1:
+            return found[0]
+    return None
 
 
 def _ranked_label(layer: Labels, column: str, smallest: bool) -> int:
