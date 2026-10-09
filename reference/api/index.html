@@ -1,0 +1,3914 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Ask questions about your napari images in plain language with Lumen">
+      
+      
+      
+        <link rel="canonical" href="https://holoviz-topics.github.io/lumen-napari/reference/api/">
+      
+      
+        <link rel="prev" href="../file_formats/">
+      
+      
+        <link rel="next" href="../../explanation/how_it_works/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Python API - lumen-napari</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#python-api" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="lumen-napari" class="md-header__button md-logo" aria-label="lumen-napari" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            lumen-napari
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Python API
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/holoviz-topics/lumen-napari" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="lumen-napari" class="md-nav__button md-logo" aria-label="lumen-napari" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    lumen-napari
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/holoviz-topics/lumen-napari" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting_started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting_started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting_started/llm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Choosing an LLM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-to guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    How-to guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/upload_images/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upload images
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/segment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Segment and measure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/units/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Physical units
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/explore_in_napari/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Explore objects in napari
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/plates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Screens and plates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/statistics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compare conditions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/large_images/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Large images and whole slides
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/regions_and_edits/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regions and hand corrections
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/export/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Export a script or report
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use from Python
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../chat_actions/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Chat actions and tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../measurements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Measurement columns
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../file_formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    File formats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python API
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        App
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="App">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.app.LumenServer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LumenServer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.app.build_ui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        build_ui
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.app.provider_llm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        provider_llm
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#segment-and-measure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Segment and measure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Segment and measure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.segment.segment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        segment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.segment.available" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        available
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.segment.read_image" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        read_image
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.measure.measure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        measure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.measure.to_features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        to_features
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files-and-plates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Files and plates
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Files and plates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.files.read_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        read_file
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.files.ImageFile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ImageFile
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.batch.measure_files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        measure_files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.batch.group_channels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        group_channels
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.batch.join_plate_map" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        join_plate_map
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.batch.well_of" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        well_of
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.batch.open_in_viewer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        open_in_viewer
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#large-images" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Large images
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Large images">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.region.choose_level" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        choose_level
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.region.load_region" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load_region
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.region.visible_region" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        visible_region
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.tiles.segment_tiled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        segment_tiled
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#regions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Regions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.regions.objects_by_region" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        objects_by_region
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#statistics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Statistics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Statistics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.stats.compare" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        compare
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.stats.dose_response" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        dose_response
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.stats.per_replicate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        per_replicate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reports
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Reports">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.report.report_html" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        report_html
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.report.overlay_png" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        overlay_png
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.script.Script" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Script
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Script">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.script.Script.chart" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        chart
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.script.Script.created" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        created
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.script.Script.edited" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        edited
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.script.Script.load" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chat-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chat integration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Chat integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NapariControls
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="NapariControls">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.segment_layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        segment_layer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="segment_layer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.segment_layer--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.measure_layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        measure_layer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="measure_layer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.measure_layer--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.layer_features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        layer_features
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="layer_features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.layer_features--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.segment_folder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        segment_folder
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="segment_folder">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.segment_folder--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.load_table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load_table
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="load_table">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.load_table--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.measure_regions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        measure_regions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="measure_regions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.measure_regions--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.segment_whole_slide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        segment_whole_slide
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="segment_whole_slide">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.segment_whole_slide--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.compare_conditions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        compare_conditions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="compare_conditions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.compare_conditions--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.tools.make_tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        make_tools
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.explorer.ObjectExplorer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ObjectExplorer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.plate.PlateHeatmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PlateHeatmap
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.upload.upload_image" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        upload_image
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Explanation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Explanation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../explanation/how_it_works/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How it works
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../explanation/limitations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Limitations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#app" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        App
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="App">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.app.LumenServer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        LumenServer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.app.build_ui" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        build_ui
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.app.provider_llm" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        provider_llm
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#segment-and-measure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Segment and measure
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Segment and measure">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.segment.segment" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        segment
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.segment.available" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        available
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.segment.read_image" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        read_image
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.measure.measure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        measure
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.measure.to_features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        to_features
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#files-and-plates" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Files and plates
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Files and plates">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.files.read_file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        read_file
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.files.ImageFile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ImageFile
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.batch.measure_files" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        measure_files
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.batch.group_channels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        group_channels
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.batch.join_plate_map" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        join_plate_map
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.batch.well_of" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        well_of
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.batch.open_in_viewer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        open_in_viewer
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#large-images" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Large images
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Large images">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.region.choose_level" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        choose_level
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.region.load_region" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load_region
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.region.visible_region" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        visible_region
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.tiles.segment_tiled" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        segment_tiled
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#regions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Regions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Regions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.regions.objects_by_region" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        objects_by_region
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#statistics" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Statistics
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Statistics">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.stats.compare" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        compare
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.stats.dose_response" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        dose_response
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.stats.per_replicate" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        per_replicate
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#reports" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Reports
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Reports">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.report.report_html" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        report_html
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.report.overlay_png" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        overlay_png
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.script.Script" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Script
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Script">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.script.Script.chart" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        chart
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.script.Script.created" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        created
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.script.Script.edited" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        edited
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.script.Script.load" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#chat-integration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Chat integration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Chat integration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        NapariControls
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="NapariControls">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.segment_layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        segment_layer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="segment_layer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.segment_layer--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.measure_layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        measure_layer
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="measure_layer">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.measure_layer--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.layer_features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        layer_features
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="layer_features">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.layer_features--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.segment_folder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        segment_folder
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="segment_folder">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.segment_folder--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.load_table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        load_table
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="load_table">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.load_table--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.measure_regions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        measure_regions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="measure_regions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.measure_regions--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.segment_whole_slide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        segment_whole_slide
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="segment_whole_slide">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.segment_whole_slide--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.compare_conditions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        compare_conditions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="compare_conditions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.controls.NapariControls.compare_conditions--parameters" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Parameters
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.tools.make_tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        make_tools
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.explorer.ObjectExplorer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ObjectExplorer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.plate.PlateHeatmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PlateHeatmap
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#lumen_napari.upload.upload_image" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        upload_image
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="python-api">Python API<a class="headerlink" href="#python-api" title="Permanent link">&para;</a></h1>
+<p>Generated from the docstrings. See <a href="../../how_to/python/">Use from Python</a> for examples.</p>
+<h2 id="app">App<a class="headerlink" href="#app" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="lumen_napari.app.LumenServer" class="doc doc-heading">
+            <code>lumen_napari.app.LumenServer</code>
+
+
+<a href="#lumen_napari.app.LumenServer" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>Run the Lumen app for a viewer in a background thread, reachable only from this machine.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.app.build_ui" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">build_ui</span><span class="p">(</span><span class="n">viewer</span><span class="p">,</span> <span class="n">script</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.app.build_ui" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>A Lumen ExplorerUI whose data comes from the napari viewer.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.app.provider_llm" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">app</span><span class="o">.</span><span class="n">provider_llm</span><span class="p">()</span></code>
+
+<a href="#lumen_napari.app.provider_llm" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>The LLM named by LUMEN_NAPARI_PROVIDER (a Lumen provider such as 'claude-code' or
+'copilot-cli'), or None to let Lumen pick one from the API keys in the environment.</p>
+
+
+    </div>
+
+</div><h2 id="segment-and-measure">Segment and measure<a class="headerlink" href="#segment-and-measure" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.segment.segment" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">segment</span><span class="o">.</span><span class="n">segment</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">'otsu'</span><span class="p">,</span> <span class="n">min_size</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">split_touching</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">diameter</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span> <span class="n">dark_objects</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">local_threshold</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.segment.segment" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Segment the objects of a 2D or 3D image and return a label image. <code>threshold</code>
+replaces Otsu's, so tiles of one large image share a single cut-off. <code>model</code> names the
+StarDist or BioImage.IO model.</p>
+<p>With Otsu, <code>dark_objects</code> and <code>split_touching</code> are worked out from the image when left
+as None (see <code>polarity</code>): bright objects on a dark background are split where they
+touch; dark objects on a bright background (brightfield) are found by inverting; cells
+inside a network of bright walls or membranes are found without splitting, since the
+walls already separate them.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.segment.available" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">segment</span><span class="o">.</span><span class="n">available</span><span class="p">()</span></code>
+
+<a href="#lumen_napari.segment.available" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Which methods can run here.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.segment.read_image" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">segment</span><span class="o">.</span><span class="n">read_image</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.segment.read_image" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Read an image file as one intensity channel; RGB images are converted to gray.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.measure.measure" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">measure</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">intensity</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">origin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.measure.measure" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Return one row per label with shape and, if an image is given, intensity columns.</p>
+<p>In 3D <code>area</code> is called <code>volume</code>. With a <code>unit</code> (the physical unit of <code>spacing</code>), size
+columns get it as a suffix, such as <code>area_um2</code> or <code>centroid_0_um</code>. <code>bbox</code> stays in pixels.
+<code>origin</code> is added to the centroids, to place objects of a cropped image in world space.
+<code>channels</code> maps a name to another image of the same shape; each adds its own intensity
+columns, such as <code>intensity_mean_tubulin</code>.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.measure.to_features" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">measure</span><span class="o">.</span><span class="n">to_features</span><span class="p">(</span><span class="n">df</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.measure.to_features" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Key a measurement table by label value, the way napari Labels features expect.</p>
+
+
+    </div>
+
+</div><h2 id="files-and-plates">Files and plates<a class="headerlink" href="#files-and-plates" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.files.read_file" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">files</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.files.read_file" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>The file's channels by name, its physical pixel size and, from OME plate metadata, its
+well. Plain image files have one channel called "image" and no metadata.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="lumen_napari.files.ImageFile" class="doc doc-heading">
+            <code>lumen_napari.files.ImageFile</code>
+
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-dataclass"><code>dataclass</code></small>
+  </span>
+
+<a href="#lumen_napari.files.ImageFile" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.batch.measure_files" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">batch</span><span class="o">.</span><span class="n">measure_files</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">'otsu'</span><span class="p">,</span> <span class="n">min_size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">segment_channel</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.batch.measure_files" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>One row per object across all files, keyed by image_id (the file name without extension).</p>
+<p>With <code>channels</code>, files are grouped into sites (see <code>group_channels</code>): <code>segment_channel</code>
+is segmented and every other channel adds intensity columns such as intensity_mean_actin.
+A <code>well</code> column is added when every image_id contains a plate well id.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.batch.group_channels" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">batch</span><span class="o">.</span><span class="n">group_channels</span><span class="p">(</span><span class="n">paths</span><span class="p">,</span> <span class="n">channels</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.batch.group_channels" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Group per-channel files into sites. <code>channels</code> maps a channel name to the token that
+marks it in file names (<code>{"dapi": "_w1", "actin": "_w4"}</code>); a site is the name before the
+token. Sites missing a channel are left out.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.batch.join_plate_map" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">batch</span><span class="o">.</span><span class="n">join_plate_map</span><span class="p">(</span><span class="n">objects</span><span class="p">,</span> <span class="n">plate_map</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.batch.join_plate_map" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Add the plate map's columns (compound, dose...) to every object, matched on well, or on
+image_id when the map has no well column.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.batch.well_of" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">batch</span><span class="o">.</span><span class="n">well_of</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.batch.well_of" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>The plate well in a file name, zero padded (B2 -&gt; B02), or None.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.batch.open_in_viewer" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">batch</span><span class="o">.</span><span class="n">open_in_viewer</span><span class="p">(</span><span class="n">viewer</span><span class="p">,</span> <span class="n">image_id</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.batch.open_in_viewer" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Open a batch-measured image and its labels in napari, segmented exactly as before.</p>
+
+
+    </div>
+
+</div><h2 id="large-images">Large images<a class="headerlink" href="#large-images" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.region.choose_level" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">choose_level</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">budget</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.region.choose_level" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>The finest level that fits the pixel budget.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.region.load_region" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">load_region</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">region</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">gray</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.region.load_region" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Read one level of the layer, cropped to a full-resolution region, as one intensity
+channel (or, with gray=False, RGB images as they are). Returns the pixels and the world
+scale and translate that place them.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.region.visible_region" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">region</span><span class="o">.</span><span class="n">visible_region</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.region.visible_region" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>The part of the layer on screen, in full-resolution pixels. Axes that are not displayed
+(such as z in a 2D view of a volume) are kept whole.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.tiles.segment_tiled" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">tiles</span><span class="o">.</span><span class="n">segment_tiled</span><span class="p">(</span><span class="n">layer</span><span class="p">,</span> <span class="n">tile</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span> <span class="n">overlap</span><span class="o">=</span><span class="mi">64</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">'otsu'</span><span class="p">,</span> <span class="n">min_size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">split_touching</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span> <span class="n">unit</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.tiles.segment_tiled" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Measure every object of a 2D image, tile by tile. Returns the table, in world units,
+and the number of tiles. Labels are renumbered to be unique across the image.</p>
+
+
+    </div>
+
+</div><h2 id="regions">Regions<a class="headerlink" href="#regions" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.regions.objects_by_region" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">regions</span><span class="o">.</span><span class="n">objects_by_region</span><span class="p">(</span><span class="n">labels</span><span class="p">,</span> <span class="n">shapes</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.regions.objects_by_region" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>One row per object: its measurements, its region and the region's area in world units.</p>
+
+
+    </div>
+
+</div><h2 id="statistics">Statistics<a class="headerlink" href="#statistics" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.stats.compare" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">compare</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">measurement</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">control</span><span class="p">,</span> <span class="n">replicate</span><span class="o">=</span><span class="s1">'well'</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.stats.compare" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Per condition: replicates, mean and sd of replicate medians, z-score and fold change
+against the control replicates, and a Welch t-test against the control.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.stats.dose_response" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">dose_response</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">measurement</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">dose</span><span class="p">,</span> <span class="n">replicate</span><span class="o">=</span><span class="s1">'well'</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.stats.dose_response" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>A four-parameter logistic fit of the replicate medians against dose, per condition.
+Conditions with fewer than four positive doses, that do not converge, or that do not
+respond to dose (see <code>_responds</code>) get NaN.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.stats.per_replicate" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">stats</span><span class="o">.</span><span class="n">per_replicate</span><span class="p">(</span><span class="n">df</span><span class="p">,</span> <span class="n">measurement</span><span class="p">,</span> <span class="n">replicate</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">dose</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.stats.per_replicate" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>One row per replicate (well) with the median of its objects, so a well with many cells
+does not outweigh one with few.</p>
+
+
+    </div>
+
+</div><h2 id="reports">Reports<a class="headerlink" href="#reports" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.report.report_html" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">report_html</span><span class="p">(</span><span class="n">script</span><span class="p">,</span> <span class="n">snapshot</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">title</span><span class="o">=</span><span class="s1">'lumen-napari report'</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.report.report_html" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>One standalone HTML page: questions, napari snapshot, report cards with overlays, the
+charts (rendered by vega-embed) and the Python that reproduces the analysis.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.report.overlay_png" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">report</span><span class="o">.</span><span class="n">overlay_png</span><span class="p">(</span><span class="n">image</span><span class="p">,</span> <span class="n">labels</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.report.overlay_png" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>A PNG of the image with object outlines, to check a segmentation at a glance. Volumes
+show the slice with the most objects.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="lumen_napari.script.Script" class="doc doc-heading">
+            <code>lumen_napari.script.Script</code>
+
+
+<a href="#lumen_napari.script.Script" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+
+
+        <p>The steps as Python, plus what the shareable report needs: the questions asked, the
+report cards posted in the chat and the charts Lumen drew.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="lumen_napari.script.Script.chart" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">chart</span><span class="p">(</span><span class="n">spec</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.script.Script.chart" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Keep a chart once, however often Lumen renders it.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="lumen_napari.script.Script.created" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">created</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.script.Script.created" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Mark a layer the script itself creates, so it is never loaded from disk.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="lumen_napari.script.Script.edited" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">edited</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.script.Script.edited" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Note, once, that a layer was corrected by hand, which the script cannot replay.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="lumen_napari.script.Script.load" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">load</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.script.Script.load" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Add the line that loads a layer, once per layer.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div><h2 id="chat-integration">Chat integration<a class="headerlink" href="#chat-integration" title="Permanent link">&para;</a></h2>
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="lumen_napari.controls.NapariControls" class="doc doc-heading">
+            <code>lumen_napari.controls.NapariControls</code>
+
+
+<a href="#lumen_napari.controls.NapariControls" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="lumen.ai.controls.CodeSourceControls">CodeSourceControls</span></code></p>
+
+
+
+        <p>Expose segmentation and measurement of napari layers as Lumen data sources.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="lumen_napari.controls.NapariControls.segment_layer" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">segment_layer</span><span class="p">(</span><span class="n">image_layer</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">'auto'</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span> <span class="n">min_size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">split_touching</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">visible_only</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">level</span><span class="o">=-</span><span class="mi">1</span><span class="p">,</span> <span class="n">measure_layers</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">dark_objects</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.controls.NapariControls.segment_layer" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Find the objects (cells, nuclei, spots) in a napari image layer and measure each one.</p>
+<p>Use this to segment an image. It adds a labels layer to napari and returns one row per
+object with its area, shape and intensity. Large and multiscale images (such as
+OME-Zarr) are read at the finest resolution level that fits in memory; set
+visible_only to segment just the part on screen at full detail.</p>
+<h6 id="lumen_napari.controls.NapariControls.segment_layer--parameters">Parameters<a class="headerlink" href="#lumen_napari.controls.NapariControls.segment_layer--parameters" title="Permanent link">&para;</a></h6>
+<p>image_layer : str
+    Name of the napari image layer to segment.
+method : str
+    Segmentation method: 'auto', 'otsu', 'cellpose', 'stardist' or 'bioimageio'.
+    Keep 'auto' unless the user asks for a method: it picks Otsu, or Cellpose for
+    stained tissue and brightfield when installed, and says why.
+model : str
+    For stardist or bioimageio: the model name or BioImage.IO id. Usually empty.
+reason : str
+    One sentence on why this method fits the image, shown to the user.
+min_size : int
+    Objects with fewer pixels than this are dropped.
+split_touching : bool
+    Split touching objects with a watershed (otsu only). Leave empty to decide from
+    the image: off for cells inside walls, on otherwise.
+visible_only : bool
+    Segment only the region currently visible in napari.
+level : int
+    Resolution level of a multiscale image, 0 being full resolution. -1 picks the
+    finest level that fits in memory.
+measure_layers : list[str]
+    Other image layers (channels such as tubulin or actin) to measure intensity in,
+    each giving columns like intensity_mean_tubulin. Defaults to every other image
+    layer that lines up with this one, such as the other channels of the same file.
+dark_objects : bool
+    Find dark objects instead of bright ones (otsu only): cells outlined by bright
+    walls or membranes, or objects on a bright (brightfield) background. Leave empty
+    to detect it from the image, which is usually right.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="lumen_napari.controls.NapariControls.measure_layer" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">measure_layer</span><span class="p">(</span><span class="n">labels_layer</span><span class="p">,</span> <span class="n">image_layer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">measure_layers</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.controls.NapariControls.measure_layer" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Measure the objects of a napari labels layer that already exists.</p>
+<p>Only for labels layers, such as ones drawn by hand or made by another plugin. To find
+objects in an image layer, use Segment Layer instead.</p>
+<h6 id="lumen_napari.controls.NapariControls.measure_layer--parameters">Parameters<a class="headerlink" href="#lumen_napari.controls.NapariControls.measure_layer--parameters" title="Permanent link">&para;</a></h6>
+<p>labels_layer : str
+    Name of the napari labels layer to measure.
+image_layer : str
+    Optional image layer to measure intensities from.
+measure_layers : list[str]
+    More image layers (channels) to measure intensity in, each giving columns like
+    intensity_mean_actin.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="lumen_napari.controls.NapariControls.layer_features" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">layer_features</span><span class="p">(</span><span class="n">layer</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.controls.NapariControls.layer_features" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Load the features table of a napari points, shapes, labels or tracks layer.</p>
+<h6 id="lumen_napari.controls.NapariControls.layer_features--parameters">Parameters<a class="headerlink" href="#lumen_napari.controls.NapariControls.layer_features--parameters" title="Permanent link">&para;</a></h6>
+<p>layer : str
+    Name of the napari layer whose features to load.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="lumen_napari.controls.NapariControls.segment_folder" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">segment_folder</span><span class="p">(</span><span class="n">folder</span><span class="p">,</span> <span class="n">pattern</span><span class="o">=</span><span class="s1">'*.tif'</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">'auto'</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span> <span class="n">min_size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">max_files</span><span class="o">=</span><span class="mi">500</span><span class="p">,</span> <span class="n">plate_map</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">segment_channel</span><span class="o">=</span><span class="s1">''</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.controls.NapariControls.segment_folder" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Segment and measure every image file in a folder into one table, one row per object.</p>
+<p>Use this for many images at once, such as all fields or wells of a plate. Rows are keyed
+by image_id (the file name without extension) and by well when file names contain plate
+wells like B02. If the user has a plate map file, pass it as plate_map: its columns, such
+as compound or dose, are joined onto every object. The images are not added to napari.
+OME-TIFF, OME-Zarr and CZI files supply their own channel names, pixel size (sizes are
+then in micrometers) and plate well; other files are measured in pixels.</p>
+<h6 id="lumen_napari.controls.NapariControls.segment_folder--parameters">Parameters<a class="headerlink" href="#lumen_napari.controls.NapariControls.segment_folder--parameters" title="Permanent link">&para;</a></h6>
+<p>folder : str
+    Path of the folder with the images.
+pattern : str
+    Glob pattern for the image files, such as '<em>.tif' or '</em>.png'.
+method : str
+    Segmentation method: 'auto', 'otsu', 'cellpose', 'stardist' or 'bioimageio'.
+    Keep 'auto' unless the user asks for a method: it picks Otsu, or Cellpose for
+    stained tissue and brightfield when installed, and says why.
+model : str
+    For stardist or bioimageio: the model name or BioImage.IO id. Usually empty.
+reason : str
+    One sentence on why this method fits the image, shown to the user.
+min_size : int
+    Objects with fewer pixels than this are dropped.
+max_files : int
+    Stop after this many files.
+plate_map : str
+    Optional path of a .csv, .tsv, .xlsx or .parquet table with a well or image_id column.
+channels : dict[str, str]
+    For screens with one file per channel: channel name to the token that marks it in
+    file names, such as {"dapi": "<em>w1", "tubulin": "_w2", "actin": "_w4"}.
+segment_channel : str
+    The channel to segment, usually the nuclear stain: one of the channels names, or
+    for multi-channel files (OME-TIFF, OME-Zarr, CZI) a channel name stored in the file
+    such as 'dapi'. Defaults to the first channel. The others are measured as
+    intensity_mean</em><channel> columns.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="lumen_napari.controls.NapariControls.load_table" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">load_table</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.controls.NapariControls.load_table" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Load a table file, such as a plate map of wells and treatments, to join with
+measurements. Reads .csv, .tsv, .xlsx and .parquet files.</p>
+<h6 id="lumen_napari.controls.NapariControls.load_table--parameters">Parameters<a class="headerlink" href="#lumen_napari.controls.NapariControls.load_table--parameters" title="Permanent link">&para;</a></h6>
+<p>path : str
+    Path of the table file.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="lumen_napari.controls.NapariControls.measure_regions" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">measure_regions</span><span class="p">(</span><span class="n">labels_layer</span><span class="p">,</span> <span class="n">shapes_layer</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.controls.NapariControls.measure_regions" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Assign every object of a labels layer to the drawn shape it lies in, to compare
+regions: density, counts or intensity inside versus outside a drawn area.</p>
+<p>Returns one row per object with its measurements, a <code>region</code> column (the shape's name,
+"region 1", "region 2"..., or "outside") and <code>region_area</code>, the region's area. Density
+is COUNT(*) / region_area per region.</p>
+<h6 id="lumen_napari.controls.NapariControls.measure_regions--parameters">Parameters<a class="headerlink" href="#lumen_napari.controls.NapariControls.measure_regions--parameters" title="Permanent link">&para;</a></h6>
+<p>labels_layer : str
+    Name of the napari labels layer with the objects.
+shapes_layer : str
+    Name of the napari shapes layer with the drawn regions.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="lumen_napari.controls.NapariControls.segment_whole_slide" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">segment_whole_slide</span><span class="p">(</span><span class="n">image_layer</span><span class="p">,</span> <span class="n">tile_size</span><span class="o">=</span><span class="mi">2048</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s1">'otsu'</span><span class="p">,</span> <span class="n">model</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span> <span class="n">reason</span><span class="o">=</span><span class="s1">''</span><span class="p">,</span> <span class="n">min_size</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span> <span class="n">split_touching</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.controls.NapariControls.segment_whole_slide" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Segment and measure every object of a whole-slide or other very large 2D image at
+full resolution, tile by tile, without loading it all. Use this instead of Segment
+Layer when the image is too big to segment at once. Objects are added to napari as a
+points layer at their centroids, and measured in one table.</p>
+<h6 id="lumen_napari.controls.NapariControls.segment_whole_slide--parameters">Parameters<a class="headerlink" href="#lumen_napari.controls.NapariControls.segment_whole_slide--parameters" title="Permanent link">&para;</a></h6>
+<p>image_layer : str
+    Name of the napari image layer.
+tile_size : int
+    Tile side in pixels. Smaller tiles use less memory.
+method : str
+    Segmentation method: 'otsu', 'cellpose', 'stardist' or 'bioimageio'. Use otsu
+    unless the user asks for another; it needs no setup and detects bright or dark
+    objects by itself.
+model : str
+    For stardist or bioimageio: the model name or BioImage.IO id. Usually empty.
+reason : str
+    One sentence on why this method fits the image, shown to the user.
+min_size : int
+    Objects with fewer pixels than this are dropped.
+split_touching : bool
+    Split touching objects with a watershed (otsu only).</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h4 id="lumen_napari.controls.NapariControls.compare_conditions" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">compare_conditions</span><span class="p">(</span><span class="n">table</span><span class="p">,</span> <span class="n">measurement</span><span class="p">,</span> <span class="n">condition</span><span class="p">,</span> <span class="n">control</span><span class="p">,</span> <span class="n">replicate</span><span class="o">=</span><span class="s1">'well'</span><span class="p">,</span> <span class="n">dose</span><span class="o">=</span><span class="s1">''</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.controls.NapariControls.compare_conditions" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Compare conditions (compounds, treatments) against a control the statistically sound
+way. Use this, not a plain average over cells, for questions like "which compounds
+change nuclear size compared to DMSO?".</p>
+<p>Objects are first summarised per replicate (the median per well), so wells, not cells,
+are the replicates. Returns per condition: replicates, objects, mean and sd of the well
+medians, fold change and z-score against the control wells, and a Welch t-test p-value.
+With a dose column it also fits a dose-response curve per condition (EC50, hill).</p>
+<h6 id="lumen_napari.controls.NapariControls.compare_conditions--parameters">Parameters<a class="headerlink" href="#lumen_napari.controls.NapariControls.compare_conditions--parameters" title="Permanent link">&para;</a></h6>
+<p>table : str
+    A measurement table with one row per object, such as plate1_objects.
+measurement : str
+    The column to compare, such as area or intensity_mean_tubulin.
+condition : str
+    The column holding the condition, such as compound.
+control : str
+    The control condition, such as DMSO.
+replicate : str
+    The column identifying a replicate, usually well.
+dose : str
+    Optional dose or concentration column for a dose-response fit.</p>
+
+
+    </div>
+
+</div>
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.tools.make_tools" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">make_tools</span><span class="p">(</span><span class="n">viewer</span><span class="p">,</span> <span class="n">controls</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">actions</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.tools.make_tools" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Build the Lumen tools that read and steer the viewer. With the session's napari
+controls, statistics on their tables are a tool too, and with <code>actions</code> so are the
+controls' segment and measure actions, for models that cannot call them natively.</p>
+
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="lumen_napari.explorer.ObjectExplorer" class="doc doc-heading">
+            <code>lumen_napari.explorer.ObjectExplorer</code>
+
+
+<a href="#lumen_napari.explorer.ObjectExplorer" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="lumen.ai.analysis.Analysis">Analysis</span></code></p>
+
+
+
+        <p>Scatter plot of segmented objects. Clicking a point zooms napari to that object.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="lumen_napari.plate.PlateHeatmap" class="doc doc-heading">
+            <code>lumen_napari.plate.PlateHeatmap</code>
+
+
+<a href="#lumen_napari.plate.PlateHeatmap" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="lumen.ai.analysis.Analysis">Analysis</span></code></p>
+
+
+
+        <p>Heatmap of a measurement per well on a 96 or 384 well plate. Clicking a well opens one
+of its images in napari.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-function">
+
+
+<h3 id="lumen_napari.upload.upload_image" class="doc doc-heading">
+            <code class="highlight language-python"><span class="n">lumen_napari</span><span class="o">.</span><span class="n">upload</span><span class="o">.</span><span class="n">upload_image</span><span class="p">(</span><span class="n">controls</span><span class="p">,</span> <span class="n">extension</span><span class="p">,</span> <span class="n">context</span><span class="p">,</span> <span class="n">file_obj</span><span class="p">,</span> <span class="n">alias</span><span class="p">,</span> <span class="n">filename</span><span class="p">)</span></code>
+
+<a href="#lumen_napari.upload.upload_image" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents first">
+
+        <p>Save the upload, open each channel as a napari image layer with the file's pixel size,
+segment the first channel and measure the others. Returns the measurement source, so
+Lumen can query it straight away.</p>
+
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>

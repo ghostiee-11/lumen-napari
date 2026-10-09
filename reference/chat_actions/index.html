@@ -1,0 +1,2159 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Ask questions about your napari images in plain language with Lumen">
+      
+      
+      
+        <link rel="canonical" href="https://holoviz-topics.github.io/lumen-napari/reference/chat_actions/">
+      
+      
+        <link rel="prev" href="../../how_to/python/">
+      
+      
+        <link rel="next" href="../measurements/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Chat actions and tools - lumen-napari</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#chat-actions-and-tools" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="lumen-napari" class="md-header__button md-logo" aria-label="lumen-napari" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            lumen-napari
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Chat actions and tools
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/holoviz-topics/lumen-napari" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="lumen-napari" class="md-nav__button md-logo" aria-label="lumen-napari" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    lumen-napari
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/holoviz-topics/lumen-napari" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    GitHub
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../examples/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Examples
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Getting started
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting_started/installation/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Installation
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting_started/quickstart/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Quickstart
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../getting_started/llm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Choosing an LLM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How-to guides
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    How-to guides
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/upload_images/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Upload images
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/segment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Segment and measure
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/units/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Physical units
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/explore_in_napari/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Explore objects in napari
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/plates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Screens and plates
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/statistics/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Compare conditions
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/large_images/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Large images and whole slides
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/regions_and_edits/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Regions and hand corrections
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/export/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Export a script or report
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../how_to/python/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Use from Python
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Chat actions and tools
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Chat actions and tools
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Actions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Actions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#segment-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Segment Layer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#measure-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Measure Layer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layer-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layer Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#segment-folder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Segment Folder
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#load-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Load Table
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#measure-regions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Measure Regions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#segment-whole-slide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Segment Whole Slide
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tools
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tools">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#list_napari_layers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        list_napari_layers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#show_object_in_napari" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        show_object_in_napari
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#color_objects_by" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        color_objects_by
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filter_objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        filter_objects
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set_pixel_size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        set_pixel_size
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#segmentation_methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        segmentation_methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compare_conditions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        compare_conditions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#analyses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Analyses
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../measurements/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Measurement columns
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../file_formats/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    File formats
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Python API
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--section md-nav__item--nested">
+      
+        
+        
+          
+        
+        <input class="md-nav__toggle md-toggle md-toggle--indeterminate" type="checkbox" id="__nav_6" >
+        
+          
+          <label class="md-nav__link" for="__nav_6" id="__nav_6_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Explanation
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_6_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_6">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Explanation
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../explanation/how_it_works/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    How it works
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../explanation/limitations/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Limitations
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#actions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Actions
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Actions">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#segment-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Segment Layer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#measure-layer" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Measure Layer
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#layer-features" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Layer Features
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#segment-folder" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Segment Folder
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#load-table" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Load Table
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#measure-regions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Measure Regions
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#segment-whole-slide" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Segment Whole Slide
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#tools" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Tools
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Tools">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#list_napari_layers" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        list_napari_layers
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#show_object_in_napari" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        show_object_in_napari
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#color_objects_by" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        color_objects_by
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#filter_objects" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        filter_objects
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#set_pixel_size" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        set_pixel_size
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#segmentation_methods" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        segmentation_methods
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#compare_conditions" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        compare_conditions
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#analyses" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Analyses
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="chat-actions-and-tools">Chat actions and tools<a class="headerlink" href="#chat-actions-and-tools" title="Permanent link">&para;</a></h1>
+<p>The LLM answers by calling these actions and tools. You do not call them directly; ask in plain language and Lumen picks one. Knowing them helps you phrase a question, or name a setting.</p>
+<p><strong>Actions</strong> create or replace a table. Each table is added to one DuckDB database per chat session, so every table stays queryable and joinable with SQL. <strong>Tools</strong> act on napari and report what they did.</p>
+<p>Layer names are matched loosely, so the model's wording rarely fails: the exact name (<code>nuclei labels</code>), its table name (<code>nuclei_labels</code>), the image name for its labels (<code>nuclei</code>), a file's name for its first channel (<code>lily_stem</code> for <code>lily_stem walls</code>), a unique part of a name (<code>nuclei</code> for <code>hela_nuclei</code>), or anything when only one layer of that kind is open. Truly ambiguous or missing names fail with the list of layers.</p>
+<h2 id="actions">Actions<a class="headerlink" href="#actions" title="Permanent link">&para;</a></h2>
+<h3 id="segment-layer">Segment Layer<a class="headerlink" href="#segment-layer" title="Permanent link">&para;</a></h3>
+<p>Find the objects in an image layer, add a labels layer and measure each object. Guide: <a href="../../how_to/segment/">Segment and measure</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>image_layer</code></td>
+<td>str</td>
+<td>required</td>
+<td>Image layer to segment</td>
+</tr>
+<tr>
+<td><code>method</code></td>
+<td><code>auto</code>, <code>otsu</code>, <code>cellpose</code>, <code>stardist</code>, <code>bioimageio</code></td>
+<td><code>auto</code></td>
+<td><code>auto</code> picks from the image</td>
+</tr>
+<tr>
+<td><code>model</code></td>
+<td>str</td>
+<td><code>""</code></td>
+<td>StarDist model or BioImage.IO id</td>
+</tr>
+<tr>
+<td><code>reason</code></td>
+<td>str</td>
+<td><code>""</code></td>
+<td>Why this method fits, shown in the chat</td>
+</tr>
+<tr>
+<td><code>min_size</code></td>
+<td>int</td>
+<td>20</td>
+<td>Drop objects with fewer pixels</td>
+</tr>
+<tr>
+<td><code>split_touching</code></td>
+<td>bool</td>
+<td>from the image</td>
+<td>Watershed split (Otsu only)</td>
+</tr>
+<tr>
+<td><code>visible_only</code></td>
+<td>bool</td>
+<td><code>False</code></td>
+<td>Only the region on screen</td>
+</tr>
+<tr>
+<td><code>level</code></td>
+<td>int</td>
+<td>-1</td>
+<td>Pyramid level; -1 picks the finest that fits</td>
+</tr>
+<tr>
+<td><code>measure_layers</code></td>
+<td>list[str]</td>
+<td>aligned layers</td>
+<td>More channels to measure intensity in</td>
+</tr>
+<tr>
+<td><code>dark_objects</code></td>
+<td>bool</td>
+<td>from the image</td>
+<td>Dark objects inside walls or on a bright background (Otsu only)</td>
+</tr>
+</tbody>
+</table>
+<p>Adds layer <code>&lt;image&gt; labels</code>. Table: <code>&lt;image&gt;_labels</code>.</p>
+<h3 id="measure-layer">Measure Layer<a class="headerlink" href="#measure-layer" title="Permanent link">&para;</a></h3>
+<p>Measure an existing labels layer. If there is no labels layer yet, segments the image instead.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>labels_layer</code></td>
+<td>str</td>
+<td>required</td>
+<td>Labels layer to measure</td>
+</tr>
+<tr>
+<td><code>image_layer</code></td>
+<td>str</td>
+<td>the labels' source image</td>
+<td>Image for intensities</td>
+</tr>
+<tr>
+<td><code>measure_layers</code></td>
+<td>list[str]</td>
+<td>none</td>
+<td>More channels</td>
+</tr>
+</tbody>
+</table>
+<p>Table: <code>&lt;labels layer&gt;</code> as a table name.</p>
+<h3 id="layer-features">Layer Features<a class="headerlink" href="#layer-features" title="Permanent link">&para;</a></h3>
+<p>Load the <code>features</code> of a labels, points, shapes, tracks, surface or vectors layer. Points and other coordinate layers get <code>position_0</code>, <code>position_1</code>... columns.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>layer</code></td>
+<td>str</td>
+<td>Layer name</td>
+</tr>
+</tbody>
+</table>
+<h3 id="segment-folder">Segment Folder<a class="headerlink" href="#segment-folder" title="Permanent link">&para;</a></h3>
+<p>Segment and measure every image file in a folder into one table. Guide: <a href="../../how_to/plates/">Screens and plates</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>folder</code></td>
+<td>str</td>
+<td>required</td>
+<td>Folder path</td>
+</tr>
+<tr>
+<td><code>pattern</code></td>
+<td>str</td>
+<td><code>*.tif</code></td>
+<td>Glob pattern</td>
+</tr>
+<tr>
+<td><code>method</code>, <code>model</code>, <code>reason</code>, <code>min_size</code></td>
+<td></td>
+<td>as Segment Layer</td>
+<td></td>
+</tr>
+<tr>
+<td><code>max_files</code></td>
+<td>int</td>
+<td>500</td>
+<td></td>
+</tr>
+<tr>
+<td><code>plate_map</code></td>
+<td>str</td>
+<td><code>""</code></td>
+<td>Table with a <code>well</code> or <code>image_id</code> column</td>
+</tr>
+<tr>
+<td><code>channels</code></td>
+<td>dict[str, str]</td>
+<td>none</td>
+<td>Channel name to file name token</td>
+</tr>
+<tr>
+<td><code>segment_channel</code></td>
+<td>str</td>
+<td>first channel</td>
+<td>Channel to segment</td>
+</tr>
+</tbody>
+</table>
+<p>Table: <code>&lt;folder&gt;_objects</code>, with <code>image_id</code>, <code>well</code> (when found) and <code>path</code>.</p>
+<h3 id="load-table">Load Table<a class="headerlink" href="#load-table" title="Permanent link">&para;</a></h3>
+<p>Load a <code>.csv</code>, <code>.tsv</code>, <code>.xlsx</code> or <code>.parquet</code> file, such as a plate map.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>path</code></td>
+<td>str</td>
+<td>File path</td>
+</tr>
+</tbody>
+</table>
+<p>Table: the file name without extension.</p>
+<h3 id="measure-regions">Measure Regions<a class="headerlink" href="#measure-regions" title="Permanent link">&para;</a></h3>
+<p>Assign each object to the drawn shape its centroid lies in. Guide: <a href="../../how_to/regions_and_edits/">Regions and hand corrections</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>labels_layer</code></td>
+<td>str</td>
+<td>Labels layer with the objects</td>
+</tr>
+<tr>
+<td><code>shapes_layer</code></td>
+<td>str</td>
+<td>Shapes layer with the regions</td>
+</tr>
+</tbody>
+</table>
+<p>Table: <code>&lt;labels&gt;_by_region</code>, with <code>region</code> and <code>region_area</code>.</p>
+<h3 id="segment-whole-slide">Segment Whole Slide<a class="headerlink" href="#segment-whole-slide" title="Permanent link">&para;</a></h3>
+<p>Segment a very large 2D image at full resolution, tile by tile. Guide: <a href="../../how_to/large_images/">Large images</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>image_layer</code></td>
+<td>str</td>
+<td>required</td>
+<td></td>
+</tr>
+<tr>
+<td><code>tile_size</code></td>
+<td>int</td>
+<td>2048</td>
+<td>Tile side in pixels</td>
+</tr>
+<tr>
+<td><code>method</code></td>
+<td><code>otsu</code>, <code>cellpose</code>, <code>stardist</code>, <code>bioimageio</code></td>
+<td><code>otsu</code></td>
+<td>No <code>auto</code>: tiles share one threshold</td>
+</tr>
+<tr>
+<td><code>model</code>, <code>reason</code>, <code>min_size</code>, <code>split_touching</code></td>
+<td></td>
+<td>as Segment Layer</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<p>Adds points layer <code>&lt;image&gt; objects</code>. Table: <code>&lt;image&gt;_objects</code>.</p>
+<h2 id="tools">Tools<a class="headerlink" href="#tools" title="Permanent link">&para;</a></h2>
+<h3 id="list_napari_layers">list_napari_layers<a class="headerlink" href="#list_napari_layers" title="Permanent link">&para;</a></h3>
+<p>Lists the open layers with type, shape and scale. Labels layers include their object count and mean sizes and intensities. Image layers without labels are marked "not segmented yet"; when nothing is segmented, the first image is segmented first.</p>
+<h3 id="show_object_in_napari">show_object_in_napari<a class="headerlink" href="#show_object_in_napari" title="Permanent link">&para;</a></h3>
+<p>Zoom napari to one object and select it. Guide: <a href="../../how_to/explore_in_napari/">Explore objects</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>label</code></td>
+<td>int</td>
+<td>0</td>
+<td>Object label</td>
+</tr>
+<tr>
+<td><code>rank_by</code></td>
+<td>str</td>
+<td><code>""</code></td>
+<td>Show the largest by this column</td>
+</tr>
+<tr>
+<td><code>smallest</code></td>
+<td>bool</td>
+<td><code>False</code></td>
+<td>With <code>rank_by</code>, the smallest</td>
+</tr>
+<tr>
+<td><code>labels_layer</code></td>
+<td>str</td>
+<td>most recent</td>
+<td></td>
+</tr>
+<tr>
+<td><code>image_id</code></td>
+<td>str</td>
+<td><code>""</code></td>
+<td>Open this image from a segmented folder</td>
+</tr>
+</tbody>
+</table>
+<h3 id="color_objects_by">color_objects_by<a class="headerlink" href="#color_objects_by" title="Permanent link">&para;</a></h3>
+<p>Color each object by a measurement. No column resets the colors.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>column</code></td>
+<td>str</td>
+<td><code>""</code></td>
+</tr>
+<tr>
+<td><code>labels_layer</code></td>
+<td>str</td>
+<td>most recent</td>
+</tr>
+<tr>
+<td><code>colormap</code></td>
+<td>str</td>
+<td><code>viridis</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="filter_objects">filter_objects<a class="headerlink" href="#filter_objects" title="Permanent link">&para;</a></h3>
+<p>Show only objects matching a SQL condition. No condition shows all again.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>where</code></td>
+<td>str</td>
+<td><code>""</code></td>
+<td>SQL condition, units allowed</td>
+</tr>
+<tr>
+<td><code>labels_layer</code></td>
+<td>str</td>
+<td>most recent</td>
+<td></td>
+</tr>
+<tr>
+<td><code>as_new_layer</code></td>
+<td>bool</td>
+<td><code>False</code></td>
+<td>Add <code>&lt;layer&gt; filtered</code> instead of hiding</td>
+</tr>
+</tbody>
+</table>
+<h3 id="set_pixel_size">set_pixel_size<a class="headerlink" href="#set_pixel_size" title="Permanent link">&para;</a></h3>
+<p>Set the pixel size of an image and its labels, and measure the labels again. Guide: <a href="../../how_to/units/">Physical units</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>size</code></td>
+<td>float</td>
+<td>required</td>
+</tr>
+<tr>
+<td><code>unit</code></td>
+<td>str</td>
+<td><code>um</code></td>
+</tr>
+<tr>
+<td><code>z_size</code></td>
+<td>float</td>
+<td><code>size</code></td>
+</tr>
+<tr>
+<td><code>layer</code></td>
+<td>str</td>
+<td>first image</td>
+</tr>
+</tbody>
+</table>
+<h3 id="segmentation_methods">segmentation_methods<a class="headerlink" href="#segmentation_methods" title="Permanent link">&para;</a></h3>
+<p>Lists the four methods, whether each is installed (with the install command if not), and when each fits.</p>
+<h3 id="compare_conditions">compare_conditions<a class="headerlink" href="#compare_conditions" title="Permanent link">&para;</a></h3>
+<p>Compare conditions against a control with wells as replicates. Guide: <a href="../../how_to/statistics/">Compare conditions</a>.</p>
+<table>
+<thead>
+<tr>
+<th>Parameter</th>
+<th>Type</th>
+<th>Default</th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>table</code></td>
+<td>str</td>
+<td>required</td>
+<td>Object table</td>
+</tr>
+<tr>
+<td><code>measurement</code></td>
+<td>str</td>
+<td>required</td>
+<td>Column to compare</td>
+</tr>
+<tr>
+<td><code>condition</code></td>
+<td>str</td>
+<td>required</td>
+<td>Such as <code>compound</code></td>
+</tr>
+<tr>
+<td><code>control</code></td>
+<td>str</td>
+<td>required</td>
+<td>Such as <code>DMSO</code></td>
+</tr>
+<tr>
+<td><code>replicate</code></td>
+<td>str</td>
+<td><code>well</code></td>
+<td></td>
+</tr>
+<tr>
+<td><code>dose</code></td>
+<td>str</td>
+<td><code>""</code></td>
+<td>Dose column for a dose-response fit</td>
+</tr>
+</tbody>
+</table>
+<p>Table: <code>&lt;table&gt;_vs_&lt;control&gt;</code>.</p>
+<h2 id="analyses">Analyses<a class="headerlink" href="#analyses" title="Permanent link">&para;</a></h2>
+<p>Lumen offers these in its analysis menu when the table has the needed column.</p>
+<table>
+<thead>
+<tr>
+<th>Analysis</th>
+<th>Needs column</th>
+<th>Controls</th>
+<th>Click</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>ObjectExplorer</strong></td>
+<td><code>label</code></td>
+<td><code>x</code>, <code>y</code></td>
+<td>Zooms napari to the object, opening its image for folder tables</td>
+</tr>
+<tr>
+<td><strong>PlateHeatmap</strong></td>
+<td><code>well</code></td>
+<td><code>value</code>, <code>statistic</code> (<code>mean</code>, <code>median</code>, <code>count</code>, <code>sum</code>, <code>std</code>)</td>
+<td>Opens one image of the well in napari</td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.sections", "navigation.expand", "navigation.top", "content.code.copy", "search.suggest"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
