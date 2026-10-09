@@ -1,5 +1,6 @@
 site_name: lumen-napari
 site_description: Ask questions about your napari images in plain language with Lumen
+site_url: https://ghostiee-11.github.io/lumen-napari/
 repo_url: https://github.com/ghostiee-11/lumen-napari
 edit_uri: edit/main/docs/
 
