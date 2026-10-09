@@ -259,3 +259,12 @@ def test_background_regions_are_not_cells():
     sizes = np.bincount(labels.ravel())[1:]
     assert sizes.max() < 100  # no background-sized object left
     assert labels.max() >= 80
+
+
+def test_faint_walls_still_separate_cells():
+    walls = grid_of_walls()
+    walls[:, 30:] *= 0.15  # walls fade on the right, below a global threshold
+    walls += 0.1
+    flags = {"dark_objects": True, "split_touching": False}
+    assert segment(walls, local_threshold=False, **flags).max() == 4  # faint walls lost
+    assert segment(walls, local_threshold=True, **flags).max() == 9

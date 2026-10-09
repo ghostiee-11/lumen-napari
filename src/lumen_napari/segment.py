@@ -50,6 +50,7 @@ def segment(
     threshold: float | None = None,
     model: str = "",
     dark_objects: bool | None = None,
+    local_threshold: bool | None = None,
 ) -> np.ndarray:
     """Segment the objects of a 2D or 3D image and return a label image. `threshold`
     replaces Otsu's, so tiles of one large image share a single cut-off. `model` names the
@@ -63,10 +64,13 @@ def segment(
     image = _fill_nan(np.asarray(image))
     if method == "auto":
         method = choose_method(image)[0]
-    if method == "otsu" and threshold is None and (dark_objects is None or split_touching is None):
+    if method == "otsu" and threshold is None and None in (dark_objects, split_touching,
+                                                            local_threshold):
         dark, walls = polarity(image)
         dark_objects = dark if dark_objects is None else dark_objects
         split_touching = (not walls) if split_touching is None else split_touching
+        # Wall brightness varies across tissue; a local threshold keeps faint walls.
+        local_threshold = walls if local_threshold is None else local_threshold
     split_touching = True if split_touching is None else split_touching
     if dark_objects and method == "otsu":
         image = image.max() - image.astype(float)
@@ -84,7 +88,12 @@ def segment(
         # Volumes are noisy and nuclei textured; unsmoothed they shatter into thousands of
         # pieces. 2D stays unsmoothed, since smoothing shifts edges by about a pixel.
         image = filters.gaussian(image.astype(float), sigma=2)
-    cut = filters.threshold_otsu(image) if threshold is None else threshold
+    if threshold is not None:
+        cut = threshold
+    elif local_threshold:
+        cut = filters.threshold_local(image, _block_size(image))
+    else:
+        cut = filters.threshold_otsu(image)
     mask = ndi.binary_fill_holes(image > cut)
     if min_size:
         mask = morphology.remove_small_objects(mask, max_size=min_size - 1)
@@ -133,6 +142,11 @@ def polarity(image: np.ndarray) -> tuple[bool, bool]:
     background = mask.mean() > 0.5
     walls = not background and sizes.max() >= 0.6 * mask.sum() and span >= 0.8
     return bool(walls or background), bool(walls)
+
+
+def _block_size(image: np.ndarray) -> int:
+    """Neighbourhood for a local threshold: about a twentieth of the image, odd, at least 15."""
+    return max(15, min(image.shape) // 18 | 1)
 
 
 def _drop_background(objects: np.ndarray) -> np.ndarray:
