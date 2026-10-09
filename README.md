@@ -2,6 +2,15 @@
 
 **Ask questions about your napari images in plain language.**
 
+[![Tests](https://github.com/ghostiee-11/lumen-napari/actions/workflows/test.yml/badge.svg)](https://github.com/ghostiee-11/lumen-napari/actions/workflows/test.yml)
+[![Docs](https://img.shields.io/badge/docs-online-blue)](https://ghostiee-11.github.io/lumen-napari/)
+[![License: BSD-3-Clause](https://img.shields.io/badge/license-BSD--3--Clause-green)](LICENSE)
+[![Python 3.11+](https://img.shields.io/badge/python-3.11%2B-3776AB?logo=python&logoColor=white)](https://www.python.org)
+[![napari plugin](https://img.shields.io/badge/napari-plugin-80d1ff)](https://napari.org)
+[![Built on Lumen](https://img.shields.io/badge/built%20on-Lumen%20%C2%B7%20HoloViz-fc5c00)](https://lumen.holoviz.org)
+[![Contributions welcome](https://img.shields.io/badge/contributions-welcome%20%E2%9D%A4-e5534b)](CONTRIBUTING.md)
+[![GitHub stars](https://img.shields.io/github/stars/ghostiee-11/lumen-napari?style=social)](https://github.com/ghostiee-11/lumen-napari/stargazers)
+
 [Documentation](https://ghostiee-11.github.io/lumen-napari/) · [Examples](https://ghostiee-11.github.io/lumen-napari/examples/) · [Contributing](CONTRIBUTING.md)
 
 [![Demo: asking Lumen to find every cell; it counts 2,652 cells and napari zooms to the largest](docs/assets/demo.gif)](https://ghostiee-11.github.io/lumen-napari/#watch-it)
@@ -55,6 +64,10 @@ You can also drop image files straight into the chat. The chat server listens on
 ## Learn more
 
 The [documentation](https://ghostiee-11.github.io/lumen-napari/) has a quickstart, how-to guides for every workflow (plates, statistics, large images, regions, exports), reference pages for every chat action and measurement, and notes on how it works and where it stops working.
+
+## Contributing ❤️
+
+Contributions of every kind are welcome: bug reports, images it gets wrong, new examples, docs fixes and code. Start with the [contributing guide](CONTRIBUTING.md), or open an [issue](https://github.com/ghostiee-11/lumen-napari/issues). If lumen-napari helps your research, a ⭐ helps others find it.
 
 ## License
 
