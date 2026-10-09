@@ -4,7 +4,9 @@
 
 [Documentation](https://ghostiee-11.github.io/lumen-napari/) · [Examples](https://ghostiee-11.github.io/lumen-napari/examples/) · [Contributing](CONTRIBUTING.md)
 
-![A lily stem in napari, every cell found and colored by lignin](docs/assets/lily_napari.png)
+![Left, the Lumen chat: "Color every cell in lily-blue by its mean lily-green intensity", with the plan, the segmentation check and the answer. Right, napari: the 2,652 cells colored by lignin, with a zoomed inset of one vascular bundle.](docs/assets/lumen_and_napari.png)
+
+*One question in the Lumen chat (left) segments 2,652 cells and colors each by its lignin in napari (right, zoomed inset).*
 
 lumen-napari connects [napari](https://napari.org) to [Lumen](https://lumen.holoviz.org), the HoloViz AI data explorer. Ask "how many cells are there, and are the lignified ones smaller?" and it segments the image open in napari, measures every object into a table, and answers with statistics and charts. Click a point on a chart and napari zooms to that cell.
 

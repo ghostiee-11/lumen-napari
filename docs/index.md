@@ -12,7 +12,9 @@ Lumen    Segmented `nuclei`: 348 objects into table `nuclei_labels`.
          The mean area is 83.94 pixels.
 ```
 
-![A lily stem in napari, every cell found and colored by lignin](assets/lily_napari.png)
+![Left, the Lumen chat with the question and its answer. Right, napari with the 2,652 cells colored by lignin.](assets/lumen_and_napari.png)
+
+*One question in the Lumen chat (left) segments 2,652 cells and colors each by its lignin in napari (right, zoomed inset).*
 
 It works on any image with distinct objects, not only nuclei: plant cells inside their walls, stained tissue, plates of wells, galaxies. See the [Examples](examples.md).
 
