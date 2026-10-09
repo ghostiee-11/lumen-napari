@@ -82,29 +82,35 @@ def make_tools(viewer: ViewerModel, controls=None, actions: bool = False) -> lis
     provides = (["data", "source", "table", "pipeline", "metaset"] if controls is not None
                 else ["data"])
 
-    def objects_layer(name: str) -> Labels:
-        """The labels layer to act on. An image the question names is segmented first if it
-        has no labels yet; with no name, the first visible image is when nothing is
-        segmented, so a question works whatever order it is asked in."""
+    def segment_if_needed(name: str) -> Image | None:
+        """Segment the image to act on if it has no labels yet, and return it: the image the
+        question names, or else the only visible image when nothing is segmented. With
+        several channels open and none named, nothing is guessed."""
         images = [layer for layer in viewer.layers if isinstance(layer, Image)]
         named = find_layer(images, name) if name else None
         if named is None and not any(isinstance(layer, Labels) for layer in viewer.layers):
-            named = next((layer for layer in images if layer.visible), None)
-        if controls is not None and named is not None:
-            if f"{named.name} labels" not in viewer.layers:
-                controls.segment_layer(image_layer=named.name,
-                                       reason=f"{named.name} was not segmented yet.")
-            return _labels_layer(viewer, f"{named.name} labels")
-        return _labels_layer(viewer, name)
+            visible = [layer for layer in images if layer.visible]
+            named = visible[0] if len(visible) == 1 else None
+        if controls is not None and named is not None and \
+                f"{named.name} labels" not in viewer.layers:
+            controls.segment_layer(image_layer=named.name,
+                                   reason=f"{named.name} was not segmented yet.")
+        return named
+
+    def objects_layer(name: str) -> Labels:
+        """The labels layer to act on, segmenting its image first when needed, so a question
+        works whatever order it is asked in."""
+        image = segment_if_needed(name)
+        return _labels_layer(viewer, f"{image.name} labels" if image is not None else name)
 
     def list_napari_layers() -> str:
         """List the layers open in napari with their type, shape and pixel size, and for
-        segmented images their object count and mean sizes. When nothing is segmented yet,
-        the first image is segmented so its objects can be counted."""
+        segmented images their object count and mean sizes. With a single image and
+        nothing segmented yet, it is segmented so its objects can be counted."""
         if not len(viewer.layers):
             return "napari has no layers open."
-        if controls is not None and any(isinstance(layer, Image) for layer in viewer.layers):
-            objects_layer("")  # segments the first image when nothing is segmented yet
+        if controls is not None:
+            segment_if_needed("")
         lines = []
         for layer in viewer.layers:
             line = _describe(layer)

@@ -343,3 +343,17 @@ def test_columns_are_found_from_plain_words():
     assert resolve_column("Area", columns) == "area"
     assert resolve_column("lily green", columns) is None  # mean or max: ambiguous
     assert resolve_column("volume", columns) is None
+
+
+def test_listing_layers_does_not_guess_between_channels(qapp):
+    viewer = ViewerModel()
+    image = np.zeros((40, 40))
+    image[5:15, 5:15] = 1
+    viewer.add_image(image, name="lily-green")
+    viewer.add_image(image, name="lily-blue")
+    from lumen_napari.controls import NapariControls
+
+    listing = make_tools(viewer, NapariControls(viewer=viewer))[0].function
+    text = listing()
+    assert not any(layer.name.endswith("labels") for layer in viewer.layers)
+    assert "'lily-green': image" in text and "not segmented yet" in text
