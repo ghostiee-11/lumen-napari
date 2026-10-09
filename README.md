@@ -6,7 +6,7 @@
 
 [![Demo: asking Lumen to find every cell; it counts 2,652 cells and napari zooms to the largest](docs/assets/demo.gif)](https://ghostiee-11.github.io/lumen-napari/#watch-it)
 
-*"Find every cell, tell me how many there are, and show me where the biggest ones live." [Full-quality video](https://ghostiee-11.github.io/lumen-napari/#watch-it).*
+*"Find every cell, tell me how many there are, and show me where the biggest ones live."*
 
 ![Left, the Lumen chat: "Color every cell in lily-blue by its mean lily-green intensity", with the plan, the segmentation check and the answer. Right, napari: the 2,652 cells colored by lignin, with a zoomed inset of one vascular bundle.](docs/assets/lumen_and_napari.png)
 
