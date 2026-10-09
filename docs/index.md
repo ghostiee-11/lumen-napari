@@ -16,6 +16,12 @@ Lumen    Segmented `nuclei`: 348 objects into table `nuclei_labels`.
 
 *One question in the Lumen chat (left) segments 2,652 cells and colors each by its lignin in napari (right, zoomed inset).*
 
+## Watch it
+
+<video src="assets/demo.mp4" poster="assets/demo_poster.jpg" controls muted playsinline preload="metadata" width="100%"></video>
+
+*35 seconds: "Find every cell, tell me how many there are, and show me where the biggest ones live." Lumen counts 2,652 cells and napari zooms to the largest.*
+
 It works on any image with distinct objects, not only nuclei: plant cells inside their walls, stained tissue, plates of wells, galaxies. See the [Examples](examples.md).
 
 ## Why
