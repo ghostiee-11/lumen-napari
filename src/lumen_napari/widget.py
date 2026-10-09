@@ -7,6 +7,7 @@ import webbrowser
 from pathlib import Path
 from weakref import WeakKeyDictionary
 
+import imageio.v3 as iio
 import napari
 from qtpy.QtWidgets import (
     QApplication,
@@ -16,7 +17,6 @@ from qtpy.QtWidgets import (
     QVBoxLayout,
     QWidget,
 )
-from skimage.io import imsave
 
 from .app import LumenServer
 from .report import report_html
@@ -94,7 +94,7 @@ class LumenWidget(QWidget):
         if not isinstance(viewer, napari.Viewer):
             return None
         buffer = io.BytesIO()
-        imsave(buffer, viewer.screenshot(canvas_only=True, flash=False), extension=".png")
+        iio.imwrite(buffer, viewer.screenshot(canvas_only=True, flash=False), extension=".png")
         return buffer.getvalue()
 
     def _refresh(self) -> None:

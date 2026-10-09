@@ -14,6 +14,7 @@ classifiers = ["Framework :: napari"]
 dependencies = [
     "lumen[ai] @ git+https://github.com/holoviz/lumen.git@main",
     "napari @ git+https://github.com/napari/napari.git@main",
+    "imageio",
     "scikit-image>=0.22",
     "superqt",
 ]

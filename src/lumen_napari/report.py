@@ -8,10 +8,10 @@ import io
 import json
 from datetime import datetime
 
+import imageio.v3 as iio
 import numpy as np
 from markdown_it import MarkdownIt
 from skimage import exposure, segmentation, transform
-from skimage.io import imsave
 
 MAX_SIDE = 600
 
@@ -33,7 +33,7 @@ def overlay_png(image: np.ndarray, labels: np.ndarray) -> bytes:
                                       out_range=(0, 1))
     outlined = segmentation.mark_boundaries(gray, labels.astype(int), color=(1, 0.55, 0))
     buffer = io.BytesIO()
-    imsave(buffer, (outlined * 255).astype(np.uint8), extension=".png", check_contrast=False)
+    iio.imwrite(buffer, (outlined * 255).astype(np.uint8), extension=".png")
     return buffer.getvalue()
 
 
