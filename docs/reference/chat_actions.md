@@ -4,7 +4,7 @@ The LLM answers by calling these actions and tools. You do not call them directl
 
 **Actions** create or replace a table. Each table is added to one DuckDB database per chat session, so every table stays queryable and joinable with SQL. **Tools** act on napari and report what they did.
 
-Layer names can be given as the layer name (`nuclei labels`) or its table name (`nuclei_labels`). Where a tool needs a labels layer, the image name (`nuclei`) also works.
+Layer names are matched loosely, so the model's wording rarely fails: the exact name (`nuclei labels`), its table name (`nuclei_labels`), the image name for its labels (`nuclei`), a file's name for its first channel (`lily_stem` for `lily_stem walls`), a unique part of a name (`nuclei` for `hela_nuclei`), or anything when only one layer of that kind is open. Truly ambiguous or missing names fail with the list of layers.
 
 ## Actions
 

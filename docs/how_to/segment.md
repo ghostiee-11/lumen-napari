@@ -89,7 +89,12 @@ Plant tissue and membrane stains show bright walls around dark cells. This is de
 
 > How many cells are in lily-blue?
 
-Try it on **File > Open Sample > Lumen > Lily stem cells (4 channels)**: about 1,700 cells, with `lily-green` marking the lignified walls of the vascular bundles. Very dim corners can merge into a few large objects; hide them with a size filter.
+Try it on **File > Open Sample > Lumen > Lily stem cells (4 channels)**: about 2,650 cells, with `lily-green` marking the lignified walls of the vascular bundles.
+
+Two things make wall images work:
+
+- **A local threshold.** Wall brightness varies across tissue, so each pixel is compared with its neighbourhood (about a twentieth of the image) instead of one cut-off for the whole image. Faint walls inside vascular bundles still separate their cells.
+- **Background is not a cell.** Dark regions that touch the image edge and are over 20 times the typical cell size are background, and are left out.
 
 ## Measure more channels
 

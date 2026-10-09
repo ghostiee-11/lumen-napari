@@ -12,13 +12,17 @@ Lumen    Segmented `nuclei`: 348 objects into table `nuclei_labels`.
          The mean area is 83.94 pixels.
 ```
 
+![A lily stem in napari, every cell found and colored by lignin](assets/lily_napari.png)
+
+It works on any image with distinct objects, not only nuclei: plant cells inside their walls, stained tissue, plates of wells, galaxies. See the [Examples](examples.md).
+
 ## Why
 
 napari is good at looking at pixels. Most questions a biologist asks are about populations: how many cells, how big, how bright, which treatment changed them, and which cell is the odd one out. Answering them usually means a segmentation script, a measurement script, a spreadsheet and a plotting notebook, glued together by hand.
 
 lumen-napari puts that loop in one place:
 
-1. **Segment** an image in napari (Otsu with watershed, Cellpose, StarDist or a BioImage.IO model).
+1. **Segment** an image in napari. lumen-napari detects bright objects, dark objects or cells inside walls, and picks Otsu or Cellpose by itself (StarDist and BioImage.IO models on request).
 2. **Measure** every object into a SQL table, in physical units.
 3. **Ask** questions about the table: counts, distributions, comparisons, plate statistics.
 4. **Look** at any object behind an answer: charts, tables and plate heatmaps click back to napari.

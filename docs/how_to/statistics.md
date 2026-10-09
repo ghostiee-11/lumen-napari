@@ -27,7 +27,7 @@ You need a table with one row per object, a condition column (such as `compound`
 
 Rows are sorted by `z_score`. The result is stored as a new table, `<table>_vs_<control>`, so you can chart or query it.
 
-3. **Dose-response**, with a dose column: a four-parameter logistic fit of well medians against dose, per condition, giving `bottom`, `top`, `ec50` and `hill`, and `doses` (the number of distinct positive doses).
+3. **Dose-response**, with a dose column: a four-parameter logistic fit of well medians against dose, per condition, giving `bottom`, `top`, `ec50` and `hill`, and `doses` (the number of distinct positive doses). A curve is only reported when it is a real response: its EC50 lies within the tested doses and, when there are more wells than curve parameters, it fits clearly better than a flat line (F-test, p < 0.05). A compound with no effect gets no EC50 rather than a made-up one.
 
 ## Reading the answer
 
@@ -44,7 +44,7 @@ The statistics are left empty (`NaN`) rather than invented when they cannot be c
 - **One replicate:** no spread, no test.
 - **Replicates that do not vary** (identical well medians in both groups): a t-test would be meaningless.
 - **Control wells that do not vary:** the z-score is undefined.
-- **Dose-response** needs at least four distinct positive doses and a fit that converges.
+- **Dose-response** needs at least four distinct positive doses, a fit that converges, and a real response (see above).
 
 ## Why not a plain average?
 

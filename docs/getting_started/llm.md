@@ -46,7 +46,7 @@ export LUMEN_NAPARI_PROVIDER=claude-code
 napari
 ```
 
-These providers run the CLI in a read-only or planning mode and are meant for local use. They are slower than an API key, because each answer waits for the CLI to finish, and they cannot read images.
+These providers run the CLI in a read-only or planning mode and are meant for local use. They cannot make native tool calls, so lumen-napari offers its segment and measure actions to them as tools, which they can call; every question works, just more slowly. They are slower than an API key, because each answer waits for the CLI to finish, and they cannot read images.
 
 `LUMEN_NAPARI_PROVIDER` takes any Lumen provider name, so it also forces a key-based one when several keys are set, for example `anthropic` or `ollama`. An unknown name fails with the list of valid ones.
 
