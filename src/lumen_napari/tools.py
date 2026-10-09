@@ -131,7 +131,8 @@ def make_tools(viewer: ViewerModel, controls=None, actions: bool = False) -> lis
         label : int
             The object's label value, the `label` column of a measurement table.
         rank_by : str
-            Measurement column to rank by, such as 'area' or 'intensity_mean'.
+            Measurement to rank by, such as 'area', or intensity_mean_<layer> for the
+            brightness of another layer or channel. Plain words also work.
         smallest : bool
             With rank_by, show the smallest object instead of the largest.
         labels_layer : str
@@ -158,7 +159,10 @@ def make_tools(viewer: ViewerModel, controls=None, actions: bool = False) -> lis
         Parameters
         ----------
         column : str
-            Measurement column to color by, such as 'area' or 'intensity_mean'.
+            Measurement to color by, such as 'area'. The brightness of another layer or
+            channel is intensity_mean_<layer>, e.g. 'intensity_mean_lily_green' for the layer
+            lily-green; 'intensity_mean' alone is the segmented layer itself. Plain words
+            such as 'mean lily-green intensity' also work.
         labels_layer : str
             Name of the napari labels layer. Defaults to the most recently added one.
         colormap : str
