@@ -7,13 +7,13 @@ lumen-napari needs Python 3.11 or newer. It currently installs Lumen and napari 
 === "pip"
 
     ```bash
-    pip install "lumen-napari[qt] @ git+https://github.com/ghostiee-11/lumen-napari.git"
+    pip install "lumen-napari[qt] @ git+https://github.com/holoviz-topics/lumen-napari.git"
     ```
 
 === "uv"
 
     ```bash
-    uv pip install "lumen-napari[qt] @ git+https://github.com/ghostiee-11/lumen-napari.git"
+    uv pip install "lumen-napari[qt] @ git+https://github.com/holoviz-topics/lumen-napari.git"
     ```
 
 The `qt` extra installs PyQt6, which napari needs to open a window. Leave it out if your environment already has a Qt binding (PyQt5, PySide2 or PySide6).
@@ -59,7 +59,7 @@ See [Choosing an LLM](llm.md) for other providers and local models.
 ## Development install
 
 ```bash
-git clone https://github.com/ghostiee-11/lumen-napari.git
+git clone https://github.com/holoviz-topics/lumen-napari.git
 cd lumen-napari
 uv venv && uv pip install -e ".[qt,test]"
 pytest

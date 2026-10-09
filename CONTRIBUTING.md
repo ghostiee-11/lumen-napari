@@ -4,7 +4,7 @@ Thanks for helping. Bug reports, examples of images it gets wrong, docs fixes an
 
 ## Report a problem
 
-Open an [issue](https://github.com/ghostiee-11/lumen-napari/issues) with:
+Open an [issue](https://github.com/holoviz-topics/lumen-napari/issues) with:
 
 - what you asked in the chat, and what happened instead;
 - the outline image from the chat's napari message, if segmentation looks wrong;
@@ -16,7 +16,7 @@ Never paste API keys into issues, logs or screenshots.
 ## Set up
 
 ```bash
-git clone https://github.com/ghostiee-11/lumen-napari.git
+git clone https://github.com/holoviz-topics/lumen-napari.git
 cd lumen-napari
 uv venv && uv pip install -e ".[qt,test,docs]"
 ```
@@ -55,7 +55,7 @@ CI runs the same three on every pull request.
 | `region.py`, `tiles.py` | Large images and whole slides |
 | `widget.py` | The napari dock |
 
-[How it works](https://ghostiee-11.github.io/lumen-napari/explanation/how_it_works/) explains the threads, the shared database and the click-back.
+[How it works](https://holoviz-topics.github.io/lumen-napari/explanation/how_it_works/) explains the threads, the shared database and the click-back.
 
 ## Writing style
 
