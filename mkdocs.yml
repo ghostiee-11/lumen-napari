@@ -33,6 +33,7 @@ markdown_extensions:
   - pymdownx.details
   - pymdownx.highlight
   - pymdownx.superfences
+  - pymdownx.snippets
   - pymdownx.tabbed:
       alternate_style: true
 
@@ -49,6 +50,7 @@ plugins:
 
 nav:
   - Home: index.md
+  - Examples: examples.md
   - Getting started:
       - Installation: getting_started/installation.md
       - Quickstart: getting_started/quickstart.md
@@ -72,3 +74,4 @@ nav:
   - Explanation:
       - How it works: explanation/how_it_works.md
       - Limitations: explanation/limitations.md
+  - Contributing: contributing.md
