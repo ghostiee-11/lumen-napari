@@ -249,3 +249,13 @@ def test_cellpose_segments_volumes_in_3d(monkeypatch, fresh_cellpose):
     calls.clear()
     segment(np.zeros((10, 10)), method="cellpose")
     assert calls == {}
+
+
+def test_background_regions_are_not_cells():
+    walls = np.zeros((200, 200))
+    walls[:100:10, :100] = walls[:100, :100:10] = 1  # small cells in the top-left quarter
+    walls[100, :] = walls[:, 100] = 1  # the rest is open background, cut off by a wall
+    labels = segment(walls, dark_objects=True, split_touching=False)
+    sizes = np.bincount(labels.ravel())[1:]
+    assert sizes.max() < 100  # no background-sized object left
+    assert labels.max() >= 80

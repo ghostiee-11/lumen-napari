@@ -89,6 +89,8 @@ def segment(
     if min_size:
         mask = morphology.remove_small_objects(mask, max_size=min_size - 1)
     objects = ndi.label(mask)[0]
+    if dark_objects:
+        objects = _drop_background(objects)
     if not split_touching or not objects.max():
         return objects.astype(np.int32)
     distance = ndi.distance_transform_edt(mask)
@@ -131,6 +133,22 @@ def polarity(image: np.ndarray) -> tuple[bool, bool]:
     background = mask.mean() > 0.5
     walls = not background and sizes.max() >= 0.6 * mask.sum() and span >= 0.8
     return bool(walls or background), bool(walls)
+
+
+def _drop_background(objects: np.ndarray) -> np.ndarray:
+    """Without the background regions that dark-object segmentation also finds: objects that
+    touch the image edge and are over 20 times the median object size."""
+    sizes = np.bincount(objects.ravel())
+    if len(sizes) < 3:
+        return objects
+    edge = np.unique(np.concatenate([np.ravel(objects[tuple(
+        slice(None) if a != axis else i for a in range(objects.ndim))])
+        for axis in range(objects.ndim) for i in (0, -1)]))
+    huge = sizes > 20 * np.median(sizes[1:])
+    drop = np.intersect1d(edge[edge > 0], np.flatnonzero(huge))
+    if not len(drop):
+        return objects
+    return segmentation.relabel_sequential(np.where(np.isin(objects, drop), 0, objects))[0]
 
 
 def _fill_nan(image: np.ndarray) -> np.ndarray:
