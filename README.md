@@ -4,13 +4,17 @@
 
 [Documentation](https://ghostiee-11.github.io/lumen-napari/) · [Examples](https://ghostiee-11.github.io/lumen-napari/examples/) · [Contributing](CONTRIBUTING.md)
 
+[![Demo: asking Lumen to find every cell; it counts 2,652 cells and napari zooms to the largest](docs/assets/demo.gif)](https://ghostiee-11.github.io/lumen-napari/#watch-it)
+
+*"Find every cell, tell me how many there are, and show me where the biggest ones live." [Full-quality video](https://ghostiee-11.github.io/lumen-napari/#watch-it).*
+
 ![Left, the Lumen chat: "Color every cell in lily-blue by its mean lily-green intensity", with the plan, the segmentation check and the answer. Right, napari: the 2,652 cells colored by lignin, with a zoomed inset of one vascular bundle.](docs/assets/lumen_and_napari.png)
 
 *One question in the Lumen chat (left) segments 2,652 cells and colors each by its lignin in napari (right, zoomed inset).*
 
-[![Watch the 35-second demo: Lumen counts 2,652 cells and napari zooms to the largest](docs/assets/demo_poster.jpg)](https://ghostiee-11.github.io/lumen-napari/#watch-it)
+![Left, Lumen: "There are 2,652 cells... the largest cell has an area of 3,780". Right, napari zoomed onto that cell, label 2508, area 3.78e+03 in the status bar.](docs/assets/demo_poster.jpg)
 
-**[▶ Watch the 35-second demo](https://ghostiee-11.github.io/lumen-napari/#watch-it)**
+*Lumen's answer (left) and the same cell selected in napari (right): label 2508, area 3,780.*
 
 lumen-napari connects [napari](https://napari.org) to [Lumen](https://lumen.holoviz.org), the HoloViz AI data explorer. Ask "how many cells are there, and are the lignified ones smaller?" and it segments the image open in napari, measures every object into a table, and answers with statistics and charts. Click a point on a chart and napari zooms to that cell.
 
